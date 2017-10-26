@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">eXplorun</string>
+	<string name="title_activity_maps">Carte</string>
+	<string name="your_position">Votre position</string>
+</resources>

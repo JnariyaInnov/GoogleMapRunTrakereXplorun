@@ -1,31 +1,120 @@
 package brice.explorun;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, LocationListener
 {
 
-	private GoogleMap mMap;
+	private GoogleMap mMap = null;
+	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
+	private GoogleApiClient mGoogleApiClient = null;
+
+	private boolean mRequestingLocationUpdates = false;
+	private Location mLastLocation = null;
+	private MarkerOptions userLocationMarkerOptions;
+	private Marker userMarker;
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_maps);
+
+		// Create an instance of GoogleAPIClient.
+		if (this.mGoogleApiClient == null) {
+			this.mGoogleApiClient = new GoogleApiClient.Builder(this)
+					.addConnectionCallbacks(this)
+					.addOnConnectionFailedListener(this)
+					.addApi(LocationServices.API)
+					.build();
+		}
+
+		this.userLocationMarkerOptions = new MarkerOptions().position(new LatLng(0,0)).title(this.getResources().getString(R.string.your_position)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+
 		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
 		SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
 				.findFragmentById(R.id.map);
 		mapFragment.getMapAsync(this);
 	}
 
+	protected void onStart() {
+		this.mGoogleApiClient.connect();
+		super.onStart();
+	}
+
+	protected void onStop() {
+		this.mGoogleApiClient.disconnect();
+		super.onStop();
+	}
+
+	@Override
+	public void onConnected(Bundle connectionHint) {
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+		{
+			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_GPS);
+		}
+		else
+		{
+			getLocation();
+		}
+	}
+
+	@Override
+	public void onConnectionSuspended(int i)
+	{
+
+	}
+
+	@Override
+	public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
+	{
+
+	}
+
+	@Override
+	public void onLocationChanged(Location location) {
+		this.mLastLocation = location;
+		updateMap();
+	}
+
+
+	public void getLocation()
+	{
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+		{
+			this.mLastLocation = LocationServices.FusedLocationApi.getLastLocation(this.mGoogleApiClient);
+			if (this.mLastLocation != null)
+			{
+				updateMap();
+			}
+			if (!this.mRequestingLocationUpdates)
+			{
+				startLocationUpdates();
+				this.mRequestingLocationUpdates = true;
+			}
+		}
+	}
 
 	/**
 	 * Manipulates the map once available.
@@ -37,13 +126,79 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	 * installed Google Play services and returned to the app.
 	 */
 	@Override
-	public void onMapReady(GoogleMap googleMap)
-	{
-		mMap = googleMap;
+	public void onMapReady(GoogleMap googleMap) {
+		this.mMap = googleMap;
+		this.userMarker = this.mMap.addMarker(this.userLocationMarkerOptions);
+	}
 
-		// Add a marker in Sydney and move the camera
-		LatLng sydney = new LatLng(-34, 151);
-		mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-		mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+	public void updateMap() {
+		if (this.mLastLocation != null)
+		{
+			LatLng userLocation = new LatLng(this.mLastLocation.getLatitude(), this.mLastLocation.getLongitude());
+			if (this.mMap != null)
+			{
+				this.mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
+				this.userMarker.setPosition(userLocation);
+				UiSettings settings = this.mMap.getUiSettings();
+				settings.setZoomControlsEnabled(true);
+				if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+				{
+					this.mMap.setMyLocationEnabled(true);
+					this.mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener()
+					{
+						@Override
+						public boolean onMyLocationButtonClick()
+						{
+							getLocation();
+							return true;
+						}
+					});
+				}
+			}
+		}
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults)
+	{
+		switch (requestCode)
+		{
+			case MY_PERMISSIONS_REQUEST_GPS:
+			{
+				// If request is cancelled, the result arrays are empty.
+				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+				{
+					getLocation();
+				}
+			}
+			break;
+		}
+	}
+
+	protected LocationRequest createLocationRequest()
+	{
+		LocationRequest mLocationRequest = new LocationRequest();
+		mLocationRequest.setInterval(10000);
+		mLocationRequest.setFastestInterval(10000);
+		mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+		return mLocationRequest;
+	}
+
+	protected void startLocationUpdates()
+	{
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+		{
+			LocationServices.FusedLocationApi.requestLocationUpdates(this.mGoogleApiClient, createLocationRequest(), this);
+		}
+	}
+
+	public void onDestroy()
+	{
+		super.onDestroy();
+		stopLocationUpdates();
+	}
+
+	protected void stopLocationUpdates() {
+		LocationServices.FusedLocationApi.removeLocationUpdates(this.mGoogleApiClient, this);
 	}
 }
