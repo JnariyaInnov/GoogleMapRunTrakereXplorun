@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -19,12 +20,11 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -35,23 +35,19 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
 	private GoogleApiClient mGoogleApiClient = null;
 
-	private boolean firstRequest = true;
+	private boolean isFirstRequest = true;
 	private boolean mRequestingLocationUpdates = false;
 	private Location mLastLocation = null;
 	private MarkerOptions userLocationMarkerOptions;
 	private Marker userMarker;
 
 	private final String REQUESTING_LOCATION_UPDATES_KEY = "requesting";
+	private final String FIRST_REQUEST_KEY = "isFirstRequest";
 	private final String LOCATION_KEY = "location";
 
-
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-							 Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_maps, container, false);
-		super.onCreate(savedInstanceState);
-
-		MapsInitializer.initialize(this.getActivity());
 
 		// Create an instance of GoogleAPIClient.
 		if (this.mGoogleApiClient == null) {
@@ -62,12 +58,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 					.build();
 		}
 
-		SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-		mapFragment.getMapAsync(this);
-
 		this.userLocationMarkerOptions = new MarkerOptions().position(new LatLng(0,0)).title(this.getResources().getString(R.string.your_position)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
-
-		updateValuesFromBundle(savedInstanceState);
 
 		return view;
 	}
@@ -96,7 +87,22 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 					this.userLocationMarkerOptions.position(position);
 				}
 			}
+
+			if (savedInstanceState.keySet().contains(FIRST_REQUEST_KEY))
+			{
+				this.isFirstRequest = savedInstanceState.getBoolean(FIRST_REQUEST_KEY);
+			}
 		}
+	}
+
+	@Override
+	public void onActivityCreated(@Nullable Bundle savedInstanceState)
+	{
+		super.onActivityCreated(savedInstanceState);
+		updateValuesFromBundle(savedInstanceState);
+
+		SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.map);
+		mapFragment.getMapAsync(this);
 	}
 
 	public void onStart() {
@@ -112,6 +118,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
 	public void onSaveInstanceState(Bundle savedInstanceState) {
 		savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, this.mRequestingLocationUpdates);
+		savedInstanceState.putBoolean(FIRST_REQUEST_KEY, this.isFirstRequest);
 		savedInstanceState.putParcelable(LOCATION_KEY, this.mLastLocation);
 		super.onSaveInstanceState(savedInstanceState);
 	}
@@ -141,7 +148,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 	@Override
 	public void onLocationChanged(Location location) {
 		this.mLastLocation = location;
-		Log.d("onLocationChanged", location.toString());
 		updateMap();
 	}
 
@@ -202,10 +208,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 			LatLng userLocation = new LatLng(this.mLastLocation.getLatitude(), this.mLastLocation.getLongitude());
 			if (this.mMap != null)
 			{
-				if (this.firstRequest)
+				if (this.isFirstRequest)
 				{
 					this.mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
-					this.firstRequest = false;
+					this.isFirstRequest = false;
 				}
 				this.userMarker.setPosition(userLocation);
 			}
