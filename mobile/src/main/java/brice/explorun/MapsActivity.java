@@ -20,7 +20,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -38,6 +37,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	private MarkerOptions userLocationMarkerOptions;
 	private Marker userMarker;
 
+	private final String REQUESTING_LOCATION_UPDATES_KEY = "requesting";
+	private final String LOCATION_KEY = "location";
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -54,10 +56,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 		this.userLocationMarkerOptions = new MarkerOptions().position(new LatLng(0,0)).title(this.getResources().getString(R.string.your_position)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
 
+		updateValuesFromBundle(savedInstanceState);
+
 		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
 		SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
 				.findFragmentById(R.id.map);
 		mapFragment.getMapAsync(this);
+	}
+
+	private void updateValuesFromBundle(Bundle savedInstanceState) {
+		if (savedInstanceState != null)
+		{
+			// Update the value of mRequestingLocationUpdates from the Bundle, and
+			// make sure that the Start Updates and Stop Updates buttons are
+			// correctly enabled or disabled.
+			if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY))
+			{
+				this.mRequestingLocationUpdates = savedInstanceState.getBoolean(REQUESTING_LOCATION_UPDATES_KEY);
+			}
+
+			// Update the value of mCurrentLocation from the Bundle and update the
+			// UI to show the correct latitude and longitude.
+			if (savedInstanceState.keySet().contains(LOCATION_KEY))
+			{
+				// Since LOCATION_KEY was found in the Bundle, we can be sure that
+				// mLastLocation is not null.
+				this.mLastLocation = savedInstanceState.getParcelable(LOCATION_KEY);
+				if (this.mLastLocation != null)
+				{
+					LatLng position = new LatLng(this.mLastLocation.getLatitude(), this.mLastLocation.getLongitude());
+					this.userLocationMarkerOptions.position(position);
+				}
+			}
+		}
 	}
 
 	protected void onStart() {
@@ -66,8 +97,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	}
 
 	protected void onStop() {
+		this.stopLocationUpdates();
 		this.mGoogleApiClient.disconnect();
 		super.onStop();
+	}
+
+	public void onSaveInstanceState(Bundle savedInstanceState) {
+		savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, this.mRequestingLocationUpdates);
+		savedInstanceState.putParcelable(LOCATION_KEY, this.mLastLocation);
+		super.onSaveInstanceState(savedInstanceState);
 	}
 
 	@Override
@@ -83,14 +121,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	}
 
 	@Override
-	public void onConnectionSuspended(int i)
-	{
+	public void onConnectionSuspended(int i) {
 
 	}
 
 	@Override
-	public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
-	{
+	public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
 	}
 
@@ -102,8 +138,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	}
 
 
-	public void getLocation()
-	{
+	public void getLocation() {
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
 		{
 			this.mLastLocation = LocationServices.FusedLocationApi.getLastLocation(this.mGoogleApiClient);
@@ -167,8 +202,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	}
 
 	@Override
-	public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults)
-	{
+	public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
 		switch (requestCode)
 		{
 			case MY_PERMISSIONS_REQUEST_GPS:
@@ -183,8 +217,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		}
 	}
 
-	protected LocationRequest createLocationRequest()
-	{
+	protected LocationRequest createLocationRequest() {
 		LocationRequest mLocationRequest = new LocationRequest();
 		mLocationRequest.setInterval(10000);
 		mLocationRequest.setFastestInterval(10000);
@@ -192,18 +225,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		return mLocationRequest;
 	}
 
-	protected void startLocationUpdates()
-	{
+	protected void startLocationUpdates() {
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
 		{
 			LocationServices.FusedLocationApi.requestLocationUpdates(this.mGoogleApiClient, createLocationRequest(), this);
 		}
-	}
-
-	public void onDestroy()
-	{
-		super.onDestroy();
-		stopLocationUpdates();
 	}
 
 	protected void stopLocationUpdates() {
