@@ -20,6 +20,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -31,6 +32,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
 	private GoogleApiClient mGoogleApiClient = null;
 
+	private boolean firstRequest = true;
 	private boolean mRequestingLocationUpdates = false;
 	private Location mLastLocation = null;
 	private MarkerOptions userLocationMarkerOptions;
@@ -95,6 +97,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	@Override
 	public void onLocationChanged(Location location) {
 		this.mLastLocation = location;
+		Log.d("onLocationChanged", location.toString());
 		updateMap();
 	}
 
@@ -128,7 +131,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	@Override
 	public void onMapReady(GoogleMap googleMap) {
 		this.mMap = googleMap;
+		UiSettings settings = this.mMap.getUiSettings();
+		settings.setZoomControlsEnabled(true);
 		this.userMarker = this.mMap.addMarker(this.userLocationMarkerOptions);
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+		{
+			this.mMap.setMyLocationEnabled(true);
+			this.mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener()
+			{
+				@Override
+				public boolean onMyLocationButtonClick()
+				{
+					LatLng position = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+					mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
+					return true;
+				}
+			});
+		}
 	}
 
 	public void updateMap() {
@@ -137,23 +156,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 			LatLng userLocation = new LatLng(this.mLastLocation.getLatitude(), this.mLastLocation.getLongitude());
 			if (this.mMap != null)
 			{
-				this.mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
-				this.userMarker.setPosition(userLocation);
-				UiSettings settings = this.mMap.getUiSettings();
-				settings.setZoomControlsEnabled(true);
-				if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+				if (this.firstRequest)
 				{
-					this.mMap.setMyLocationEnabled(true);
-					this.mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener()
-					{
-						@Override
-						public boolean onMyLocationButtonClick()
-						{
-							getLocation();
-							return true;
-						}
-					});
+					this.mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
+					this.firstRequest = false;
 				}
+				this.userMarker.setPosition(userLocation);
 			}
 		}
 	}
