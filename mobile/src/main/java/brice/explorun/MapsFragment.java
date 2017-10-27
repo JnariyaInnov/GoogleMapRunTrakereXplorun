@@ -1,6 +1,7 @@
 package brice.explorun;
 
 import android.Manifest;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.annotation.NonNull;
@@ -8,16 +9,22 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStates;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -32,6 +39,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 {
 	private GoogleMap mMap = null;
 	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
+	private final int REQUEST_CHECK_SETTINGS = 0x1;
 	private GoogleApiClient mGoogleApiClient = null;
 
 	private boolean isFirstRequest = true;
@@ -56,8 +64,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 					.addApi(LocationServices.API)
 					.build();
 		}
-
-		this.userLocationMarkerOptions = new MarkerOptions().position(new LatLng(0,0)).title(this.getResources().getString(R.string.your_position)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
 
 		return view;
 	}
@@ -130,7 +136,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 		}
 		else
 		{
-			getLocation();
+			checkLocationEnabled();
 		}
 	}
 
@@ -150,6 +156,53 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 		updateMap();
 	}
 
+	public void checkLocationEnabled() {
+		if (Utility.isOnline(this.getActivity())) {
+			LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+					.addLocationRequest(createLocationRequest());
+
+			PendingResult<LocationSettingsResult> result =
+					LocationServices.SettingsApi.checkLocationSettings(this.mGoogleApiClient, builder.build());
+
+			result.setResultCallback(new ResultCallback<LocationSettingsResult>()
+			{
+				@Override
+				public void onResult(LocationSettingsResult locationSettingsResult)
+				{
+
+					final Status status = locationSettingsResult.getStatus();
+					final LocationSettingsStates LS_state = locationSettingsResult.getLocationSettingsStates();
+					switch (status.getStatusCode())
+					{
+						case LocationSettingsStatusCodes.SUCCESS:
+							// All location settings are satisfied. The client can initialize location
+							// requests here.
+							getLocation();
+							break;
+						case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+							// Location settings are not satisfied. But could be fixed by showing the user
+							// a dialog.
+							try
+							{
+								// Show the dialog by calling startResolutionForResult(),
+								// and check the result in onActivityResult().
+								status.startResolutionForResult(getActivity(), REQUEST_CHECK_SETTINGS);
+							}
+							catch (IntentSender.SendIntentException e)
+							{
+								// Ignore the error.
+							}
+							break;
+						case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+							// Location settings are not satisfied. However, we have no way to fix the
+							// settings so we won't show the dialog.
+
+							break;
+					}
+				}
+			});
+		}
+	}
 
 	public void getLocation() {
 		if (ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
@@ -181,7 +234,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 		this.mMap = googleMap;
 		UiSettings settings = this.mMap.getUiSettings();
 		settings.setZoomControlsEnabled(true);
-		this.userMarker = this.mMap.addMarker(this.userLocationMarkerOptions);
 		if (ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
 		{
 			this.mMap.setMyLocationEnabled(true);
@@ -209,6 +261,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 			{
 				if (this.isFirstRequest)
 				{
+					this.userLocationMarkerOptions = new MarkerOptions().position(userLocation).title(this.getResources().getString(R.string.your_position)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+					this.userMarker = this.mMap.addMarker(this.userLocationMarkerOptions);
 					this.mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
 					this.isFirstRequest = false;
 				}
@@ -226,7 +280,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 				// If request is cancelled, the result arrays are empty.
 				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
 				{
-					getLocation();
+					checkLocationEnabled();
 				}
 			}
 			break;
