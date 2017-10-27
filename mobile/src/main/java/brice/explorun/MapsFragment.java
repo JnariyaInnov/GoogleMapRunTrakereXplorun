@@ -29,9 +29,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsFragment extends SupportMapFragment implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, LocationListener
+public class MapsFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, LocationListener
 {
-
 	private GoogleMap mMap = null;
 	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
 	private GoogleApiClient mGoogleApiClient = null;
@@ -49,29 +48,28 @@ public class MapsFragment extends SupportMapFragment implements OnMapReadyCallba
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 							 Bundle savedInstanceState) {
+		View view = inflater.inflate(R.layout.fragment_maps, container, false);
 		super.onCreate(savedInstanceState);
 
-		MapsInitializer.initialize(this.getContext());
+		MapsInitializer.initialize(this.getActivity());
 
 		// Create an instance of GoogleAPIClient.
 		if (this.mGoogleApiClient == null) {
-			this.mGoogleApiClient = new GoogleApiClient.Builder(this.getContext())
+			this.mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
 					.addConnectionCallbacks(this)
 					.addOnConnectionFailedListener(this)
 					.addApi(LocationServices.API)
 					.build();
 		}
 
+		SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+		mapFragment.getMapAsync(this);
 
 		this.userLocationMarkerOptions = new MarkerOptions().position(new LatLng(0,0)).title(this.getResources().getString(R.string.your_position)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
 
 		updateValuesFromBundle(savedInstanceState);
 
-		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
-		this.getMapAsync(this);
-
-		// Inflate the layout for this fragment
-		return inflater.inflate(R.layout.fragment_maps, container, false);
+		return view;
 	}
 
 	private void updateValuesFromBundle(Bundle savedInstanceState) {
@@ -102,8 +100,8 @@ public class MapsFragment extends SupportMapFragment implements OnMapReadyCallba
 	}
 
 	public void onStart() {
-		this.mGoogleApiClient.connect();
 		super.onStart();
+		this.mGoogleApiClient.connect();
 	}
 
 	public void onStop() {
@@ -187,8 +185,11 @@ public class MapsFragment extends SupportMapFragment implements OnMapReadyCallba
 				@Override
 				public boolean onMyLocationButtonClick()
 				{
-					LatLng position = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-					mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
+					if (mLastLocation != null)
+					{
+						LatLng position = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+						mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
+					}
 					return true;
 				}
 			});
