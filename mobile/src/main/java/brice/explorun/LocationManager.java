@@ -7,8 +7,6 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
-import android.util.Log;
-
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -43,6 +41,7 @@ public class LocationManager implements LocationListener
 	private final String REQUESTING_LOCATION_UPDATES_KEY = "requesting";
 	private final String FIRST_REQUEST_KEY = "isFirstRequest";
 	private final String LOCATION_KEY = "location";
+	private final int refreshInterval = 10000;
 
 	LocationManager(Activity context, GoogleApiClient googleApiClient)
 	{
@@ -210,8 +209,8 @@ public class LocationManager implements LocationListener
 	private LocationRequest createLocationRequest()
 	{
 		LocationRequest mLocationRequest = new LocationRequest();
-		mLocationRequest.setInterval(10000);
-		mLocationRequest.setFastestInterval(10000);
+		mLocationRequest.setInterval(refreshInterval);
+		mLocationRequest.setFastestInterval(refreshInterval);
 		mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 		return mLocationRequest;
 	}

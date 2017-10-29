@@ -2,7 +2,6 @@ package brice.explorun;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -15,22 +14,17 @@ import android.view.ViewGroup;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
-import com.google.android.gms.maps.model.LatLng;
 
 public class MapsFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
 {
-	private GoogleMap mMap = null;
 	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
 	private GoogleApiClient mGoogleApiClient = null;
 
 	private LocationManager locationManager;
-	private Location mLastLocation = null;
-
 	public LocationManager getLocationManager()
 	{
 		return this.locationManager;
@@ -142,9 +136,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 	@Override
 	public void onMapReady(GoogleMap googleMap)
 	{
-		this.mMap = googleMap;
-		this.locationManager.setMap(this.mMap);
-		UiSettings settings = this.mMap.getUiSettings();
+		this.locationManager.setMap(googleMap);
+		UiSettings settings = googleMap.getUiSettings();
 		settings.setZoomControlsEnabled(true);
 	}
 }
