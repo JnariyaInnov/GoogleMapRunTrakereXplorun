@@ -2,10 +2,14 @@ package brice.explorun;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -19,9 +23,27 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         if (!Utility.isOnline(this))
         {
-			this.dialog = Utility.showAlertDialog(R.string.network_error, R.string.no_network, this);
+			updateNoNetworkLabel(true);
+			final Handler ha=new Handler();
+			final MainActivity _this = this;
+			ha.postDelayed(new Runnable() {
+
+				@Override
+				public void run() {
+					//call function
+					if(Utility.isOnline(getApplicationContext())){
+						//TODO: Faire ca mieux (c'est mal mais j'ai faim dsl... )
+						_this.mapsFragment = new MapsFragment();
+						getSupportFragmentManager().beginTransaction().replace(R.id.container, _this.mapsFragment).commit();
+					}
+					else {
+						ha.postDelayed(this, 10000);
+					}
+				}
+			}, 10000);
 		}
 
 		if (savedInstanceState != null)
@@ -77,5 +99,25 @@ public class MainActivity extends AppCompatActivity
     		this.dialog.dismiss();
 		}
 		super.onDestroy();
+	}
+
+	public void updateNoNetworkLabel(boolean visible){
+		TextView noNetworkLabel = this.findViewById(R.id.no_network_label);
+		if (visible){
+			ViewGroup.LayoutParams params = noNetworkLabel.getLayoutParams();
+			// Changes the height and width to the specified *pixels*
+			params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+			params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+			noNetworkLabel.setLayoutParams(params);
+			noNetworkLabel.setVisibility(View.VISIBLE);
+		}
+		else{
+			ViewGroup.LayoutParams params = noNetworkLabel.getLayoutParams();
+			// Changes the height and width to the specified *pixels*
+			params.height = 0;
+			params.width = 0;
+			noNetworkLabel.setLayoutParams(params);
+			noNetworkLabel.setVisibility(View.INVISIBLE);
+		}
 	}
 }

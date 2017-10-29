@@ -3,6 +3,6 @@
 	<string name="app_name">eXplorun</string>
 	<string name="title_activity_maps">Carte</string>
 	<string name="your_position">Votre position</string>
-	<string name="no_network">Une connexion à internet est requise pour utiliser cette application</string>
+	<string name="no_network">Une connexion internet est requise pour utiliser cette application</string>
 	<string name="network_error">Erreur réseau</string>
 </resources>
