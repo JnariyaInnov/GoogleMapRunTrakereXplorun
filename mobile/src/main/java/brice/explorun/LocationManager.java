@@ -1,7 +1,6 @@
 package brice.explorun;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
@@ -9,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -22,12 +20,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 public class LocationManager implements LocationListener
 {
@@ -55,7 +48,7 @@ public class LocationManager implements LocationListener
 		this.mLastLocation = loc;
 	}
 
-	void onSaveInstanceState(Bundle savedInstanceState)
+	protected void onSaveInstanceState(Bundle savedInstanceState)
 	{
 		savedInstanceState.putParcelable(LOCATION_KEY, this.mLastLocation);
 	}
@@ -68,7 +61,7 @@ public class LocationManager implements LocationListener
 		mapFragment.updateMap();
 	}
 
-	void getLocation()
+	public void initLocation()
 	{
 		if (ActivityCompat.checkSelfPermission(mapFragment.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
 		{
@@ -83,7 +76,7 @@ public class LocationManager implements LocationListener
 		}
 	}
 
-	public void getLocationFromPreferences()
+	public void updateLocationFromPreferences()
 	{
 		SharedPreferences sharedPref = this.mapFragment.getActivity().getPreferences(Context.MODE_PRIVATE);
 		float latitude = sharedPref.getFloat("latitude", -1);
@@ -104,7 +97,7 @@ public class LocationManager implements LocationListener
 		editor.apply();
 	}
 
-	void checkLocationEnabled()
+	public void checkLocationEnabled()
 	{
 		LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
 				.addLocationRequest(createLocationRequest());
@@ -123,7 +116,7 @@ public class LocationManager implements LocationListener
 				{
 					case LocationSettingsStatusCodes.SUCCESS:
 						// All location settings are satisfied. The client can initialize location requests here.
-						getLocation();
+						initLocation();
 						break;
 
 					case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
@@ -162,7 +155,7 @@ public class LocationManager implements LocationListener
 		}
 	}
 
-	void stopLocationUpdates()
+	public void stopLocationUpdates()
 	{
 		LocationServices.FusedLocationApi.removeLocationUpdates(this.mGoogleApiClient, this);
 	}

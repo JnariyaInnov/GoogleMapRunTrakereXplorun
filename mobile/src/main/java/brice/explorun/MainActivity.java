@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity
 						if (this.fragment instanceof MapsFragment)
 						{
 							MapsFragment fragment = (MapsFragment) this.fragment;
-							fragment.getLocationManager().getLocation();
+							fragment.getLocationManager().initLocation();
 						}
 						break;
 
@@ -164,14 +164,8 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
-		// Pass the event to ActionBarDrawerToggle, if it returns
-		// true, then it has handled the app icon touch event
-		if (this.mDrawerToggle.onOptionsItemSelected(item)) {
-			return true;
-		}
-		else {
-			return super.onOptionsItemSelected(item);
-		}
+		// Pass the event to ActionBarDrawerToggle, if it returns true, then it has handled the app icon touch event
+		return (this.mDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item));
 	}
 
 
