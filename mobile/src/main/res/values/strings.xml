@@ -4,4 +4,10 @@
 	<string name="your_position">Your position</string>
 	<string name="network_error">Network error</string>
 	<string name="no_network">An internet connection is required to use this application</string>
+	<string name="drawer_title">Menu</string>
+	<string name="drawer_open">Open the menu</string>
+	<string name="drawer_close">Close the menu</string>
+	<string name="nav_map">Map</string>
+	<string name="nav_history">History</string>
+	<string name="nav_about">About</string>
 </resources>

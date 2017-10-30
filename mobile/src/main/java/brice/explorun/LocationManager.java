@@ -41,7 +41,7 @@ public class LocationManager implements LocationListener
 	private final String REQUESTING_LOCATION_UPDATES_KEY = "requesting";
 	private final String FIRST_REQUEST_KEY = "isFirstRequest";
 	private final String LOCATION_KEY = "location";
-	private final int refreshInterval = 10000;
+	private final int refreshInterval = 10000; // Intervalle de rafraîchissement de la position (en ms)
 
 	LocationManager(Activity context, GoogleApiClient googleApiClient)
 	{

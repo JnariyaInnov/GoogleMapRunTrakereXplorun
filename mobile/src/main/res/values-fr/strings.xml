@@ -5,4 +5,10 @@
 	<string name="your_position">Votre position</string>
 	<string name="no_network">Une connexion à internet est requise pour utiliser cette application</string>
 	<string name="network_error">Erreur réseau</string>
+	<string name="drawer_title">Menu</string>
+	<string name="nav_map">Carte</string>
+	<string name="nav_history">Historique</string>
+	<string name="drawer_open">Ouvrir le menu</string>
+	<string name="drawer_close">Fermer le menu</string>
+	<string name="nav_about">A propos</string>
 </resources>
