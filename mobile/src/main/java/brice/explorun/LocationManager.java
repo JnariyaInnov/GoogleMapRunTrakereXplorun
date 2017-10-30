@@ -2,7 +2,9 @@ package brice.explorun;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -112,8 +114,17 @@ public class LocationManager implements LocationListener
 	@Override
 	public void onLocationChanged(Location location)
 	{
-		this.mLastLocation = location;
-		updateMap();
+		MainActivity act = (MainActivity) this.context;
+		if(Utility.isOnline(this.context))
+		{
+			this.mLastLocation = location;
+			updateMap();
+			act.updateNoNetworkLabel(false);
+		}
+		else {
+			act.updateNoNetworkLabel(true);
+		}
+
 	}
 
 	void getLocation()
@@ -138,6 +149,7 @@ public class LocationManager implements LocationListener
 		if (this.mLastLocation != null)
 		{
 			LatLng userLocation = new LatLng(this.mLastLocation.getLatitude(), this.mLastLocation.getLongitude());
+			storeLastLocation(userLocation);
 			if (this.mMap != null)
 			{
 				if (this.isFirstRequest)
@@ -153,6 +165,27 @@ public class LocationManager implements LocationListener
 				this.userMarker.setPosition(userLocation);
 			}
 		}
+	}
+
+	private void restoreLastLocation(){
+		SharedPreferences sharedPref = this.context.getPreferences(Context.MODE_PRIVATE);
+		float latitude = sharedPref.getFloat("latitude", -1);
+		float longitude = sharedPref.getFloat("longitude", -1);
+		if(latitude != -1 && longitude != -1){
+			mLastLocation = new Location("");
+			mLastLocation.setLatitude(latitude);
+			mLastLocation.setLongitude(longitude);
+			updateMap();
+		}
+
+	}
+
+	private void storeLastLocation(LatLng loc){
+		SharedPreferences sharedPref = this.context.getPreferences(Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = sharedPref.edit();
+		editor.putFloat("latitude", (float) loc.latitude);
+		editor.putFloat("longitude", (float) loc.longitude);
+		editor.commit();
 	}
 
 	void checkLocationEnabled()
@@ -203,6 +236,11 @@ public class LocationManager implements LocationListener
 					}
 				}
 			});
+		}
+		else {
+			MainActivity act = (MainActivity) this.context;
+			act.updateNoNetworkLabel(true);
+			restoreLastLocation();
 		}
 	}
 
