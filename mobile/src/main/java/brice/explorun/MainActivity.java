@@ -26,16 +26,6 @@ public class MainActivity extends AppCompatActivity
 	private String mTitle;
 	private int selectedItemId;
 
-	public Fragment getFragment()
-	{
-		return this.fragment;
-	}
-
-	public void setFragment(Fragment fragment)
-	{
-		this.fragment = fragment;
-	}
-
 	@Override
     protected void onCreate(Bundle savedInstanceState)
 	{

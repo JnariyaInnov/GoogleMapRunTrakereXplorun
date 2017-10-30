@@ -10,6 +10,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -37,12 +38,10 @@ public class LocationManager implements LocationListener
 	private GoogleApiClient mGoogleApiClient;
 
 	private boolean isFirstRequest = true;
-	private boolean mRequestingLocationUpdates = false;
 	private Location mLastLocation = null;
 	private MarkerOptions userLocationMarkerOptions;
 	private Marker userMarker;
 
-	private final String REQUESTING_LOCATION_UPDATES_KEY = "requesting";
 	private final String FIRST_REQUEST_KEY = "isFirstRequest";
 	private final String LOCATION_KEY = "location";
 	private final int refreshInterval = 10000; // Intervalle de rafraîchissement de la position (en ms)
@@ -76,22 +75,8 @@ public class LocationManager implements LocationListener
 		}
 	}
 
-	private MapsFragment getMapsFragment()
-	{
-		MainActivity act = (MainActivity) this.context;
-		return (MapsFragment) act.getFragment();
-	}
-
 	void updateValuesFromBundle(Bundle savedInstanceState)
 	{
-		// Update the value of mRequestingLocationUpdates from the Bundle, and
-		// make sure that the Start Updates and Stop Updates buttons are
-		// correctly enabled or disabled.
-		if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY))
-		{
-			this.mRequestingLocationUpdates = savedInstanceState.getBoolean(REQUESTING_LOCATION_UPDATES_KEY);
-		}
-
 		// Update the value of mCurrentLocation from the Bundle and update the
 		// UI to show the correct latitude and longitude.
 		if (savedInstanceState.keySet().contains(LOCATION_KEY))
@@ -114,7 +99,6 @@ public class LocationManager implements LocationListener
 
 	void onSaveInstanceState(Bundle savedInstanceState)
 	{
-		savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, this.mRequestingLocationUpdates);
 		savedInstanceState.putBoolean(FIRST_REQUEST_KEY, this.isFirstRequest);
 		savedInstanceState.putParcelable(LOCATION_KEY, this.mLastLocation);
 	}
@@ -122,17 +106,9 @@ public class LocationManager implements LocationListener
 	@Override
 	public void onLocationChanged(Location location)
 	{
-		if(Utility.isOnline(this.context))
-		{
-			this.mLastLocation = location;
-			updateMap();
-			getMapsFragment().updateNoNetworkLabel(false);
-		}
-		else
-		{
-			getMapsFragment().updateNoNetworkLabel(true);
-		}
-
+		Log.d("onLocationChanged", location.toString());
+		this.mLastLocation = location;
+		updateMap();
 	}
 
 	void getLocation()
@@ -144,11 +120,11 @@ public class LocationManager implements LocationListener
 			{
 				updateMap();
 			}
-			if (!this.mRequestingLocationUpdates)
+			else
 			{
-				startLocationUpdates();
-				this.mRequestingLocationUpdates = true;
+				restoreLastLocation();
 			}
+			startLocationUpdates();
 		}
 	}
 
@@ -200,58 +176,50 @@ public class LocationManager implements LocationListener
 
 	void checkLocationEnabled()
 	{
-		if (Utility.isOnline(this.context))
+		LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+				.addLocationRequest(createLocationRequest());
+
+		PendingResult<LocationSettingsResult> result =
+				LocationServices.SettingsApi.checkLocationSettings(this.mGoogleApiClient, builder.build());
+
+		result.setResultCallback(new ResultCallback<LocationSettingsResult>()
 		{
-			LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-					.addLocationRequest(createLocationRequest());
-
-			PendingResult<LocationSettingsResult> result =
-					LocationServices.SettingsApi.checkLocationSettings(this.mGoogleApiClient, builder.build());
-
-			result.setResultCallback(new ResultCallback<LocationSettingsResult>()
+			@Override
+			public void onResult(LocationSettingsResult locationSettingsResult)
 			{
-				@Override
-				public void onResult(LocationSettingsResult locationSettingsResult)
+
+				final Status status = locationSettingsResult.getStatus();
+				switch (status.getStatusCode())
 				{
+					case LocationSettingsStatusCodes.SUCCESS:
+						// All location settings are satisfied. The client can initialize location
+						// requests here.
+						getLocation();
+						break;
 
-					final Status status = locationSettingsResult.getStatus();
-					switch (status.getStatusCode())
-					{
-						case LocationSettingsStatusCodes.SUCCESS:
-							// All location settings are satisfied. The client can initialize location
-							// requests here.
-							getLocation();
-							break;
+					case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+						// Location settings are not satisfied. But could be fixed by showing the user
+						// a dialog.
+						try
+						{
+							// Show the dialog by calling startResolutionForResult(),
+							// and check the result in onActivityResult().
+							status.startResolutionForResult(context, REQUEST_CHECK_SETTINGS);
+						}
+						catch (IntentSender.SendIntentException e)
+						{
+							// Ignore the error.
+						}
+						break;
 
-						case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-							// Location settings are not satisfied. But could be fixed by showing the user
-							// a dialog.
-							try
-							{
-								// Show the dialog by calling startResolutionForResult(),
-								// and check the result in onActivityResult().
-								status.startResolutionForResult(context, REQUEST_CHECK_SETTINGS);
-							}
-							catch (IntentSender.SendIntentException e)
-							{
-								// Ignore the error.
-							}
-							break;
+					case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+						// Location settings are not satisfied. However, we have no way to fix the
+						// settings so we won't show the dialog.
 
-						case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-							// Location settings are not satisfied. However, we have no way to fix the
-							// settings so we won't show the dialog.
-
-							break;
-					}
+						break;
 				}
-			});
-		}
-		else
-		{
-			getMapsFragment().updateNoNetworkLabel(true);
-			restoreLastLocation();
-		}
+			}
+		});
 	}
 
 	private LocationRequest createLocationRequest()
