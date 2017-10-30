@@ -7,39 +7,22 @@ import android.widget.TextView;
 
 public class NetworkHandler extends Handler
 {
-	private TextView noNetworkLabel;
-
-	public NetworkHandler(final Activity activity, TextView noNetworkLabel)
+	public NetworkHandler(final Activity activity, final TextView noNetworkLabel, final int checkInterval)
 	{
-		this.noNetworkLabel = noNetworkLabel;
 		this.post(new Runnable()
 		{
 			@Override
 			public void run()
 			{
 				//call function
-				if(Utility.isOnline(activity.getApplicationContext()))
-				{
-					updateNoNetworkLabel(false);
+				if(Utility.isOnline(activity.getBaseContext())) {
+					noNetworkLabel.setVisibility(View.GONE);
 				}
-				else
-				{
-					updateNoNetworkLabel(true);
+				else {
+					noNetworkLabel.setVisibility(View.VISIBLE);
 				}
-				postDelayed(this, 5000);
+				postDelayed(this, checkInterval);
 			}
 		});
-	}
-
-	private void updateNoNetworkLabel(boolean visible)
-	{
-		if (visible)
-		{
-			this.noNetworkLabel.setVisibility(View.VISIBLE);
-		}
-		else
-		{
-			this.noNetworkLabel.setVisibility(View.GONE);
-		}
 	}
 }

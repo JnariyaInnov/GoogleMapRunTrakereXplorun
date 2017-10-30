@@ -33,73 +33,30 @@ public class LocationManager implements LocationListener
 {
 	private final int REQUEST_CHECK_SETTINGS = 0x1;
 
-	private Activity context;
-	private GoogleMap mMap;
+	private MapsFragment mapFragment;
 	private GoogleApiClient mGoogleApiClient;
-
-	private boolean isFirstRequest = true;
 	private Location mLastLocation = null;
-	private MarkerOptions userLocationMarkerOptions;
-	private Marker userMarker;
 
 	private final String FIRST_REQUEST_KEY = "isFirstRequest";
 	private final String LOCATION_KEY = "location";
 	private final int refreshInterval = 10000; // Intervalle de rafraîchissement de la position (en ms)
 
-	LocationManager(Activity context, GoogleApiClient googleApiClient)
+	LocationManager(MapsFragment mapFragment, GoogleApiClient googleApiClient)
 	{
-		this.context = context;
-		this.mMap = null;
+		this.mapFragment = mapFragment;
 		this.mGoogleApiClient = googleApiClient;
 	}
 
-	void setMap(GoogleMap map)
-	{
-		this.mMap = map;
-		if (ActivityCompat.checkSelfPermission(this.context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-		{
-			this.mMap.setMyLocationEnabled(true);
-			this.mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener()
-			{
-				@Override
-				public boolean onMyLocationButtonClick()
-				{
-					if (mLastLocation != null)
-					{
-						LatLng position = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-						mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
-					}
-					return true;
-				}
-			});
-		}
+	public Location getmLastLocation() {
+		return mLastLocation;
 	}
 
-	void updateValuesFromBundle(Bundle savedInstanceState)
-	{
-		// Update the value of mCurrentLocation from the Bundle and update the
-		// UI to show the correct latitude and longitude.
-		if (savedInstanceState.keySet().contains(LOCATION_KEY))
-		{
-			// Since LOCATION_KEY was found in the Bundle, we can be sure that
-			// mLastLocation is not null.
-			this.mLastLocation = savedInstanceState.getParcelable(LOCATION_KEY);
-			if (this.mLastLocation != null)
-			{
-				LatLng position = new LatLng(this.mLastLocation.getLatitude(), this.mLastLocation.getLongitude());
-				this.userLocationMarkerOptions = new MarkerOptions().position(position).title(this.context.getResources().getString(R.string.your_position)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
-			}
-		}
-
-		if (savedInstanceState.keySet().contains(FIRST_REQUEST_KEY))
-		{
-			this.isFirstRequest = savedInstanceState.getBoolean(FIRST_REQUEST_KEY);
-		}
+	public void setLastLocation(Location loc){
+		this.mLastLocation = loc;
 	}
 
 	void onSaveInstanceState(Bundle savedInstanceState)
 	{
-		savedInstanceState.putBoolean(FIRST_REQUEST_KEY, this.isFirstRequest);
 		savedInstanceState.putParcelable(LOCATION_KEY, this.mLastLocation);
 	}
 
@@ -108,66 +65,39 @@ public class LocationManager implements LocationListener
 	{
 		Log.d("onLocationChanged", location.toString());
 		this.mLastLocation = location;
-		updateMap();
+		mapFragment.updateMap();
 	}
 
 	void getLocation()
 	{
-		if (ActivityCompat.checkSelfPermission(this.context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+		if (ActivityCompat.checkSelfPermission(mapFragment.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
 		{
 			this.mLastLocation = LocationServices.FusedLocationApi.getLastLocation(this.mGoogleApiClient);
-			if (this.mLastLocation != null)
-			{
-				updateMap();
+			if (this.mLastLocation != null) {
+				mapFragment.updateMap();
 			}
-			else
-			{
-				restoreLastLocation();
+			else {
+				mapFragment.restoreLastLocation();
 			}
 			startLocationUpdates();
 		}
 	}
 
-	private void updateMap()
+	public void getLocationFromPreferences()
 	{
-		if (this.mLastLocation != null)
-		{
-			LatLng userLocation = new LatLng(this.mLastLocation.getLatitude(), this.mLastLocation.getLongitude());
-			storeLastLocation(userLocation);
-			if (this.mMap != null)
-			{
-				if (this.isFirstRequest)
-				{
-					this.userLocationMarkerOptions = new MarkerOptions().position(userLocation).title(this.context.getResources().getString(R.string.your_position)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
-					this.mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
-					this.isFirstRequest = false;
-				}
-				if (this.userMarker == null)
-				{
-					this.userMarker = this.mMap.addMarker(this.userLocationMarkerOptions);
-				}
-				this.userMarker.setPosition(userLocation);
-			}
-		}
-	}
-
-	private void restoreLastLocation()
-	{
-		SharedPreferences sharedPref = this.context.getPreferences(Context.MODE_PRIVATE);
+		SharedPreferences sharedPref = this.mapFragment.getActivity().getPreferences(Context.MODE_PRIVATE);
 		float latitude = sharedPref.getFloat("latitude", -1);
 		float longitude = sharedPref.getFloat("longitude", -1);
-		if(latitude != -1 && longitude != -1)
-		{
+		if(latitude != -1 && longitude != -1) {
 			mLastLocation = new Location("");
 			mLastLocation.setLatitude(latitude);
 			mLastLocation.setLongitude(longitude);
-			updateMap();
 		}
 	}
 
-	private void storeLastLocation(LatLng loc)
+	public void storeLastLocation(LatLng loc)
 	{
-		SharedPreferences sharedPref = this.context.getPreferences(Context.MODE_PRIVATE);
+		SharedPreferences sharedPref = this.mapFragment.getActivity().getPreferences(Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPref.edit();
 		editor.putFloat("latitude", (float) loc.latitude);
 		editor.putFloat("longitude", (float) loc.longitude);
@@ -192,30 +122,23 @@ public class LocationManager implements LocationListener
 				switch (status.getStatusCode())
 				{
 					case LocationSettingsStatusCodes.SUCCESS:
-						// All location settings are satisfied. The client can initialize location
-						// requests here.
+						// All location settings are satisfied. The client can initialize location requests here.
 						getLocation();
 						break;
 
 					case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-						// Location settings are not satisfied. But could be fixed by showing the user
-						// a dialog.
-						try
-						{
-							// Show the dialog by calling startResolutionForResult(),
-							// and check the result in onActivityResult().
-							status.startResolutionForResult(context, REQUEST_CHECK_SETTINGS);
+						// Location settings are not satisfied. But could be fixed by showing the user a dialog.
+						try {
+							// Show the dialog by calling startResolutionForResult() and check the result in onActivityResult().
+							status.startResolutionForResult(mapFragment.getActivity(), REQUEST_CHECK_SETTINGS);
 						}
-						catch (IntentSender.SendIntentException e)
-						{
+						catch (IntentSender.SendIntentException e) {
 							// Ignore the error.
 						}
 						break;
 
 					case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-						// Location settings are not satisfied. However, we have no way to fix the
-						// settings so we won't show the dialog.
-
+						// Location settings are not satisfied.
 						break;
 				}
 			}
@@ -233,7 +156,7 @@ public class LocationManager implements LocationListener
 
 	private void startLocationUpdates()
 	{
-		if (ActivityCompat.checkSelfPermission(this.context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+		if (ActivityCompat.checkSelfPermission(this.mapFragment.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
 		{
 			LocationServices.FusedLocationApi.requestLocationUpdates(this.mGoogleApiClient, createLocationRequest(), this);
 		}

@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -17,7 +16,6 @@ import android.view.View;
 public class MainActivity extends AppCompatActivity
 {
 	private Fragment fragment;
-	private AlertDialog dialog;
 	private final int REQUEST_CHECK_SETTINGS = 0x1;
 
 	private DrawerLayout mDrawerLayout;
@@ -168,12 +166,12 @@ public class MainActivity extends AppCompatActivity
 	{
 		// Pass the event to ActionBarDrawerToggle, if it returns
 		// true, then it has handled the app icon touch event
-		if (this.mDrawerToggle.onOptionsItemSelected(item))
-		{
+		if (this.mDrawerToggle.onOptionsItemSelected(item)) {
 			return true;
 		}
-
-		return super.onOptionsItemSelected(item);
+		else {
+			return super.onOptionsItemSelected(item);
+		}
 	}
 
 
@@ -189,11 +187,6 @@ public class MainActivity extends AppCompatActivity
 
 	protected void onDestroy()
 	{
-		//Dismiss the dialog to prevent error when destroying activity
-    	if (this.dialog != null && this.dialog.isShowing())
-    	{
-    		this.dialog.dismiss();
-		}
 		super.onDestroy();
 	}
 }
