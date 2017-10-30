@@ -9,6 +9,8 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -74,6 +76,12 @@ public class LocationManager implements LocationListener
 		}
 	}
 
+	private MapsFragment getMapsFragment()
+	{
+		MainActivity act = (MainActivity) this.context;
+		return (MapsFragment) act.getFragment();
+	}
+
 	void updateValuesFromBundle(Bundle savedInstanceState)
 	{
 		// Update the value of mRequestingLocationUpdates from the Bundle, and
@@ -114,15 +122,15 @@ public class LocationManager implements LocationListener
 	@Override
 	public void onLocationChanged(Location location)
 	{
-		MainActivity act = (MainActivity) this.context;
 		if(Utility.isOnline(this.context))
 		{
 			this.mLastLocation = location;
 			updateMap();
-			act.updateNoNetworkLabel(false);
+			getMapsFragment().updateNoNetworkLabel(false);
 		}
-		else {
-			act.updateNoNetworkLabel(true);
+		else
+		{
+			getMapsFragment().updateNoNetworkLabel(true);
 		}
 
 	}
@@ -167,25 +175,27 @@ public class LocationManager implements LocationListener
 		}
 	}
 
-	private void restoreLastLocation(){
+	private void restoreLastLocation()
+	{
 		SharedPreferences sharedPref = this.context.getPreferences(Context.MODE_PRIVATE);
 		float latitude = sharedPref.getFloat("latitude", -1);
 		float longitude = sharedPref.getFloat("longitude", -1);
-		if(latitude != -1 && longitude != -1){
+		if(latitude != -1 && longitude != -1)
+		{
 			mLastLocation = new Location("");
 			mLastLocation.setLatitude(latitude);
 			mLastLocation.setLongitude(longitude);
 			updateMap();
 		}
-
 	}
 
-	private void storeLastLocation(LatLng loc){
+	private void storeLastLocation(LatLng loc)
+	{
 		SharedPreferences sharedPref = this.context.getPreferences(Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPref.edit();
 		editor.putFloat("latitude", (float) loc.latitude);
 		editor.putFloat("longitude", (float) loc.longitude);
-		editor.commit();
+		editor.apply();
 	}
 
 	void checkLocationEnabled()
@@ -237,9 +247,9 @@ public class LocationManager implements LocationListener
 				}
 			});
 		}
-		else {
-			MainActivity act = (MainActivity) this.context;
-			act.updateNoNetworkLabel(true);
+		else
+		{
+			getMapsFragment().updateNoNetworkLabel(true);
 			restoreLastLocation();
 		}
 	}

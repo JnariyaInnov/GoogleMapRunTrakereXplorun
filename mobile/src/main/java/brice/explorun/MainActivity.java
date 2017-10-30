@@ -11,7 +11,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -26,6 +25,16 @@ public class MainActivity extends AppCompatActivity
 
 	private String mTitle;
 	private int selectedItemId;
+
+	public Fragment getFragment()
+	{
+		return this.fragment;
+	}
+
+	public void setFragment(Fragment fragment)
+	{
+		this.fragment = fragment;
+	}
 
 	@Override
     protected void onCreate(Bundle savedInstanceState)
@@ -69,11 +78,6 @@ public class MainActivity extends AppCompatActivity
 
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);
-
-		if (!Utility.isOnline(this))
-        {
-			this.dialog = Utility.showAlertDialog(R.string.network_error, R.string.no_network, this);
-		}
 
 		if (savedInstanceState != null)
 		{

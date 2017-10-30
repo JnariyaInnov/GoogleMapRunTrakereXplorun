@@ -2,6 +2,7 @@ package brice.explorun;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -10,6 +11,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -24,6 +26,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
 	private GoogleApiClient mGoogleApiClient = null;
 
+	private TextView noNetworkLabel;
+
 	private LocationManager locationManager;
 	public LocationManager getLocationManager()
 	{
@@ -34,6 +38,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
 		View view = inflater.inflate(R.layout.fragment_maps, container, false);
+
+		this.noNetworkLabel = view.findViewById(R.id.no_network_label);
 
 		// Create an instance of GoogleAPIClient.
 		if (this.mGoogleApiClient == null)
@@ -46,6 +52,32 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 		}
 
 		this.locationManager = new LocationManager(this.getActivity(), this.mGoogleApiClient);
+
+		if (!Utility.isOnline(this.getActivity()))
+		{
+			updateNoNetworkLabel(true);
+			final Handler ha = new Handler();
+			final MainActivity mainActivity = (MainActivity) getActivity();
+			ha.postDelayed(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					//call function
+					if(Utility.isOnline(mainActivity.getApplicationContext()))
+					{
+						//TODO: Faire ca mieux (c'est mal mais j'ai faim dsl... )
+						Fragment fragment = new MapsFragment();
+						mainActivity.setFragment(fragment);
+						mainActivity.getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
+					}
+					else
+					{
+						ha.postDelayed(this, 10000);
+					}
+				}
+			}, 10000);
+		}
 
 		return view;
 	}
@@ -139,5 +171,17 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 		this.locationManager.setMap(googleMap);
 		UiSettings settings = googleMap.getUiSettings();
 		settings.setZoomControlsEnabled(true);
+	}
+
+	public void updateNoNetworkLabel(boolean visible)
+	{
+		if (visible)
+		{
+			this.noNetworkLabel.setVisibility(View.VISIBLE);
+		}
+		else
+		{
+			this.noNetworkLabel.setVisibility(View.GONE);
+		}
 	}
 }
