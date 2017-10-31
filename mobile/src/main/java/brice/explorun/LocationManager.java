@@ -30,7 +30,6 @@ public class LocationManager implements LocationListener
 	private GoogleApiClient mGoogleApiClient;
 	private Location mLastLocation = null;
 
-	private final String FIRST_REQUEST_KEY = "isFirstRequest";
 	private final String LOCATION_KEY = "location";
 	private final int refreshInterval = 10000; // Intervalle de rafraîchissement de la position (en ms)
 
@@ -40,7 +39,7 @@ public class LocationManager implements LocationListener
 		this.mGoogleApiClient = googleApiClient;
 	}
 
-	public Location getmLastLocation() {
+	public Location getLastLocation() {
 		return mLastLocation;
 	}
 
