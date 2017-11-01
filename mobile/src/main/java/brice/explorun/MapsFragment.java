@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,14 +30,33 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class MapsFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
 {
 	private final String LOCATION_KEY = "location";
+	private final String FIRST_REQUEST_KEY = "first_request";
 	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
 	private final int checkInterval = 5000;
+
 	private GoogleMap map = null;
 	private MarkerOptions userLocationMarkerOptions;
 	private Marker userMarker;
+	private boolean isFirstRequest = true;
 
 	private GoogleApiClient mGoogleApiClient = null;
 	private LocationManager locationManager;
+
+	private GoogleMap.OnMyLocationButtonClickListener onMyLocationButtonClickListener = new GoogleMap.OnMyLocationButtonClickListener()
+	{
+
+		@Override
+		public boolean onMyLocationButtonClick()
+		{
+			if (locationManager != null && locationManager.getLastLocation() != null)
+			{
+				LatLng position = new LatLng(locationManager.getLastLocation().getLatitude(), locationManager.getLastLocation().getLongitude());
+				map.moveCamera(CameraUpdateFactory.newLatLng(position));
+			}
+			return true;
+		}
+	};
+
 	public LocationManager getLocationManager()
 	{
 		return this.locationManager;
@@ -68,11 +88,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 			if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
 				// Since LOCATION_KEY was found in the Bundle, we can be sure that LastLocation is not null.
 				this.locationManager.setLastLocation((Location) savedInstanceState.getParcelable(LOCATION_KEY));
-				Location loc = locationManager.getmLastLocation();
+				Location loc = locationManager.getLastLocation();
 				if (loc != null) {
 					LatLng position = new LatLng(loc.getLatitude(), loc.getLongitude());
 					this.userLocationMarkerOptions = new MarkerOptions().position(position).title(getContext().getResources().getString(R.string.your_position)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
 				}
+			}
+
+			if (savedInstanceState.keySet().contains(FIRST_REQUEST_KEY))
+			{
+				this.isFirstRequest = savedInstanceState.getBoolean(FIRST_REQUEST_KEY);
 			}
 		}
 	}
@@ -102,6 +127,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 	public void onSaveInstanceState(Bundle savedInstanceState)
 	{
 		this.locationManager.onSaveInstanceState(savedInstanceState);
+		savedInstanceState.putBoolean(FIRST_REQUEST_KEY, this.isFirstRequest);
 		super.onSaveInstanceState(savedInstanceState);
 	}
 
@@ -135,6 +161,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
 				{
 					this.getLocationManager().checkLocationEnabled();
+					if (this.map != null)
+					{
+						initializeMyLocationButton();
+					}
 				}
 			}
 			break;
@@ -145,35 +175,35 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 	public void onMapReady(final GoogleMap googleMap)
 	{
 		//Initialize map
-		final LocationManager lm = this.locationManager;
-		if (ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-			googleMap.setMyLocationEnabled(true);
-			googleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
-
-				@Override
-				public boolean onMyLocationButtonClick() {
-					if (lm != null) {
-						LatLng position = new LatLng(lm.getmLastLocation().getLatitude(), lm.getmLastLocation().getLongitude());
-						googleMap.moveCamera(CameraUpdateFactory.newLatLng(position));
-					}
-					return true;
-				}
-			});
-		}
 		UiSettings settings = googleMap.getUiSettings();
 		settings.setZoomControlsEnabled(true);
 		this.map = googleMap;
+		initializeMyLocationButton();
+	}
+
+	public void initializeMyLocationButton()
+	{
+		if (ActivityCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+			this.map.setMyLocationEnabled(true);
+			this.map.setOnMyLocationButtonClickListener(this.onMyLocationButtonClickListener);
+		}
 	}
 
 	public void updateMap()
 	{
-		if (this.locationManager.getmLastLocation() != null)
+		if (this.locationManager.getLastLocation() != null)
 		{
-			LatLng userLocation = new LatLng(this.locationManager.getmLastLocation().getLatitude(), this.locationManager.getmLastLocation().getLongitude());
+			LatLng userLocation = new LatLng(this.locationManager.getLastLocation().getLatitude(), this.locationManager.getLastLocation().getLongitude());
 			this.locationManager.storeLastLocation(userLocation);
-			if (this.map != null) {
-				this.map.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
-				if (this.userMarker == null) {
+			if (this.map != null)
+			{
+				if (this.isFirstRequest)
+				{
+					this.map.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
+					this.isFirstRequest = false;
+				}
+				if (this.userMarker == null)
+				{
 					this.userLocationMarkerOptions = new MarkerOptions().position(userLocation).title(getContext().getResources().getString(R.string.your_position)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
 					this.userMarker = this.map.addMarker(this.userLocationMarkerOptions);
 				}
