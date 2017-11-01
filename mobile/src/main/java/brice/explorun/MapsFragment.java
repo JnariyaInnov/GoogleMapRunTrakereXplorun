@@ -42,21 +42,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 	private GoogleApiClient mGoogleApiClient = null;
 	private LocationManager locationManager;
 
-	private GoogleMap.OnMyLocationButtonClickListener onMyLocationButtonClickListener = new GoogleMap.OnMyLocationButtonClickListener()
-	{
-
-		@Override
-		public boolean onMyLocationButtonClick()
-		{
-			if (locationManager != null && locationManager.getLastLocation() != null)
-			{
-				LatLng position = new LatLng(locationManager.getLastLocation().getLatitude(), locationManager.getLastLocation().getLongitude());
-				map.moveCamera(CameraUpdateFactory.newLatLng(position));
-			}
-			return true;
-		}
-	};
-
 	public LocationManager getLocationManager()
 	{
 		return this.locationManager;
@@ -183,9 +168,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
 	public void initializeMyLocationButton()
 	{
-		if (ActivityCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+		if (ActivityCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+		{
 			this.map.setMyLocationEnabled(true);
-			this.map.setOnMyLocationButtonClickListener(this.onMyLocationButtonClickListener);
 		}
 	}
 
