@@ -1,4 +1,4 @@
-package brice.explorun;
+package brice.explorun.fragments;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -27,12 +27,17 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
+import brice.explorun.Utility;
+import brice.explorun.models.Observer;
+import brice.explorun.observables.LocationManager;
+import brice.explorun.models.NetworkHandler;
+import brice.explorun.R;
+
+public class MapsFragment extends Fragment implements Observer, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
 {
 	private final String LOCATION_KEY = "location";
 	private final String FIRST_REQUEST_KEY = "first_request";
 	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
-	private final int checkInterval = 5000;
 
 	private GoogleMap map = null;
 	private MarkerOptions userLocationMarkerOptions;
@@ -61,7 +66,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 		}
 
 		this.locationManager = new LocationManager(this, this.mGoogleApiClient);
-		new NetworkHandler(this.getActivity(), (TextView) view.findViewById(R.id.no_network_label), checkInterval);
+		new NetworkHandler(this.getActivity(), (TextView) view.findViewById(R.id.no_network_label), Utility.CHECK_INTERVAL);
 
 		return view;
 	}
@@ -99,13 +104,19 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 	public void onStart()
 	{
 		super.onStart();
-		this.mGoogleApiClient.connect();
+		if (!this.mGoogleApiClient.isConnected())
+		{
+			this.mGoogleApiClient.connect();
+		}
 	}
 
 	public void onStop()
 	{
-		this.locationManager.stopLocationUpdates();
-		this.mGoogleApiClient.disconnect();
+		if (this.mGoogleApiClient.isConnected())
+		{
+			this.locationManager.stopLocationUpdates();
+			this.mGoogleApiClient.disconnect();
+		}
 		super.onStop();
 	}
 
@@ -174,7 +185,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 		}
 	}
 
-	public void updateMap()
+	@Override
+	public void update()
 	{
 		if (this.locationManager.getLastLocation() != null)
 		{
@@ -200,6 +212,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 	public void restoreLastLocation()
 	{
 		this.locationManager.updateLocationFromPreferences();
-		updateMap();
+		update();
 	}
 }

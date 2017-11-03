@@ -1,9 +1,11 @@
-package brice.explorun;
+package brice.explorun.models;
 
 import android.app.Activity;
 import android.os.Handler;
 import android.view.View;
 import android.widget.TextView;
+
+import brice.explorun.Utility;
 
 public class NetworkHandler extends Handler
 {

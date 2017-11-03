@@ -13,6 +13,10 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 
+import brice.explorun.fragments.AboutFragment;
+import brice.explorun.fragments.MapsFragment;
+import brice.explorun.fragments.NearbyAttractionsFragment;
+
 public class MainActivity extends AppCompatActivity
 {
 	private Fragment fragment;
@@ -141,6 +145,10 @@ public class MainActivity extends AppCompatActivity
 			{
 				case R.id.nav_about:
 					this.fragment = new AboutFragment();
+					break;
+
+				case R.id.nav_nearby_attractions:
+					this.fragment = new NearbyAttractionsFragment();
 					break;
 
 				default:
