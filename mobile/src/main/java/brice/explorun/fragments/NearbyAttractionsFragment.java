@@ -5,14 +5,11 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -24,7 +21,6 @@ import java.util.Locale;
 import brice.explorun.Utility;
 import brice.explorun.models.CustomRequestQueue;
 import brice.explorun.models.NearbyAttractionsAdapter;
-import brice.explorun.models.NetworkHandler;
 import brice.explorun.models.Place;
 import brice.explorun.models.PlacesObserver;
 import brice.explorun.observables.NearbyAttractionsCallback;
@@ -46,7 +42,6 @@ public class NearbyAttractionsFragment extends Fragment implements PlacesObserve
 	private int requestsCount; // Number of API requests to do
 	private int responsesCount = 0; // Number of received API responses
 
-	private ProgressBar progressBar;
 	private LinearLayout progressBarLayout;
 
 	@Override
@@ -73,9 +68,6 @@ public class NearbyAttractionsFragment extends Fragment implements PlacesObserve
 			this.requestsCount = types.length;
 
 			this.progressBarLayout = view.findViewById(R.id.progress_layout);
-			this.progressBar = view.findViewById(R.id.requests_progress);
-
-			new NetworkHandler(this.getActivity(), (TextView) view.findViewById(R.id.no_network_label), Utility.CHECK_INTERVAL);
 
 			sendRequests();
 		}
@@ -132,6 +124,7 @@ public class NearbyAttractionsFragment extends Fragment implements PlacesObserve
 		if (this.responsesCount == this.requestsCount)
 		{
 			this.progressBarLayout.setVisibility(View.GONE);
+			this.responsesCount = 0;
 		}
 	}
 }

@@ -10,12 +10,14 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
 import brice.explorun.fragments.AboutFragment;
 import brice.explorun.fragments.MapsFragment;
 import brice.explorun.fragments.NearbyAttractionsFragment;
+import brice.explorun.models.NetworkHandler;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -27,6 +29,8 @@ public class MainActivity extends AppCompatActivity
 
 	private String mTitle;
 	private int selectedItemId;
+
+	private NetworkHandler networkHandler;
 
 	@Override
     protected void onCreate(Bundle savedInstanceState)
@@ -83,6 +87,13 @@ public class MainActivity extends AppCompatActivity
 			selectItem(navigationView.getMenu().getItem(0));
 		}
     }
+
+    protected void onStart()
+	{
+		this.networkHandler = NetworkHandler.getInstance(this);
+		this.networkHandler.run();
+		super.onStart();
+	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -187,8 +198,9 @@ public class MainActivity extends AppCompatActivity
 		getSupportFragmentManager().putFragment(outState, "fragment", this.fragment);
 	}
 
-	protected void onDestroy()
+	protected void onStop()
 	{
-		super.onDestroy();
+		this.networkHandler.stopThread();
+		super.onStop();
 	}
 }

@@ -10,8 +10,6 @@ import android.widget.ProgressBar;
 
 public class Utility
 {
-	public static final int CHECK_INTERVAL = 5000; // Time between two checks of internet connection (in ms)
-
 	/**
 	 * Method to know if the user is connected to the Internet
 	 * @param context Context of the application

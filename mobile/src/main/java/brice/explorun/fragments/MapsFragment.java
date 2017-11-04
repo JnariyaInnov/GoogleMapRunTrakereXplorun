@@ -66,7 +66,6 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 		}
 
 		this.locationManager = new LocationManager(this, this.mGoogleApiClient);
-		new NetworkHandler(this.getActivity(), (TextView) view.findViewById(R.id.no_network_label), Utility.CHECK_INTERVAL);
 
 		return view;
 	}
