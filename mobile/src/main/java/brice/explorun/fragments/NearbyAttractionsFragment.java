@@ -94,6 +94,8 @@ public class NearbyAttractionsFragment extends Fragment implements PlacesObserve
 		{
 			this.progressBarLayout.setVisibility(View.VISIBLE);
 
+			this.adapter.clear();
+
 			for (String type : this.types)
 			{
 				String url = getPlacesApiUrl(type);
@@ -114,7 +116,28 @@ public class NearbyAttractionsFragment extends Fragment implements PlacesObserve
 		this.responsesCount++;
 		if (places != null)
 		{
-			this.adapter.addAll(places);
+			// We add the place only if it doesn't already exist
+			for (Place p1: places)
+			{
+				boolean found = false;
+				int i = 0;
+				while (!found && i < this.places.size())
+				{
+					Place p2 = this.places.get(i);
+					if (p1.getPlaceId().equals(p2.getPlaceId()))
+					{
+						found = true;
+					}
+					else
+					{
+						i++;
+					}
+				}
+				if (!found)
+				{
+					this.adapter.add(p1);
+				}
+			}
 			this.adapter.notifyDataSetChanged();
 		}
 		else
