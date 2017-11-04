@@ -13,6 +13,7 @@ public class Place
 
 	private double latitude = -1; // Latitude of the place
 	private double longitude = -1; // Longitude of the place
+	private double distance = 0; // Distance between the place and the user (in km)
 
 	private ArrayList<String> types = new ArrayList<>(); // Types of the place, used by Google
 
@@ -57,6 +58,16 @@ public class Place
 	public void setLongitude(double longitude)
 	{
 		this.longitude = longitude;
+	}
+
+	public double getDistance()
+	{
+		return distance;
+	}
+
+	public void setDistance(double distance)
+	{
+		this.distance = distance;
 	}
 
 	public ArrayList<String> getTypes()

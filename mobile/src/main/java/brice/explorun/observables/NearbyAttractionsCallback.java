@@ -1,8 +1,6 @@
 package brice.explorun.observables;
 
 import android.support.v4.app.Fragment;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -22,7 +20,6 @@ import brice.explorun.models.PlacesObserver;
 public class NearbyAttractionsCallback extends Observable implements Response.Listener<JSONObject>, Response.ErrorListener
 {
 	private PlacesObserver observer;
-	private Toast toast = null;
 
 	public NearbyAttractionsCallback(PlacesObserver observer)
 	{
@@ -103,11 +100,6 @@ public class NearbyAttractionsCallback extends Observable implements Response.Li
 	@Override
 	public void onErrorResponse(VolleyError error)
 	{
-		if (this.toast == null)
-		{
-			Fragment fragment = (Fragment) this.observer;
-			this.toast = Toast.makeText(fragment.getActivity(), R.string.http_error, Toast.LENGTH_LONG);
-			this.toast.show();
-		}
+		this.observer.updatePlaces(null);
 	}
 }

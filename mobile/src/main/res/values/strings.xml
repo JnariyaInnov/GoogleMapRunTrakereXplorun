@@ -21,4 +21,8 @@
 	<string name="network_error">Network error</string>
 	<string name="http_error">Error with the request, please try again later</string>
 	<string name="api_request_error">An error occurred with the request, some elements might be missing</string>
+
+	<!-- Nearby tourist attractions -->
+	<string name="distance_in_km" translatable="false">%1$.1f km</string>
+	<string name="distance_in_m" translatable="false">%1$.0f m</string>
 </resources>

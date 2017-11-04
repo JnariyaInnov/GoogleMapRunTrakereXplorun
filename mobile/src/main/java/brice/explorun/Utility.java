@@ -45,8 +45,37 @@ public class Utility
 				.show();
 	}
 
-	public static ProgressBar showProgressBar(Context context)
+	/**
+	 * Function which converts degrees in radians
+	 * @param degrees Value in degrees to convert
+	 * @return The converted value in radians
+	 */
+	public static double degreesToRadians(double degrees)
 	{
-		return new ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal);
+		return degrees * Math.PI / 180;
+	}
+
+	/**
+	 * Function which computes the distance between two GPS coordinates
+	 * @param lat1 First latitude
+	 * @param lon1 First longitude
+	 * @param lat2 Second latitude
+	 * @param lon2 Second longitude
+	 * @return The distance between the two GPS coordinates, in km
+	 */
+	public static double distanceBetweenCoordinates(double lat1, double lon1, double lat2, double lon2)
+	{
+		int earthRadiusKm = 6371;
+
+		double dLat = degreesToRadians(lat2-lat1);
+		double dLon = degreesToRadians(lon2-lon1);
+
+		lat1 = degreesToRadians(lat1);
+		lat2 = degreesToRadians(lat2);
+
+		double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+				Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
+		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+		return earthRadiusKm * c;
 	}
 }

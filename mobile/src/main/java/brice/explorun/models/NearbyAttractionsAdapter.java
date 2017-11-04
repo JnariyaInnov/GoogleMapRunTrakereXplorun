@@ -32,10 +32,26 @@ public class NearbyAttractionsAdapter extends ArrayAdapter<Place>
 		}
 		// Lookup view for data population
 		TextView name = convertView.findViewById(R.id.attraction_name);
+		TextView txtDistance = convertView.findViewById(R.id.attraction_distance);
 		// Populate the data into the template view using the data object
 		if (place != null)
 		{
 			name.setText(place.getName());
+
+			double distance = place.getDistance();
+			String distanceString;
+			if (distance < 1)
+			{
+				// We round the distance to the nearest multiple of 10
+				distance = Math.round(Math.round(distance*1000)/10.0)*10.0;
+				distanceString = String.format(getContext().getResources().getString(R.string.distance_in_m), distance);
+			}
+			else
+			{
+				distance = Math.round(distance*10.0)/10.0;
+				distanceString = String.format(getContext().getResources().getString(R.string.distance_in_km), distance);
+			}
+			txtDistance.setText(distanceString);
 		}
 		// Return the completed view to render on screen
 		return convertView;

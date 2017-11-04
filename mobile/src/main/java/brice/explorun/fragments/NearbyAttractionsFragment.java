@@ -16,6 +16,7 @@ import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Locale;
 
 import brice.explorun.Utility;
@@ -135,6 +136,10 @@ public class NearbyAttractionsFragment extends Fragment implements PlacesObserve
 				}
 				if (!found)
 				{
+					// Compute distance between the user and the place
+					double distance = Utility.distanceBetweenCoordinates(this.latitude, this.longitude, p1.getLatitude(), p1.getLongitude());
+					p1.setDistance(distance);
+
 					this.adapter.add(p1);
 				}
 			}
@@ -148,6 +153,14 @@ public class NearbyAttractionsFragment extends Fragment implements PlacesObserve
 		{
 			this.progressBarLayout.setVisibility(View.GONE);
 			this.responsesCount = 0;
+			this.adapter.sort(new Comparator<Place>()
+			{
+				@Override
+				public int compare(Place p1, Place p2)
+				{
+					return Double.compare(p1.getDistance(), p2.getDistance());
+				}
+			});
 		}
 	}
 }
