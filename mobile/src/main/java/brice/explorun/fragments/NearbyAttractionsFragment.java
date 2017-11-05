@@ -33,6 +33,8 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 
 	private LinearLayout progressBarLayout;
 
+	private final String PLACES_KEY = "places";
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
@@ -51,7 +53,15 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 		this.manager = new NearbyAttractionsManager(this, this.mGoogleApiClient);
 
 		// Setting up the list of places
-		this.places = new ArrayList<>();
+		if (savedInstanceState != null)
+		{
+			this.places = savedInstanceState.getParcelableArrayList(this.PLACES_KEY);
+		}
+		else
+		{
+			this.places = new ArrayList<>();
+		}
+
 		ListView list = view.findViewById(R.id.list_nearby_attractions);
 		this.adapter = new NearbyAttractionsAdapter(this.getActivity(), places);
 		list.setAdapter(this.adapter);
@@ -87,6 +97,11 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 		super.onDestroy();
 	}
 
+	public void onSaveInstanceState(Bundle outBundle)
+	{
+		outBundle.putParcelableArrayList(this.PLACES_KEY, this.places);
+	}
+
 	@Override
 	public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
 	{
@@ -98,6 +113,7 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 		if (Utility.isOnline(this.getActivity()))
 		{
 			this.progressBarLayout.setVisibility(View.VISIBLE);
+			this.adapter.clear();
 		}
 		this.manager.getNearbyPlaces();
 	}

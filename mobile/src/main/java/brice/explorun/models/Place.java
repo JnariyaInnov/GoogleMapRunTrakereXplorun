@@ -1,12 +1,15 @@
 package brice.explorun.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
 
 /**
  * Class which represents a place in our application
  */
 
-public class Place
+public class Place implements Parcelable
 {
 	private String placeId = ""; // Id of the place
 	private String name = ""; // Name of the place
@@ -110,4 +113,67 @@ public class Place
 		this.setIconUrl(iconUrl);
 		this.setPhoto(photo);
 	}
+
+	protected Place(Parcel in)
+	{
+		this.placeId = in.readString();
+		this.name = in.readString();
+		this.latitude = in.readDouble();
+		this.longitude = in.readDouble();
+		this.distance = in.readDouble();
+		if (in.readByte() == 0x01)
+		{
+			this.types = new ArrayList<>();
+			in.readList(this.types, String.class.getClassLoader());
+		}
+		else
+		{
+			this.types = null;
+		}
+		this.iconUrl = in.readString();
+		this.photo = (Photo) in.readValue(Photo.class.getClassLoader());
+	}
+
+	@Override
+	public int describeContents()
+	{
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags)
+	{
+		dest.writeString(this.placeId);
+		dest.writeString(this.name);
+		dest.writeDouble(this.latitude);
+		dest.writeDouble(this.longitude);
+		dest.writeDouble(this.distance);
+		if (this.types == null)
+		{
+			dest.writeByte((byte) (0x00));
+		}
+		else
+		{
+			dest.writeByte((byte) (0x01));
+			dest.writeList(this.types);
+		}
+		dest.writeString(this.iconUrl);
+		dest.writeValue(this.photo);
+	}
+
+	@SuppressWarnings("unused")
+	public static final Parcelable.Creator<Place> CREATOR = new Parcelable.Creator<Place>()
+	{
+		@Override
+		public Place createFromParcel(Parcel in)
+		{
+			return new Place(in);
+		}
+
+		@Override
+		public Place[] newArray(int size)
+		{
+			return new Place[size];
+		}
+	};
 }
