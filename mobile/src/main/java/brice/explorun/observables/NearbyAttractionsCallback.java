@@ -1,8 +1,5 @@
 package brice.explorun.observables;
 
-import android.graphics.BitmapFactory;
-import android.support.v4.app.Fragment;
-
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
@@ -11,20 +8,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Observable;
 
-import brice.explorun.R;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
-import brice.explorun.models.PlacesObserver;
 
-public class NearbyAttractionsCallback extends Observable implements Response.Listener<JSONObject>, Response.ErrorListener
+public class NearbyAttractionsCallback implements Response.Listener<JSONObject>, Response.ErrorListener
 {
-	private PlacesObserver observer;
+	private NearbyAttractionsManager manager;
 
-	public NearbyAttractionsCallback(PlacesObserver observer)
+	public NearbyAttractionsCallback(NearbyAttractionsManager manager)
 	{
-		this.observer = observer;
+		this.manager = manager;
 	}
 
 	@Override
@@ -68,13 +62,10 @@ public class NearbyAttractionsCallback extends Observable implements Response.Li
 						}
 
 						// Get the size of a photo of the place
-						Photo photo = new Photo(placeId, 0, 0);
+						Photo photo = null;
 						if (object.has("photos")) // We check if there is a photo for the place
 						{
-							JSONArray photos = object.getJSONArray("photos");
-							JSONObject photoObject = photos.getJSONObject(0);
-							photo.setWidth(photoObject.getInt("width"));
-							photo.setHeight(photoObject.getInt("height"));
+							photo = new Photo(placeId);
 						}
 
 						// Store it in a place object
@@ -88,17 +79,17 @@ public class NearbyAttractionsCallback extends Observable implements Response.Li
 					j++;
 				}
 			}
-			this.observer.updatePlaces(places);
+			this.manager.updatePlaces(places);
 		}
 		catch (JSONException e)
 		{
-			this.observer.updatePlaces(null);
+			this.manager.updatePlaces(null);
 		}
 	}
 
 	@Override
 	public void onErrorResponse(VolleyError error)
 	{
-		this.observer.updatePlaces(null);
+		this.manager.updatePlaces(null);
 	}
 }

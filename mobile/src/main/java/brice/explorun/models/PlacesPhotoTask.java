@@ -9,15 +9,17 @@ import com.google.android.gms.location.places.PlacePhotoMetadataBuffer;
 import com.google.android.gms.location.places.PlacePhotoMetadataResult;
 import com.google.android.gms.location.places.Places;
 
+import brice.explorun.observables.NearbyAttractionsManager;
+
 public class PlacesPhotoTask extends AsyncTask<Photo, Void, Photo>
 {
-	private PlacesObserver observer;
+	private NearbyAttractionsManager manager;
 
 	private GoogleApiClient mGoogleApiClient;
 
-	public PlacesPhotoTask(PlacesObserver observer, GoogleApiClient googleApiClient)
+	public PlacesPhotoTask(NearbyAttractionsManager manager, GoogleApiClient googleApiClient)
 	{
-		this.observer = observer;
+		this.manager = manager;
 		this.mGoogleApiClient = googleApiClient;
 	}
 
@@ -62,6 +64,6 @@ public class PlacesPhotoTask extends AsyncTask<Photo, Void, Photo>
 	@Override
 	protected void onPostExecute(Photo photo)
 	{
-		this.observer.updatePlacePhoto(photo);
+		this.manager.updatePlacePhoto(photo);
 	}
 }

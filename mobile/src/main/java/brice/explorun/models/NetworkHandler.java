@@ -9,6 +9,7 @@ import android.widget.TextView;
 import brice.explorun.R;
 import brice.explorun.Utility;
 import brice.explorun.fragments.NearbyAttractionsFragment;
+import brice.explorun.observables.NearbyAttractionsManager;
 
 public class NetworkHandler extends Handler
 {
@@ -53,7 +54,7 @@ public class NetworkHandler extends Handler
 							if (fragment instanceof NearbyAttractionsFragment)
 							{
 								NearbyAttractionsFragment frag = (NearbyAttractionsFragment) fragment;
-								frag.sendRequests();
+								frag.getNearbyPlaces();
 							}
 						}
 						isConnected = true;

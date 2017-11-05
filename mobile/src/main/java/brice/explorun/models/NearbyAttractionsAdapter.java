@@ -63,15 +63,15 @@ public class NearbyAttractionsAdapter extends ArrayAdapter<Place>
 			holder.distanceView.setText(distanceString);
 
 			// Add the photo of the place to the view
-			Bitmap bitmap = place.getPhoto().getBitmap();
-			if (bitmap == null) // If the place has no photo
+			Photo photo = place.getPhoto();
+			if (photo == null || photo.getBitmap() == null) // If the place has no photo
 			{
 				holder.imageView.setImageDrawable(getContext().getResources().getDrawable(R.drawable.ic_photo_camera));
 				holder.imageView.setContentDescription(getContext().getResources().getString(R.string.no_photo));
 			}
 			else
 			{
-				holder.imageView.setImageBitmap(bitmap);
+				holder.imageView.setImageBitmap(photo.getBitmap());
 				holder.imageView.setContentDescription(place.getPhoto().getAttribution());
 			}
 		}

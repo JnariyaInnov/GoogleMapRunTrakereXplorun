@@ -57,7 +57,8 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 	{
 		View view = inflater.inflate(R.layout.fragment_maps, container, false);
 		// Create an instance of GoogleAPIClient.
-		if (this.mGoogleApiClient == null) {
+		if (this.mGoogleApiClient == null)
+		{
 			this.mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
 					.addConnectionCallbacks(this)
 					.addOnConnectionFailedListener(this)

@@ -9,10 +9,6 @@ import android.graphics.Bitmap;
 public class Photo
 {
 	private String placeId = ""; // Id of the place to which the photo belongs
-
-	private int width = 0; // Width of the photo
-	private int height = 0; // Height of the photo
-
 	private String attribution = ""; // Attribution of the photo, used by Google
 	private Bitmap bitmap = null; // Bitmap representing the photo
 
@@ -24,26 +20,6 @@ public class Photo
 	public void setPlaceId(String placeId)
 	{
 		this.placeId = placeId;
-	}
-
-	public int getWidth()
-	{
-		return width;
-	}
-
-	public void setWidth(int width)
-	{
-		this.width = width;
-	}
-
-	public int getHeight()
-	{
-		return height;
-	}
-
-	public void setHeight(int height)
-	{
-		this.height = height;
 	}
 
 	public String getAttribution()
@@ -66,17 +42,10 @@ public class Photo
 		this.bitmap = bitmap;
 	}
 
-	public Photo(String placeId, int width, int height)
+	public Photo(String placeId)
 	{
 		this.setPlaceId(placeId);
-		this.setWidth(width);
-		this.setHeight(height);
-	}
-
-	public Photo(String placeId, int width, int height, String attribution, Bitmap bitmap)
-	{
-		this(placeId, width, height);
-		this.setAttribution(attribution);
-		this.setBitmap(bitmap);
+		this.setAttribution("");
+		this.setBitmap(null);
 	}
 }
