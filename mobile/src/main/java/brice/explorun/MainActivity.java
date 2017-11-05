@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity
 			//Restore the fragment's instance
 			this.fragment = getSupportFragmentManager().getFragment(savedInstanceState, "fragment");
 			this.mTitle = savedInstanceState.getString("title");
+			getSupportActionBar().setTitle(this.mTitle);
 			this.selectedItemId = savedInstanceState.getInt("selectedItemId");
 		}
 		else

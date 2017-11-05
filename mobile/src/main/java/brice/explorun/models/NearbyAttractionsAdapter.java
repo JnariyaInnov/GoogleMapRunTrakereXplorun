@@ -1,11 +1,14 @@
 package brice.explorun.models;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -23,20 +26,26 @@ public class NearbyAttractionsAdapter extends ArrayAdapter<Place>
 	@NonNull
 	public View getView(int position, View convertView, @NonNull ViewGroup parent)
 	{
+		ViewHolder holder;
+
 		// Get the data item for this position
 		Place place = getItem(position);
 		// Check if an existing view is being reused, otherwise inflate the view
 		if (convertView == null)
 		{
 			convertView = LayoutInflater.from(getContext()).inflate(R.layout.nearby_attraction, parent, false);
+			holder = new ViewHolder(convertView);
+			convertView.setTag(holder);
 		}
-		// Lookup view for data population
-		TextView name = convertView.findViewById(R.id.attraction_name);
-		TextView txtDistance = convertView.findViewById(R.id.attraction_distance);
+		else
+		{
+			holder = (ViewHolder) convertView.getTag();
+		}
+
 		// Populate the data into the template view using the data object
 		if (place != null)
 		{
-			name.setText(place.getName());
+			holder.nameView.setText(place.getName());
 
 			double distance = place.getDistance();
 			String distanceString;
@@ -51,9 +60,39 @@ public class NearbyAttractionsAdapter extends ArrayAdapter<Place>
 				distance = Math.round(distance*10.0)/10.0;
 				distanceString = String.format(getContext().getResources().getString(R.string.distance_in_km), distance);
 			}
-			txtDistance.setText(distanceString);
+			holder.distanceView.setText(distanceString);
+
+			// Add the photo of the place to the view
+			Bitmap bitmap = place.getPhoto().getBitmap();
+			if (bitmap == null) // If the place has no photo
+			{
+				holder.imageView.setImageDrawable(getContext().getResources().getDrawable(R.drawable.ic_photo_camera));
+				holder.imageView.setContentDescription(getContext().getResources().getString(R.string.no_photo));
+			}
+			else
+			{
+				holder.imageView.setImageBitmap(bitmap);
+				holder.imageView.setContentDescription(place.getPhoto().getAttribution());
+			}
 		}
 		// Return the completed view to render on screen
 		return convertView;
+	}
+
+	/**
+	 * Cache of the children views for a forecast list item.
+	 */
+	private static class ViewHolder
+	{
+		private final ImageView imageView;
+		private final TextView nameView;
+		private final TextView distanceView;
+
+		private ViewHolder(View view)
+		{
+			this.imageView = view.findViewById(R.id.attraction_photo);
+			this.nameView = view.findViewById(R.id.attraction_name);
+			this.distanceView = view.findViewById(R.id.attraction_distance);
+		}
 	}
 }

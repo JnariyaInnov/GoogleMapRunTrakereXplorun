@@ -1,0 +1,67 @@
+package brice.explorun.models;
+
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
+
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.places.PlacePhotoMetadata;
+import com.google.android.gms.location.places.PlacePhotoMetadataBuffer;
+import com.google.android.gms.location.places.PlacePhotoMetadataResult;
+import com.google.android.gms.location.places.Places;
+
+public class PlacesPhotoTask extends AsyncTask<Photo, Void, Photo>
+{
+	private PlacesObserver observer;
+
+	private GoogleApiClient mGoogleApiClient;
+
+	public PlacesPhotoTask(PlacesObserver observer, GoogleApiClient googleApiClient)
+	{
+		this.observer = observer;
+		this.mGoogleApiClient = googleApiClient;
+	}
+
+	/**
+	 * Loads the first photo for a place id from the Geo Data API.
+	 * The photo  must be the first (and only) parameter.
+	 */
+	@Override
+	protected Photo doInBackground(Photo... params)
+	{
+		if (params.length < 1)
+		{
+			return null;
+		}
+
+		Photo photo = params[0];
+		PlacePhotoMetadataResult result = Places.GeoDataApi.getPlacePhotos(this.mGoogleApiClient, photo.getPlaceId()).await();
+
+		if (result.getStatus().isSuccess())
+		{
+			PlacePhotoMetadataBuffer photoMetadataBuffer = result.getPhotoMetadata();
+			if (photoMetadataBuffer.getCount() > 0 && !isCancelled())
+			{
+				// Get the first bitmap and its attributions.
+				PlacePhotoMetadata photoMetadata = photoMetadataBuffer.get(0);
+				if (photoMetadata != null)
+				{
+					String attribution = photoMetadata.getAttributions().toString();
+					// Load a bitmap for this photo.
+					Bitmap image = photoMetadata.getPhoto(this.mGoogleApiClient).await().getBitmap();
+
+					photo.setAttribution(attribution);
+					photo.setBitmap(image);
+				}
+			}
+			// Release the PlacePhotoMetadataBuffer.
+			photoMetadataBuffer.release();
+		}
+		return photo;
+	}
+
+	@Override
+	protected void onPostExecute(Photo photo)
+	{
+		this.observer.updatePlacePhoto(photo);
+	}
+}

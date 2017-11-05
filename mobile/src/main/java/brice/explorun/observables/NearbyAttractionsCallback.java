@@ -1,5 +1,6 @@
 package brice.explorun.observables;
 
+import android.graphics.BitmapFactory;
 import android.support.v4.app.Fragment;
 
 import com.android.volley.Response;
@@ -44,7 +45,7 @@ public class NearbyAttractionsCallback extends Observable implements Response.Li
 					// Get the icon of the place
 					String iconUrl = object.getString("icon");
 
-					if (!iconUrl.contains("business") && !iconUrl.contains("shopping"))
+					if (!iconUrl.contains("shopping"))
 					{
 						// Get the location of the place
 						JSONObject geometry = object.getJSONObject("geometry");
@@ -66,16 +67,14 @@ public class NearbyAttractionsCallback extends Observable implements Response.Li
 							types.add(typesArray.getString(k));
 						}
 
-						// Get the reference of a photo of the place
-						Photo photo = null;
+						// Get the size of a photo of the place
+						Photo photo = new Photo(placeId, 0, 0);
 						if (object.has("photos")) // We check if there is a photo for the place
 						{
 							JSONArray photos = object.getJSONArray("photos");
 							JSONObject photoObject = photos.getJSONObject(0);
-							int width = photoObject.getInt("width");
-							int height = photoObject.getInt("height");
-							String reference = photoObject.getString("photo_reference");
-							photo = new Photo(width, height, reference);
+							photo.setWidth(photoObject.getInt("width"));
+							photo.setHeight(photoObject.getInt("height"));
 						}
 
 						// Store it in a place object

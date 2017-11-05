@@ -3,7 +3,9 @@ package brice.explorun.fragments;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +16,9 @@ import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.places.Places;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -22,15 +27,20 @@ import java.util.Locale;
 import brice.explorun.Utility;
 import brice.explorun.models.CustomRequestQueue;
 import brice.explorun.models.NearbyAttractionsAdapter;
+import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
 import brice.explorun.models.PlacesObserver;
+import brice.explorun.models.PlacesPhotoTask;
 import brice.explorun.observables.NearbyAttractionsCallback;
 import brice.explorun.R;
 
-public class NearbyAttractionsFragment extends Fragment implements PlacesObserver
+public class NearbyAttractionsFragment extends Fragment implements PlacesObserver, GoogleApiClient.OnConnectionFailedListener
 {
 	private final String PLACES_API_BASE_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
 	private final int RADIUS = 5000; // 5km around user's location
+
+	private GoogleApiClient mGoogleApiClient;
+	private ArrayList<AsyncTask> asyncTasks;
 
 	private float latitude;
 	private float longitude;
@@ -55,6 +65,17 @@ public class NearbyAttractionsFragment extends Fragment implements PlacesObserve
 		this.latitude = prefs.getFloat("latitude", -1);
 		this.longitude = prefs.getFloat("longitude", -1);
 
+		// Create an instance of GoogleAPIClient.
+		if (this.mGoogleApiClient == null) {
+			this.mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
+					.addApi(Places.GEO_DATA_API)
+					.addOnConnectionFailedListener(this)
+					.build();
+
+		}
+
+		this.asyncTasks = new ArrayList<>();
+
 		if (this.latitude != -1 && this.longitude != -1)
 		{
 			this.nearbyAttractionsCallback = new NearbyAttractionsCallback(this);
@@ -74,6 +95,39 @@ public class NearbyAttractionsFragment extends Fragment implements PlacesObserve
 		}
 
 		return view;
+	}
+
+	public void onStart()
+	{
+		super.onStart();
+		if (!this.mGoogleApiClient.isConnected())
+		{
+			this.mGoogleApiClient.connect();
+		}
+	}
+
+	public void onStop()
+	{
+		if (this.mGoogleApiClient.isConnected())
+		{
+			this.mGoogleApiClient.disconnect();
+		}
+		super.onStop();
+	}
+
+	public void onDestroy()
+	{
+		for (AsyncTask task: this.asyncTasks)
+		{
+			task.cancel(true);
+		}
+		super.onDestroy();
+	}
+
+	@Override
+	public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
+	{
+
 	}
 
 	public String getPlacesApiUrl(String type)
@@ -161,6 +215,23 @@ public class NearbyAttractionsFragment extends Fragment implements PlacesObserve
 					return Double.compare(p1.getDistance(), p2.getDistance());
 				}
 			});
+
+			this.getPlacesImages();
 		}
+	}
+
+	public void getPlacesImages()
+	{
+		for (Place p: this.places)
+		{
+			PlacesPhotoTask task = new PlacesPhotoTask(this, this.mGoogleApiClient);
+			this.asyncTasks.add(task);
+			task.execute(p.getPhoto());
+		}
+	}
+
+	public synchronized void updatePlacePhoto(Photo photo)
+	{
+		this.adapter.notifyDataSetChanged();
 	}
 }

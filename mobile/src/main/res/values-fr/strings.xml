@@ -16,4 +16,5 @@
 	<string name="api_request_error">Une erreur avec la requête est survenue, certains éléments
 		peuvent manquer
 	</string>
+	<string name="no_photo">Pas de photo trouvée pour cette curiosité</string>
 </resources>

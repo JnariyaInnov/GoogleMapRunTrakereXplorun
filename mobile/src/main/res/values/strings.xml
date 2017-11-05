@@ -25,4 +25,5 @@
 	<!-- Nearby tourist attractions -->
 	<string name="distance_in_km" translatable="false">%1$.1f km</string>
 	<string name="distance_in_m" translatable="false">%1$.0f m</string>
+	<string name="no_photo">No photo found for this attraction</string>
 </resources>
