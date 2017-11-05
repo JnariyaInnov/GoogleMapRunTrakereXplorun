@@ -11,7 +11,7 @@ import android.os.Parcelable;
 public class Photo implements Parcelable
 {
 	private String placeId = ""; // Id of the place to which the photo belongs
-	private String attribution = ""; // Attribution of the photo, used by Google
+	private String attribution = ""; // Description of the photo (unable to load photo or to help disabled people)
 	private Bitmap bitmap = null; // Bitmap representing the photo
 
 	public String getPlaceId()

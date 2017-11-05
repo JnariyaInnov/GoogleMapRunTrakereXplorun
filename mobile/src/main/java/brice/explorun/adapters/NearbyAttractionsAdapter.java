@@ -1,8 +1,6 @@
-package brice.explorun.models;
+package brice.explorun.adapters;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +12,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import brice.explorun.R;
+import brice.explorun.models.Photo;
+import brice.explorun.models.Place;
 
 public class NearbyAttractionsAdapter extends ArrayAdapter<Place>
 {
@@ -33,7 +33,7 @@ public class NearbyAttractionsAdapter extends ArrayAdapter<Place>
 		// Check if an existing view is being reused, otherwise inflate the view
 		if (convertView == null)
 		{
-			convertView = LayoutInflater.from(getContext()).inflate(R.layout.nearby_attraction, parent, false);
+			convertView = LayoutInflater.from(getContext()).inflate(R.layout.nearby_attraction_item, parent, false);
 			holder = new ViewHolder(convertView);
 			convertView.setTag(holder);
 		}

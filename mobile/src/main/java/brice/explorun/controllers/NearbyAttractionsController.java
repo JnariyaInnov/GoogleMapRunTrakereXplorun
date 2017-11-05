@@ -1,4 +1,4 @@
-package brice.explorun.observables;
+package brice.explorun.controllers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -7,21 +7,27 @@ import android.os.AsyncTask;
 import android.widget.Toast;
 
 import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.common.api.GoogleApiClient;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Locale;
 
 import brice.explorun.R;
-import brice.explorun.Utility;
+import brice.explorun.models.Utility;
 import brice.explorun.models.CustomRequestQueue;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
 import brice.explorun.fragments.PlacesObserverFragment;
-import brice.explorun.models.PlacesPhotoTask;
+import brice.explorun.services.PhotoRetriever;
 
-public class NearbyAttractionsManager
+public class NearbyAttractionsController
 {
 	private final String PLACES_API_BASE_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
 	private final int RADIUS = 5000; // 5km around user's location
@@ -37,11 +43,9 @@ public class NearbyAttractionsManager
 	private int requestsCount; // Number of API requests to do
 	private int responsesCount = 0; // Number of received API responses
 
-	private NearbyAttractionsCallback nearbyAttractionsCallback;
-
 	private ArrayList<Place> places;
 
-	public NearbyAttractionsManager(PlacesObserverFragment observer, GoogleApiClient googleApiClient)
+	public NearbyAttractionsController(PlacesObserverFragment observer, GoogleApiClient googleApiClient)
 	{
 		this.observer = observer;
 		this.mGoogleApiClient = googleApiClient;
@@ -51,9 +55,6 @@ public class NearbyAttractionsManager
 		SharedPreferences prefs = this.observer.getActivity().getPreferences(Context.MODE_PRIVATE);
 		this.latitude = prefs.getFloat("latitude", -1);
 		this.longitude = prefs.getFloat("longitude", -1);
-
-		this.nearbyAttractionsCallback = new NearbyAttractionsCallback(this);
-
 		this.types = this.observer.getResources().getStringArray(R.array.places_types);
 		this.requestsCount = types.length;
 
@@ -82,11 +83,25 @@ public class NearbyAttractionsManager
 			for (String type : this.types)
 			{
 				String url = getPlacesApiUrl(type);
+				final NearbyAttractionsController _this = this;
 				JsonObjectRequest request = new JsonObjectRequest(
 						Request.Method.GET,
-						url, null,
-						this.nearbyAttractionsCallback,
-						this.nearbyAttractionsCallback
+						url,
+						null,
+						new Response.Listener<JSONObject>() {
+
+							@Override
+							public void onResponse(JSONObject response) {
+								_this.onResponse(response);
+							}
+						},
+						new Response.ErrorListener() {
+
+							@Override
+							public void onErrorResponse(VolleyError error) {
+								_this.onErrorResponse(error);
+							}
+						}
 				);
 
 				CustomRequestQueue.getInstance(this.observer.getActivity()).getRequestQueue().add(request);
@@ -142,7 +157,7 @@ public class NearbyAttractionsManager
 		Photo photo = place.getPhoto();
 		if (photo != null)
 		{
-			PlacesPhotoTask task = new PlacesPhotoTask(this, this.mGoogleApiClient);
+			PhotoRetriever task = new PhotoRetriever(this, this.mGoogleApiClient);
 			this.asyncTasks.add(task);
 			task.execute(photo);
 		}
@@ -159,5 +174,75 @@ public class NearbyAttractionsManager
 		{
 			task.cancel(true);
 		}
+	}
+
+	public void onResponse(JSONObject response)
+	{
+		try
+		{
+			String status = response.getString("status");
+			ArrayList<Place> places = new ArrayList<>();
+			if (status.equals("OK"))
+			{
+				JSONArray results = response.getJSONArray("results");
+				int i = 0, j = 0;
+				while (i < 5 && j < results.length())
+				{
+					JSONObject object = results.getJSONObject(j);
+
+					// Get the icon of the place
+					String iconUrl = object.getString("icon");
+
+					if (!iconUrl.contains("shopping"))
+					{
+						// Get the location of the place
+						JSONObject geometry = object.getJSONObject("geometry");
+						JSONObject location = geometry.getJSONObject("location");
+						double latitude = location.getDouble("lat");
+						double longitude = location.getDouble("lng");
+
+						// Get the name of the place
+						String name = object.getString("name");
+
+						// Get the id of the place
+						String placeId = object.getString("place_id");
+
+						// Get the types of the place
+						ArrayList<String> types = new ArrayList<>();
+						JSONArray typesArray = object.getJSONArray("types");
+						for (int k = 0; k < typesArray.length(); k++)
+						{
+							types.add(typesArray.getString(k));
+						}
+
+						// Get the size of a photo of the place
+						Photo photo = null;
+						if (object.has("photos")) // We check if there is a photo for the place
+						{
+							photo = new Photo(placeId);
+						}
+
+						// Store it in a place object
+						Place place = new Place(placeId, name, latitude, longitude, types, iconUrl, photo);
+
+						// Add the place into the list
+						places.add(place);
+
+						i++;
+					}
+					j++;
+				}
+			}
+			this.updatePlaces(places);
+		}
+		catch (JSONException e)
+		{
+			this.updatePlaces(null);
+		}
+	}
+
+	public void onErrorResponse(VolleyError error)
+	{
+		this.updatePlaces(null);
 	}
 }

@@ -8,11 +8,9 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -27,13 +25,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import brice.explorun.Utility;
 import brice.explorun.models.Observer;
-import brice.explorun.observables.LocationManager;
-import brice.explorun.models.NetworkHandler;
+import brice.explorun.services.LocationService;
 import brice.explorun.R;
 
-public class MapsFragment extends Fragment implements Observer, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
+public class MapFragment extends Fragment implements Observer, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
 {
 	private final String LOCATION_KEY = "location";
 	private final String FIRST_REQUEST_KEY = "first_request";
@@ -45,17 +41,17 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 	private boolean isFirstRequest = true;
 
 	private GoogleApiClient mGoogleApiClient = null;
-	private LocationManager locationManager;
+	private LocationService locationService;
 
-	public LocationManager getLocationManager()
+	public LocationService getLocationService()
 	{
-		return this.locationManager;
+		return this.locationService;
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
-		View view = inflater.inflate(R.layout.fragment_maps, container, false);
+		View view = inflater.inflate(R.layout.fragment_map, container, false);
 		// Create an instance of GoogleAPIClient.
 		if (this.mGoogleApiClient == null)
 		{
@@ -66,7 +62,7 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 					.build();
 		}
 
-		this.locationManager = new LocationManager(this, this.mGoogleApiClient);
+		this.locationService = new LocationService(this, this.mGoogleApiClient);
 
 		return view;
 	}
@@ -77,8 +73,8 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 			// Update the value of mCurrentLocation from the Bundle and update the UI to show the correct latitude and longitude.
 			if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
 				// Since LOCATION_KEY was found in the Bundle, we can be sure that LastLocation is not null.
-				this.locationManager.setLastLocation((Location) savedInstanceState.getParcelable(LOCATION_KEY));
-				Location loc = locationManager.getLastLocation();
+				this.locationService.setLastLocation((Location) savedInstanceState.getParcelable(LOCATION_KEY));
+				Location loc = locationService.getLastLocation();
 				if (loc != null) {
 					LatLng position = new LatLng(loc.getLatitude(), loc.getLongitude());
 					this.userLocationMarkerOptions = new MarkerOptions().position(position).title(getContext().getResources().getString(R.string.your_position)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
@@ -114,7 +110,7 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 	{
 		if (this.mGoogleApiClient.isConnected())
 		{
-			this.locationManager.stopLocationUpdates();
+			this.locationService.stopLocationUpdates();
 			this.mGoogleApiClient.disconnect();
 		}
 		super.onStop();
@@ -122,7 +118,7 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 
 	public void onSaveInstanceState(Bundle savedInstanceState)
 	{
-		this.locationManager.onSaveInstanceState(savedInstanceState);
+		this.locationService.onSaveInstanceState(savedInstanceState);
 		savedInstanceState.putBoolean(FIRST_REQUEST_KEY, this.isFirstRequest);
 		super.onSaveInstanceState(savedInstanceState);
 	}
@@ -136,7 +132,7 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 		}
 		else
 		{
-			this.locationManager.checkLocationEnabled();
+			this.locationService.checkLocationEnabled();
 		}
 	}
 
@@ -156,7 +152,7 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 				// If request is cancelled, the result arrays are empty.
 				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
 				{
-					this.getLocationManager().checkLocationEnabled();
+					this.getLocationService().checkLocationEnabled();
 					if (this.map != null)
 					{
 						initializeMyLocationButton();
@@ -188,10 +184,10 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 	@Override
 	public void update()
 	{
-		if (this.locationManager.getLastLocation() != null)
+		if (this.locationService.getLastLocation() != null)
 		{
-			LatLng userLocation = new LatLng(this.locationManager.getLastLocation().getLatitude(), this.locationManager.getLastLocation().getLongitude());
-			this.locationManager.storeLastLocation(userLocation);
+			LatLng userLocation = new LatLng(this.locationService.getLastLocation().getLatitude(), this.locationService.getLastLocation().getLongitude());
+			this.locationService.storeLastLocation(userLocation);
 			if (this.map != null)
 			{
 				if (this.isFirstRequest)
@@ -211,7 +207,7 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 
 	public void restoreLastLocation()
 	{
-		this.locationManager.updateLocationFromPreferences();
+		this.locationService.updateLocationFromPreferences();
 		update();
 	}
 }

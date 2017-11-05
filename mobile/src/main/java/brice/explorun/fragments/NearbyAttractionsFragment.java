@@ -15,12 +15,12 @@ import com.google.android.gms.location.places.Places;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-import brice.explorun.Utility;
-import brice.explorun.models.NearbyAttractionsAdapter;
+import brice.explorun.models.Utility;
+import brice.explorun.adapters.NearbyAttractionsAdapter;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
 import brice.explorun.R;
-import brice.explorun.observables.NearbyAttractionsManager;
+import brice.explorun.controllers.NearbyAttractionsController;
 
 public class NearbyAttractionsFragment extends PlacesObserverFragment implements GoogleApiClient.OnConnectionFailedListener
 {
@@ -29,7 +29,7 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 	private ArrayList<Place> places;
 	private NearbyAttractionsAdapter adapter;
 
-	private NearbyAttractionsManager manager;
+	private NearbyAttractionsController manager;
 
 	private LinearLayout progressBarLayout;
 
@@ -50,7 +50,7 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 
 		}
 
-		this.manager = new NearbyAttractionsManager(this, this.mGoogleApiClient);
+		this.manager = new NearbyAttractionsController(this, this.mGoogleApiClient);
 
 		// Setting up the list of places
 		if (savedInstanceState != null)

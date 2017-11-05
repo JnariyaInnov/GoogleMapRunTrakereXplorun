@@ -1,4 +1,4 @@
-package brice.explorun.models;
+package brice.explorun.services;
 
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
@@ -9,15 +9,16 @@ import com.google.android.gms.location.places.PlacePhotoMetadataBuffer;
 import com.google.android.gms.location.places.PlacePhotoMetadataResult;
 import com.google.android.gms.location.places.Places;
 
-import brice.explorun.observables.NearbyAttractionsManager;
+import brice.explorun.models.Photo;
+import brice.explorun.controllers.NearbyAttractionsController;
 
-public class PlacesPhotoTask extends AsyncTask<Photo, Void, Photo>
+public class PhotoRetriever extends AsyncTask<Photo, Void, Photo>
 {
-	private NearbyAttractionsManager manager;
+	private NearbyAttractionsController manager;
 
 	private GoogleApiClient mGoogleApiClient;
 
-	public PlacesPhotoTask(NearbyAttractionsManager manager, GoogleApiClient googleApiClient)
+	public PhotoRetriever(NearbyAttractionsController manager, GoogleApiClient googleApiClient)
 	{
 		this.manager = manager;
 		this.mGoogleApiClient = googleApiClient;

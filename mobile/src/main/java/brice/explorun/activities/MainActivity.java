@@ -1,4 +1,4 @@
-package brice.explorun;
+package brice.explorun.activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -10,14 +10,14 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
+import brice.explorun.R;
 import brice.explorun.fragments.AboutFragment;
-import brice.explorun.fragments.MapsFragment;
+import brice.explorun.fragments.MapFragment;
 import brice.explorun.fragments.NearbyAttractionsFragment;
-import brice.explorun.models.NetworkHandler;
+import brice.explorun.services.ConnectivityStatusHandler;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity
 	private String mTitle;
 	private int selectedItemId;
 
-	private NetworkHandler networkHandler;
+	private ConnectivityStatusHandler connectivityStatusHandler;
 
 	@Override
     protected void onCreate(Bundle savedInstanceState)
@@ -91,8 +91,8 @@ public class MainActivity extends AppCompatActivity
 
     protected void onStart()
 	{
-		this.networkHandler = NetworkHandler.getInstance(this);
-		this.networkHandler.run();
+		this.connectivityStatusHandler = ConnectivityStatusHandler.getInstance(this);
+		this.connectivityStatusHandler.run();
 		super.onStart();
 	}
 
@@ -106,10 +106,10 @@ public class MainActivity extends AppCompatActivity
 				{
 					case Activity.RESULT_OK:
 						// Access to location granted by the user
-						if (this.fragment instanceof MapsFragment)
+						if (this.fragment instanceof MapFragment)
 						{
-							MapsFragment fragment = (MapsFragment) this.fragment;
-							fragment.getLocationManager().initLocation();
+							MapFragment fragment = (MapFragment) this.fragment;
+							fragment.getLocationService().initLocation();
 						}
 						break;
 
@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity
 				default:
 					// Set title for main fragment = app name
 					this.mTitle = getResources().getString(R.string.app_name);
-					this.fragment = new MapsFragment();
+					this.fragment = new MapFragment();
 					break;
 			}
 
@@ -201,7 +201,7 @@ public class MainActivity extends AppCompatActivity
 
 	protected void onStop()
 	{
-		this.networkHandler.stopThread();
+		this.connectivityStatusHandler.stopThread();
 		super.onStop();
 	}
 }
