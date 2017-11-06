@@ -11,4 +11,10 @@
 	<string name="drawer_open">Ouvrir le menu</string>
 	<string name="drawer_close">Fermer le menu</string>
 	<string name="nav_about">A propos</string>
+	<string name="nav_nearby_attractions">Curiosités proches</string>
+	<string name="http_error">Erreur avec la requête, veuillez réessayer ultérieurement</string>
+	<string name="api_request_error">Une erreur avec la requête est survenue, certains éléments
+		peuvent manquer
+	</string>
+	<string name="no_photo">Pas de photo trouvée pour cette curiosité</string>
 </resources>

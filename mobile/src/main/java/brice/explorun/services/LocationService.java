@@ -1,4 +1,4 @@
-package brice.explorun;
+package brice.explorun.services;
 
 import android.Manifest;
 import android.content.Context;
@@ -22,21 +22,25 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.model.LatLng;
 
-public class LocationManager implements LocationListener
+import brice.explorun.fragments.MapFragment;
+import brice.explorun.models.Observable;
+
+public class LocationService extends Observable implements LocationListener
 {
 	private final int REQUEST_CHECK_SETTINGS = 0x1;
 
-	private MapsFragment mapFragment;
+	private MapFragment mapFragment;
 	private GoogleApiClient mGoogleApiClient;
 	private Location mLastLocation = null;
 
 	private final String LOCATION_KEY = "location";
-	private final int refreshInterval = 10000; // Intervalle de rafraîchissement de la position (en ms)
+	private final int refreshInterval = 10000; // Position refresh interval (in ms)
 
-	LocationManager(MapsFragment mapFragment, GoogleApiClient googleApiClient)
+	public LocationService(MapFragment mapFragment, GoogleApiClient googleApiClient)
 	{
 		this.mapFragment = mapFragment;
 		this.mGoogleApiClient = googleApiClient;
+		this.registerObserver(mapFragment);
 	}
 
 	public Location getLastLocation() {
@@ -47,7 +51,7 @@ public class LocationManager implements LocationListener
 		this.mLastLocation = loc;
 	}
 
-	protected void onSaveInstanceState(Bundle savedInstanceState)
+	public void onSaveInstanceState(Bundle savedInstanceState)
 	{
 		savedInstanceState.putParcelable(LOCATION_KEY, this.mLastLocation);
 	}
@@ -57,7 +61,8 @@ public class LocationManager implements LocationListener
 	{
 		Log.d("onLocationChanged", location.toString());
 		this.mLastLocation = location;
-		mapFragment.updateMap();
+		storeLastLocation(new LatLng(location.getLatitude(), location.getLongitude()));
+		this.notifyAllObservers();
 	}
 
 	public void initLocation()
@@ -65,10 +70,12 @@ public class LocationManager implements LocationListener
 		if (ActivityCompat.checkSelfPermission(mapFragment.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
 		{
 			this.mLastLocation = LocationServices.FusedLocationApi.getLastLocation(this.mGoogleApiClient);
-			if (this.mLastLocation != null) {
-				mapFragment.updateMap();
+			if (this.mLastLocation != null)
+			{
+				this.notifyAllObservers();
 			}
-			else {
+			else
+			{
 				mapFragment.restoreLastLocation();
 			}
 			startLocationUpdates();
@@ -80,7 +87,8 @@ public class LocationManager implements LocationListener
 		SharedPreferences sharedPref = this.mapFragment.getActivity().getPreferences(Context.MODE_PRIVATE);
 		float latitude = sharedPref.getFloat("latitude", -1);
 		float longitude = sharedPref.getFloat("longitude", -1);
-		if(latitude != -1 && longitude != -1) {
+		if(latitude != -1 && longitude != -1)
+		{
 			mLastLocation = new Location("");
 			mLastLocation.setLatitude(latitude);
 			mLastLocation.setLongitude(longitude);

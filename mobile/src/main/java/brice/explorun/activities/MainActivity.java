@@ -1,4 +1,4 @@
-package brice.explorun;
+package brice.explorun.activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -13,6 +13,12 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 
+import brice.explorun.R;
+import brice.explorun.fragments.AboutFragment;
+import brice.explorun.fragments.MapFragment;
+import brice.explorun.fragments.NearbyAttractionsFragment;
+import brice.explorun.services.ConnectivityStatusHandler;
+
 public class MainActivity extends AppCompatActivity
 {
 	private Fragment fragment;
@@ -20,9 +26,14 @@ public class MainActivity extends AppCompatActivity
 
 	private DrawerLayout mDrawerLayout;
 	private ActionBarDrawerToggle mDrawerToggle;
+	private NavigationView navigationView;
 
 	private String mTitle;
 	private int selectedItemId;
+
+	private ConnectivityStatusHandler connectivityStatusHandler;
+
+	public NavigationView getNavigationView() { return this.navigationView; }
 
 	@Override
     protected void onCreate(Bundle savedInstanceState)
@@ -31,14 +42,14 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
 		this.mDrawerLayout = findViewById(R.id.drawer_layout);
-		NavigationView navigationView =  findViewById(R.id.navigation);
+		this.navigationView = findViewById(R.id.navigation);
 
 		//setting up selected item listener
-		navigationView.setNavigationItemSelectedListener(
+		this.navigationView.setNavigationItemSelectedListener(
 				new NavigationView.OnNavigationItemSelectedListener() {
 					@Override
 					public boolean onNavigationItemSelected(MenuItem menuItem) {
-						selectItem(menuItem);
+						selectItem(menuItem, null);
 						return true;
 					}
 				});
@@ -72,13 +83,21 @@ public class MainActivity extends AppCompatActivity
 			//Restore the fragment's instance
 			this.fragment = getSupportFragmentManager().getFragment(savedInstanceState, "fragment");
 			this.mTitle = savedInstanceState.getString("title");
+			getSupportActionBar().setTitle(this.mTitle);
 			this.selectedItemId = savedInstanceState.getInt("selectedItemId");
 		}
 		else
 		{
-			selectItem(navigationView.getMenu().getItem(0));
+			selectItem(this.navigationView.getMenu().getItem(0), null);
 		}
     }
+
+    protected void onStart()
+	{
+		this.connectivityStatusHandler = ConnectivityStatusHandler.getInstance(this);
+		this.connectivityStatusHandler.run();
+		super.onStart();
+	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -90,10 +109,10 @@ public class MainActivity extends AppCompatActivity
 				{
 					case Activity.RESULT_OK:
 						// Access to location granted by the user
-						if (this.fragment instanceof MapsFragment)
+						if (this.fragment instanceof MapFragment)
 						{
-							MapsFragment fragment = (MapsFragment) this.fragment;
-							fragment.getLocationManager().initLocation();
+							MapFragment fragment = (MapFragment) this.fragment;
+							fragment.getLocationService().initLocation();
 						}
 						break;
 
@@ -124,7 +143,7 @@ public class MainActivity extends AppCompatActivity
 	}
 
 
-	public void selectItem(MenuItem item)
+	public void selectItem(MenuItem item, Bundle args)
 	{
 		int itemId = item.getItemId();
 		if (itemId != this.selectedItemId)
@@ -143,13 +162,18 @@ public class MainActivity extends AppCompatActivity
 					this.fragment = new AboutFragment();
 					break;
 
+				case R.id.nav_nearby_attractions:
+					this.fragment = new NearbyAttractionsFragment();
+					break;
+
 				default:
 					// Set title for main fragment = app name
 					this.mTitle = getResources().getString(R.string.app_name);
-					this.fragment = new MapsFragment();
+					this.fragment = new MapFragment();
 					break;
 			}
 
+			this.fragment.setArguments(args);
 			// Insert the fragment by replacing any existing fragment
 			FragmentManager fragmentManager = getSupportFragmentManager();
 			fragmentManager.beginTransaction()
@@ -179,8 +203,9 @@ public class MainActivity extends AppCompatActivity
 		getSupportFragmentManager().putFragment(outState, "fragment", this.fragment);
 	}
 
-	protected void onDestroy()
+	protected void onStop()
 	{
-		super.onDestroy();
+		this.connectivityStatusHandler.stopThread();
+		super.onStop();
 	}
 }

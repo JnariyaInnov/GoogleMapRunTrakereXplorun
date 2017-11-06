@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string-array name="places_types">
+		<item>city_hall</item>
+		<item>church</item>
+		<item>museum</item>
+		<item>park</item>
+	</string-array>
+</resources>

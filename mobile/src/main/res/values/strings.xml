@@ -1,13 +1,29 @@
 <resources>
 	<string name="app_name">eXplorun</string>
+
+	<!-- Map activity -->
 	<string name="title_activity_maps">Map</string>
 	<string name="your_position">Your position</string>
-	<string name="network_error">Network error</string>
+
 	<string name="no_network">An internet connection is required to use this application</string>
+
+
+	<!-- Navigation Drawer -->
 	<string name="drawer_title">Menu</string>
 	<string name="drawer_open">Open the menu</string>
 	<string name="drawer_close">Close the menu</string>
 	<string name="nav_map">Map</string>
 	<string name="nav_history">History</string>
+	<string name="nav_nearby_attractions">Nearby tourist attractions</string>
 	<string name="nav_about">About</string>
+
+	<!-- Errors -->
+	<string name="network_error">Network error</string>
+	<string name="http_error">Error with the request, please try again later</string>
+	<string name="api_request_error">An error occurred with the request, some elements might be missing</string>
+
+	<!-- Nearby tourist attractions -->
+	<string name="distance_in_km" translatable="false">%1$.1f km</string>
+	<string name="distance_in_m" translatable="false">%1$.0f m</string>
+	<string name="no_photo">No photo found for this attraction</string>
 </resources>

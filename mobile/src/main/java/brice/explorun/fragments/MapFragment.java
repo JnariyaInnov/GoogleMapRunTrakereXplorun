@@ -1,4 +1,4 @@
-package brice.explorun;
+package brice.explorun.fragments;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -6,17 +6,17 @@ import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -27,54 +27,86 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import brice.explorun.models.Utility;
+import brice.explorun.controllers.NearbyAttractionsController;
+import brice.explorun.models.Observer;
+import brice.explorun.models.Photo;
+import brice.explorun.models.Place;
+import brice.explorun.services.LocationService;
+import brice.explorun.R;
+
+public class MapFragment extends PlacesObserverFragment implements Observer, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
 {
 	private final String LOCATION_KEY = "location";
 	private final String FIRST_REQUEST_KEY = "first_request";
+	private final String PLACES_KEY = "places";
 	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
-	private final int checkInterval = 5000;
 
+	private Bundle args = null;
 	private GoogleMap map = null;
 	private MarkerOptions userLocationMarkerOptions;
 	private Marker userMarker;
 	private boolean isFirstRequest = true;
 
 	private GoogleApiClient mGoogleApiClient = null;
-	private LocationManager locationManager;
+	private LocationService locationService;
+	private NearbyAttractionsController nearbyAttractionsController;
 
-	public LocationManager getLocationManager()
+	private ArrayList<Place> places;
+	private ArrayList<Marker> placesMarkers;
+
+	private List<String> types;
+
+	public LocationService getLocationService()
 	{
-		return this.locationManager;
+		return this.locationService;
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
-		View view = inflater.inflate(R.layout.fragment_maps, container, false);
+		View view = inflater.inflate(R.layout.fragment_map, container, false);
 		// Create an instance of GoogleAPIClient.
-		if (this.mGoogleApiClient == null) {
+		if (this.mGoogleApiClient == null)
+		{
 			this.mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
 					.addConnectionCallbacks(this)
 					.addOnConnectionFailedListener(this)
 					.addApi(LocationServices.API)
+					.addApi(Places.GEO_DATA_API)
 					.build();
 		}
 
-		this.locationManager = new LocationManager(this, this.mGoogleApiClient);
-		new NetworkHandler(this.getActivity(), (TextView) view.findViewById(R.id.no_network_label), checkInterval);
+		this.args = this.getArguments();
+
+		this.locationService = new LocationService(this, this.mGoogleApiClient);
+
+		this.places = new ArrayList<>();
+		this.placesMarkers = new ArrayList<>();
+
+		this.types = Arrays.asList(getResources().getStringArray(R.array.places_types));
+
+		this.nearbyAttractionsController = new NearbyAttractionsController(this, this.mGoogleApiClient);
 
 		return view;
 	}
 
 	private void updateValuesFromBundle(Bundle savedInstanceState)
 	{
-		if (savedInstanceState != null) {
+		if (savedInstanceState != null)
+		{
 			// Update the value of mCurrentLocation from the Bundle and update the UI to show the correct latitude and longitude.
-			if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
+			if (savedInstanceState.keySet().contains(LOCATION_KEY))
+			{
 				// Since LOCATION_KEY was found in the Bundle, we can be sure that LastLocation is not null.
-				this.locationManager.setLastLocation((Location) savedInstanceState.getParcelable(LOCATION_KEY));
-				Location loc = locationManager.getLastLocation();
-				if (loc != null) {
+				this.locationService.setLastLocation((Location) savedInstanceState.getParcelable(LOCATION_KEY));
+				Location loc = this.locationService.getLastLocation();
+				if (loc != null)
+				{
 					LatLng position = new LatLng(loc.getLatitude(), loc.getLongitude());
 					this.userLocationMarkerOptions = new MarkerOptions().position(position).title(getContext().getResources().getString(R.string.your_position)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
 				}
@@ -83,6 +115,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 			if (savedInstanceState.keySet().contains(FIRST_REQUEST_KEY))
 			{
 				this.isFirstRequest = savedInstanceState.getBoolean(FIRST_REQUEST_KEY);
+			}
+
+			if (savedInstanceState.keySet().contains(PLACES_KEY))
+			{
+				this.places = savedInstanceState.getParcelableArrayList(PLACES_KEY);
 			}
 		}
 	}
@@ -99,20 +136,27 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 	public void onStart()
 	{
 		super.onStart();
-		this.mGoogleApiClient.connect();
+		if (!this.mGoogleApiClient.isConnected())
+		{
+			this.mGoogleApiClient.connect();
+		}
 	}
 
 	public void onStop()
 	{
-		this.locationManager.stopLocationUpdates();
-		this.mGoogleApiClient.disconnect();
+		if (this.mGoogleApiClient.isConnected())
+		{
+			this.locationService.stopLocationUpdates();
+			this.mGoogleApiClient.disconnect();
+		}
 		super.onStop();
 	}
 
 	public void onSaveInstanceState(Bundle savedInstanceState)
 	{
-		this.locationManager.onSaveInstanceState(savedInstanceState);
+		this.locationService.onSaveInstanceState(savedInstanceState);
 		savedInstanceState.putBoolean(FIRST_REQUEST_KEY, this.isFirstRequest);
+		savedInstanceState.putParcelableArrayList(PLACES_KEY, this.places);
 		super.onSaveInstanceState(savedInstanceState);
 	}
 
@@ -125,7 +169,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 		}
 		else
 		{
-			this.locationManager.checkLocationEnabled();
+			this.locationService.checkLocationEnabled();
 		}
 	}
 
@@ -145,7 +189,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 				// If request is cancelled, the result arrays are empty.
 				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
 				{
-					this.getLocationManager().checkLocationEnabled();
+					this.getLocationService().checkLocationEnabled();
 					if (this.map != null)
 					{
 						initializeMyLocationButton();
@@ -164,6 +208,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 		settings.setZoomControlsEnabled(true);
 		this.map = googleMap;
 		initializeMyLocationButton();
+		// Retrieve places markers if orientation has changed
+		addPlacesMarkers();
+		// Move the camera over a place if the user has clicked on one attraction in the list in the NearbyAttractionsFragment
+		if (this.isFirstRequest && this.args != null)
+		{
+			LatLng placeLocation = new LatLng(this.args.getDouble("latitude"), this.args.getDouble("longitude"));
+			this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(placeLocation, 15));
+		}
 	}
 
 	public void initializeMyLocationButton()
@@ -174,18 +226,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 		}
 	}
 
-	public void updateMap()
+	@Override
+	public void update()
 	{
-		if (this.locationManager.getLastLocation() != null)
+		if (this.locationService.getLastLocation() != null)
 		{
-			LatLng userLocation = new LatLng(this.locationManager.getLastLocation().getLatitude(), this.locationManager.getLastLocation().getLongitude());
-			this.locationManager.storeLastLocation(userLocation);
+			LatLng userLocation = new LatLng(this.locationService.getLastLocation().getLatitude(), this.locationService.getLastLocation().getLongitude());
+			this.locationService.storeLastLocation(userLocation);
 			if (this.map != null)
 			{
-				if (this.isFirstRequest)
+				if (this.isFirstRequest && this.args == null)
 				{
 					this.map.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
-					this.isFirstRequest = false;
 				}
 				if (this.userMarker == null)
 				{
@@ -193,13 +245,96 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 					this.userMarker = this.map.addMarker(this.userLocationMarkerOptions);
 				}
 				this.userMarker.setPosition(userLocation);
+				this.isFirstRequest = false;
 			}
+			getNearbyPlaces();
 		}
 	}
 
 	public void restoreLastLocation()
 	{
-		this.locationManager.updateLocationFromPreferences();
-		updateMap();
+		this.locationService.updateLocationFromPreferences();
+		update();
+	}
+
+	public void getNearbyPlaces()
+	{
+		this.nearbyAttractionsController.getNearbyPlaces(false);
+	}
+
+	@Override
+	public void updatePlaces(ArrayList<Place> places, boolean error)
+	{
+		if (error)
+		{
+			Toast.makeText(this.getActivity(), R.string.api_request_error, Toast.LENGTH_LONG).show();
+		}
+		if (places.size() > 0)
+		{
+			this.removeMarkers();
+		}
+		this.places.clear();
+		this.places.addAll(places);
+		addPlacesMarkers();
+	}
+
+	public void addPlacesMarkers()
+	{
+		for (Place place: this.places)
+		{
+			LatLng location = new LatLng(place.getLatitude(), place.getLongitude());
+			MarkerOptions options = new MarkerOptions().title(place.getName()).position(location);
+			options.icon(BitmapDescriptorFactory.defaultMarker(getPlaceMarkerColor(place)));
+			Marker marker = this.map.addMarker(options);
+			this.placesMarkers.add(marker);
+
+			// Open info window of the place marker if the user has clicked one attraction from NearbyAttractionsFragment
+			if (this.args != null)
+			{
+				LatLng placeLocation = new LatLng(this.args.getDouble("latitude"), this.args.getDouble("longitude"));
+				if (location.equals(placeLocation))
+				{
+					marker.showInfoWindow();
+				}
+			}
+		}
+	}
+
+	public void removeMarkers()
+	{
+		for (Marker m: this.placesMarkers)
+		{
+			m.remove();
+		}
+		this.placesMarkers.clear();
+	}
+
+	@Override
+	public void updatePlacePhoto(Photo photo)
+	{
+
+	}
+
+	public float getPlaceMarkerColor(Place place)
+	{
+		ArrayList<String> types = place.getTypes();
+		String res = "";
+		int i = 0;
+		boolean found = false;
+		while (!found && i < types.size())
+		{
+			String type = types.get(i);
+			if (this.types.contains(type))
+			{
+				found = true;
+				res = type;
+			}
+			else
+			{
+				i++;
+			}
+		}
+
+		return Utility.getColorFromType(this.getActivity(), res);
 	}
 }
