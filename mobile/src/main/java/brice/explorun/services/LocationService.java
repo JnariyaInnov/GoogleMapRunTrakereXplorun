@@ -1,4 +1,4 @@
-package brice.explorun.observables;
+package brice.explorun.services;
 
 import android.Manifest;
 import android.content.Context;
@@ -22,21 +22,21 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.model.LatLng;
 
-import brice.explorun.fragments.MapsFragment;
+import brice.explorun.fragments.MapFragment;
 import brice.explorun.models.Observable;
 
-public class LocationManager extends Observable implements LocationListener
+public class LocationService extends Observable implements LocationListener
 {
 	private final int REQUEST_CHECK_SETTINGS = 0x1;
 
-	private MapsFragment mapFragment;
+	private MapFragment mapFragment;
 	private GoogleApiClient mGoogleApiClient;
 	private Location mLastLocation = null;
 
 	private final String LOCATION_KEY = "location";
 	private final int refreshInterval = 10000; // Position refresh interval (in ms)
 
-	public LocationManager(MapsFragment mapFragment, GoogleApiClient googleApiClient)
+	public LocationService(MapFragment mapFragment, GoogleApiClient googleApiClient)
 	{
 		this.mapFragment = mapFragment;
 		this.mGoogleApiClient = googleApiClient;

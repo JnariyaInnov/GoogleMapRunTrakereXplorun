@@ -1,4 +1,4 @@
-package brice.explorun;
+package brice.explorun.models;
 
 import android.content.Context;
 import android.content.DialogInterface;

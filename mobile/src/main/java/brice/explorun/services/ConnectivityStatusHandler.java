@@ -1,4 +1,4 @@
-package brice.explorun.models;
+package brice.explorun.services;
 
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -7,28 +7,28 @@ import android.view.View;
 import android.widget.TextView;
 
 import brice.explorun.R;
-import brice.explorun.Utility;
+import brice.explorun.models.Utility;
 import brice.explorun.fragments.NearbyAttractionsFragment;
 
-public class NetworkHandler extends Handler
+public class ConnectivityStatusHandler extends Handler
 {
-	private static NetworkHandler instance = null;
+	private static ConnectivityStatusHandler instance = null;
 
 	private final int CHECK_INTERVAL = 5000; // Interval between two checks of the user's connection (in ms)
 	private Runnable runnable; // Thread checking the internet connection
 
 	private boolean isConnected; // True if the user has an internet connection, else false
 
-	public static NetworkHandler getInstance(AppCompatActivity activity)
+	public static ConnectivityStatusHandler getInstance(AppCompatActivity activity)
 	{
 		if (instance == null)
 		{
-			instance = new NetworkHandler(activity);
+			instance = new ConnectivityStatusHandler(activity);
 		}
 		return instance;
 	}
 
-	private NetworkHandler(final AppCompatActivity activity)
+	private ConnectivityStatusHandler(final AppCompatActivity activity)
 	{
 		this.runnable = new Runnable()
 		{
