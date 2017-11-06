@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import brice.explorun.fragments.AboutFragment;
+import brice.explorun.fragments.FormFragment;
 import brice.explorun.fragments.MapsFragment;
 import brice.explorun.fragments.NearbyAttractionsFragment;
 import brice.explorun.models.NetworkHandler;
@@ -161,6 +162,10 @@ public class MainActivity extends AppCompatActivity
 
 				case R.id.nav_nearby_attractions:
 					this.fragment = new NearbyAttractionsFragment();
+					break;
+
+				case R.id.nav_form:
+					this.fragment = new FormFragment();
 					break;
 
 				default:

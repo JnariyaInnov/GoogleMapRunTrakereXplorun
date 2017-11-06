@@ -9,6 +9,10 @@
 				android:id="@+id/nav_nearby_attractions"
 				android:title="@string/nav_nearby_attractions" />
 
+        <item
+                android:id="@+id/nav_form"
+                android:title="Start a new activity"/>
+
 	</group>
 
 	<group android:id="@+id/aside_nav" android:checkableBehavior="single">

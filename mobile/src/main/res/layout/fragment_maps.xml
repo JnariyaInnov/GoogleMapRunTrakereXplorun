@@ -16,13 +16,27 @@
 			android:visibility="gone"
 			android:text="@string/no_network" />
 
-	<fragment android:id="@+id/map"
+	<Button
+		android:id="@+id/form_btn"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="Open"/>
+
+    <FrameLayout
+        android:id="@+id/form"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:context="brice.explorun.fragments.MapsFragment"
+        android:layout_weight="1"/>
+
+    <fragment android:id="@+id/map"
 			  android:name="com.google.android.gms.maps.SupportMapFragment"
 			  xmlns:android="http://schemas.android.com/apk/res/android"
 			  xmlns:tools="http://schemas.android.com/tools"
 			  android:layout_width="match_parent"
 			  android:layout_height="match_parent"
-			  tools:context="brice.explorun.fragments.MapsFragment"/>
+			  tools:context="brice.explorun.fragments.MapsFragment" />
 
 
 </LinearLayout>

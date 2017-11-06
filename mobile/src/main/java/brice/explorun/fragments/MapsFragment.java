@@ -8,10 +8,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -47,6 +49,8 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 	private GoogleApiClient mGoogleApiClient = null;
 	private LocationManager locationManager;
 
+	private Button mFormButton;
+
 	public LocationManager getLocationManager()
 	{
 		return this.locationManager;
@@ -65,6 +69,19 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 					.addApi(LocationServices.API)
 					.build();
 		}
+
+
+		mFormButton = view.findViewById(R.id.form_btn);
+		mFormButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				android.support.v4.app.FragmentManager fragmentManager = getChildFragmentManager();
+				fragmentManager.beginTransaction()
+						.replace(R.id.form, new FormFragment())
+						.commit();
+
+			}
+		});
 
 		this.locationManager = new LocationManager(this, this.mGoogleApiClient);
 
