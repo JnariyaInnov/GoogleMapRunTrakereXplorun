@@ -80,7 +80,7 @@ public class NearbyAttractionsAdapter extends ArrayAdapter<Place>
 	}
 
 	/**
-	 * Cache of the children views for a forecast list item.
+	 * Cache of the children views for a place list item.
 	 */
 	private static class ViewHolder
 	{

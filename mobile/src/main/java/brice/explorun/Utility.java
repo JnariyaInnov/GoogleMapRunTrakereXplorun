@@ -2,11 +2,14 @@ package brice.explorun;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.support.v7.app.AlertDialog;
-import android.widget.ProgressBar;
+import android.util.Log;
+
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
 public class Utility
 {
@@ -77,5 +80,38 @@ public class Utility
 				Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
 		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 		return earthRadiusKm * c;
+	}
+
+	public static float getColorFromType(Context context, String type)
+	{
+		float res;
+		switch (type)
+		{
+			case "park":
+				res = colorToHue(context, R.color.green);
+				break;
+
+			case "museum":
+				res = BitmapDescriptorFactory.HUE_ORANGE;
+				break;
+
+			case "city_hall":
+			case "church":
+				res = colorToHue(context, R.color.brown);
+				break;
+
+			default:
+				res = BitmapDescriptorFactory.HUE_RED;
+				break;
+		}
+
+		return res;
+	}
+
+	private static float colorToHue(Context context, int colorRes)
+	{
+		float hsv[] = new float[3];
+		Color.colorToHSV(context.getResources().getColor(colorRes), hsv);
+		return hsv[0];
 	}
 }

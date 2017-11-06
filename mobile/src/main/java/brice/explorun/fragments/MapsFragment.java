@@ -6,17 +6,15 @@ import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -27,13 +25,19 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import brice.explorun.Utility;
 import brice.explorun.models.Observer;
+import brice.explorun.models.Photo;
+import brice.explorun.models.Place;
 import brice.explorun.observables.LocationManager;
-import brice.explorun.models.NetworkHandler;
 import brice.explorun.R;
+import brice.explorun.observables.NearbyAttractionsManager;
 
-public class MapsFragment extends Fragment implements Observer, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
+public class MapsFragment extends PlacesObserverFragment implements Observer, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
 {
 	private final String LOCATION_KEY = "location";
 	private final String FIRST_REQUEST_KEY = "first_request";
@@ -46,6 +50,12 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 
 	private GoogleApiClient mGoogleApiClient = null;
 	private LocationManager locationManager;
+	private NearbyAttractionsManager nearbyAttractionsManager;
+
+	private ArrayList<Place> places;
+	private ArrayList<Marker> placesMarkers;
+
+	private List<String> types;
 
 	public LocationManager getLocationManager()
 	{
@@ -63,10 +73,19 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 					.addConnectionCallbacks(this)
 					.addOnConnectionFailedListener(this)
 					.addApi(LocationServices.API)
+					.addApi(Places.GEO_DATA_API)
 					.build();
 		}
 
 		this.locationManager = new LocationManager(this, this.mGoogleApiClient);
+
+		this.places = new ArrayList<>();
+		this.placesMarkers = new ArrayList<>();
+
+		this.types = Arrays.asList(getResources().getStringArray(R.array.places_types));
+
+		this.nearbyAttractionsManager = new NearbyAttractionsManager(this, this.mGoogleApiClient);
+		this.nearbyAttractionsManager.getNearbyPlaces();
 
 		return view;
 	}
@@ -213,5 +232,55 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 	{
 		this.locationManager.updateLocationFromPreferences();
 		update();
+	}
+
+	@Override
+	public void updatePlaces(ArrayList<Place> places)
+	{
+		this.places.addAll(places);
+		for (Place p: this.places)
+		{
+			try
+			{
+				LatLng location = new LatLng(p.getLatitude(), p.getLongitude());
+				MarkerOptions options = new MarkerOptions().title(p.getName()).position(location);
+				options.icon(BitmapDescriptorFactory.defaultMarker(getPlaceMarkerColor(p)));
+				Marker marker = this.map.addMarker(options);
+				this.placesMarkers.add(marker);
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+
+	@Override
+	public void updatePlacePhoto(Photo photo)
+	{
+
+	}
+
+	public float getPlaceMarkerColor(Place place)
+	{
+		ArrayList<String> types = place.getTypes();
+		String res = "";
+		int i = 0;
+		boolean found = false;
+		while (!found && i < types.size())
+		{
+			String type = types.get(i);
+			if (this.types.contains(type))
+			{
+				found = true;
+				res = type;
+			}
+			else
+			{
+				i++;
+			}
+		}
+
+		return Utility.getColorFromType(this.getActivity(), res);
 	}
 }
