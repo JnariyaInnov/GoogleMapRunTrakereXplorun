@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -258,13 +259,20 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 
 	public void getNearbyPlaces()
 	{
-		this.nearbyAttractionsController.getNearbyPlaces();
+		this.nearbyAttractionsController.getNearbyPlaces(false);
 	}
 
 	@Override
-	public void updatePlaces(ArrayList<Place> places)
+	public void updatePlaces(ArrayList<Place> places, boolean error)
 	{
-		this.removeMarkers();
+		if (error)
+		{
+			Toast.makeText(this.getActivity(), R.string.api_request_error, Toast.LENGTH_LONG).show();
+		}
+		if (places.size() > 0)
+		{
+			this.removeMarkers();
+		}
 		this.places.clear();
 		this.places.addAll(places);
 		addPlacesMarkers();

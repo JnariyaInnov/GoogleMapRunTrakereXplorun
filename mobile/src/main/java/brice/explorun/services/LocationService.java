@@ -61,6 +61,7 @@ public class LocationService extends Observable implements LocationListener
 	{
 		Log.d("onLocationChanged", location.toString());
 		this.mLastLocation = location;
+		storeLastLocation(new LatLng(location.getLatitude(), location.getLongitude()));
 		this.notifyAllObservers();
 	}
 

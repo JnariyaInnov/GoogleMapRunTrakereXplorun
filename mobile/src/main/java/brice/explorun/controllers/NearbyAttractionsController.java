@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -36,12 +38,13 @@ public class NearbyAttractionsController
 	private GoogleApiClient mGoogleApiClient;
 	private ArrayList<AsyncTask> asyncTasks;
 
-	private float latitude;
-	private float longitude;
+	private float latitude = -1;
+	private float longitude = -1;
 
 	private String[] types;
 	private int requestsCount; // Number of API requests to do
 	private int responsesCount = 0; // Number of received API responses
+	private boolean error = false;
 
 	private ArrayList<Place> places;
 
@@ -70,7 +73,7 @@ public class NearbyAttractionsController
 		return builtUri.toString();
 	}
 
-	public void getNearbyPlaces()
+	public void getNearbyPlaces(boolean checkNow)
 	{
 		// Retrieve user's location in the SharedPreferences
 		SharedPreferences prefs = this.observer.getActivity().getPreferences(Context.MODE_PRIVATE);
@@ -79,7 +82,7 @@ public class NearbyAttractionsController
 
 		double distance = Utility.distanceBetweenCoordinates(latitude, longitude, this.latitude, this.longitude);
 
-		if (Utility.isOnline(this.observer.getActivity()) && distance > 0.1)
+		if (Utility.isOnline(this.observer.getActivity()) && (checkNow || distance > 0.1))
 		{
 			this.latitude = latitude;
 			this.longitude = longitude;
@@ -115,7 +118,7 @@ public class NearbyAttractionsController
 		}
 	}
 
-	public void updatePlaces(ArrayList<Place> places)
+	public synchronized void updatePlaces(ArrayList<Place> places)
 	{
 		this.responsesCount++;
 		if (places != null)
@@ -149,12 +152,13 @@ public class NearbyAttractionsController
 		}
 		else
 		{
-			Toast.makeText(this.observer.getActivity(), R.string.api_request_error, Toast.LENGTH_LONG).show();
+			this.error = true;
 		}
 		if (this.responsesCount == this.requestsCount)
 		{
 			this.responsesCount = 0;
-			this.observer.updatePlaces(this.places);
+			this.observer.updatePlaces(this.places, this.error);
+			this.error = false;
 		}
 	}
 
@@ -187,9 +191,10 @@ public class NearbyAttractionsController
 		try
 		{
 			String status = response.getString("status");
-			ArrayList<Place> places = new ArrayList<>();
+
 			if (status.equals("OK"))
 			{
+				ArrayList<Place> places = new ArrayList<>();
 				JSONArray results = response.getJSONArray("results");
 				int i = 0, j = 0;
 				while (i < 5 && j < results.length())
@@ -238,8 +243,12 @@ public class NearbyAttractionsController
 					}
 					j++;
 				}
+				this.updatePlaces(places);
 			}
-			this.updatePlaces(places);
+			else
+			{
+				this.updatePlaces(null);
+			}
 		}
 		catch (JSONException e)
 		{

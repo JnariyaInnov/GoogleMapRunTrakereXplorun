@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -124,13 +125,20 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 		if (Utility.isOnline(this.getActivity()))
 		{
 			this.progressBarLayout.setVisibility(View.VISIBLE);
-			this.adapter.clear();
 		}
-		this.manager.getNearbyPlaces();
+		this.manager.getNearbyPlaces(true);
 	}
 
-	public synchronized void updatePlaces(ArrayList<Place> places)
+	public void updatePlaces(ArrayList<Place> places, boolean error)
 	{
+		if (error)
+		{
+			Toast.makeText(this.getActivity(), R.string.api_request_error, Toast.LENGTH_LONG).show();
+		}
+		if (places.size() > 0)
+		{
+			this.adapter.clear();
+		}
 		this.adapter.addAll(places);
 
 		this.adapter.sort(new Comparator<Place>()
