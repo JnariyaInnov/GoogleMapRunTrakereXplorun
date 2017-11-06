@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,43 +30,45 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import brice.explorun.Utility;
+import brice.explorun.models.Utility;
+import brice.explorun.controllers.NearbyAttractionsController;
 import brice.explorun.models.Observer;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
-import brice.explorun.observables.LocationManager;
+import brice.explorun.services.LocationService;
 import brice.explorun.R;
-import brice.explorun.observables.NearbyAttractionsManager;
 
-public class MapsFragment extends PlacesObserverFragment implements Observer, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
+public class MapFragment extends PlacesObserverFragment implements Observer, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
 {
 	private final String LOCATION_KEY = "location";
 	private final String FIRST_REQUEST_KEY = "first_request";
+	private final String PLACES_KEY = "places";
 	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
 
+	private Bundle args = null;
 	private GoogleMap map = null;
 	private MarkerOptions userLocationMarkerOptions;
 	private Marker userMarker;
 	private boolean isFirstRequest = true;
 
 	private GoogleApiClient mGoogleApiClient = null;
-	private LocationManager locationManager;
-	private NearbyAttractionsManager nearbyAttractionsManager;
+	private LocationService locationService;
+	private NearbyAttractionsController nearbyAttractionsController;
 
 	private ArrayList<Place> places;
 	private ArrayList<Marker> placesMarkers;
 
 	private List<String> types;
 
-	public LocationManager getLocationManager()
+	public LocationService getLocationService()
 	{
-		return this.locationManager;
+		return this.locationService;
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
-		View view = inflater.inflate(R.layout.fragment_maps, container, false);
+		View view = inflater.inflate(R.layout.fragment_map, container, false);
 		// Create an instance of GoogleAPIClient.
 		if (this.mGoogleApiClient == null)
 		{
@@ -77,28 +80,32 @@ public class MapsFragment extends PlacesObserverFragment implements Observer, On
 					.build();
 		}
 
-		this.locationManager = new LocationManager(this, this.mGoogleApiClient);
+		this.args = this.getArguments();
+
+		this.locationService = new LocationService(this, this.mGoogleApiClient);
 
 		this.places = new ArrayList<>();
 		this.placesMarkers = new ArrayList<>();
 
 		this.types = Arrays.asList(getResources().getStringArray(R.array.places_types));
 
-		this.nearbyAttractionsManager = new NearbyAttractionsManager(this, this.mGoogleApiClient);
-		this.nearbyAttractionsManager.getNearbyPlaces();
+		this.nearbyAttractionsController = new NearbyAttractionsController(this, this.mGoogleApiClient);
 
 		return view;
 	}
 
 	private void updateValuesFromBundle(Bundle savedInstanceState)
 	{
-		if (savedInstanceState != null) {
+		if (savedInstanceState != null)
+		{
 			// Update the value of mCurrentLocation from the Bundle and update the UI to show the correct latitude and longitude.
-			if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
+			if (savedInstanceState.keySet().contains(LOCATION_KEY))
+			{
 				// Since LOCATION_KEY was found in the Bundle, we can be sure that LastLocation is not null.
-				this.locationManager.setLastLocation((Location) savedInstanceState.getParcelable(LOCATION_KEY));
-				Location loc = locationManager.getLastLocation();
-				if (loc != null) {
+				this.locationService.setLastLocation((Location) savedInstanceState.getParcelable(LOCATION_KEY));
+				Location loc = this.locationService.getLastLocation();
+				if (loc != null)
+				{
 					LatLng position = new LatLng(loc.getLatitude(), loc.getLongitude());
 					this.userLocationMarkerOptions = new MarkerOptions().position(position).title(getContext().getResources().getString(R.string.your_position)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
 				}
@@ -107,6 +114,11 @@ public class MapsFragment extends PlacesObserverFragment implements Observer, On
 			if (savedInstanceState.keySet().contains(FIRST_REQUEST_KEY))
 			{
 				this.isFirstRequest = savedInstanceState.getBoolean(FIRST_REQUEST_KEY);
+			}
+
+			if (savedInstanceState.keySet().contains(PLACES_KEY))
+			{
+				this.places = savedInstanceState.getParcelableArrayList(PLACES_KEY);
 			}
 		}
 	}
@@ -133,7 +145,7 @@ public class MapsFragment extends PlacesObserverFragment implements Observer, On
 	{
 		if (this.mGoogleApiClient.isConnected())
 		{
-			this.locationManager.stopLocationUpdates();
+			this.locationService.stopLocationUpdates();
 			this.mGoogleApiClient.disconnect();
 		}
 		super.onStop();
@@ -141,8 +153,9 @@ public class MapsFragment extends PlacesObserverFragment implements Observer, On
 
 	public void onSaveInstanceState(Bundle savedInstanceState)
 	{
-		this.locationManager.onSaveInstanceState(savedInstanceState);
+		this.locationService.onSaveInstanceState(savedInstanceState);
 		savedInstanceState.putBoolean(FIRST_REQUEST_KEY, this.isFirstRequest);
+		savedInstanceState.putParcelableArrayList(PLACES_KEY, this.places);
 		super.onSaveInstanceState(savedInstanceState);
 	}
 
@@ -155,7 +168,7 @@ public class MapsFragment extends PlacesObserverFragment implements Observer, On
 		}
 		else
 		{
-			this.locationManager.checkLocationEnabled();
+			this.locationService.checkLocationEnabled();
 		}
 	}
 
@@ -175,7 +188,7 @@ public class MapsFragment extends PlacesObserverFragment implements Observer, On
 				// If request is cancelled, the result arrays are empty.
 				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
 				{
-					this.getLocationManager().checkLocationEnabled();
+					this.getLocationService().checkLocationEnabled();
 					if (this.map != null)
 					{
 						initializeMyLocationButton();
@@ -194,6 +207,14 @@ public class MapsFragment extends PlacesObserverFragment implements Observer, On
 		settings.setZoomControlsEnabled(true);
 		this.map = googleMap;
 		initializeMyLocationButton();
+		// Retrieve places markers if orientation has changed
+		addPlacesMarkers();
+		// Move the camera over a place if the user has clicked on one attraction in the list in the NearbyAttractionsFragment
+		if (this.isFirstRequest && this.args != null)
+		{
+			LatLng placeLocation = new LatLng(this.args.getDouble("latitude"), this.args.getDouble("longitude"));
+			this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(placeLocation, 15));
+		}
 	}
 
 	public void initializeMyLocationButton()
@@ -207,16 +228,15 @@ public class MapsFragment extends PlacesObserverFragment implements Observer, On
 	@Override
 	public void update()
 	{
-		if (this.locationManager.getLastLocation() != null)
+		if (this.locationService.getLastLocation() != null)
 		{
-			LatLng userLocation = new LatLng(this.locationManager.getLastLocation().getLatitude(), this.locationManager.getLastLocation().getLongitude());
-			this.locationManager.storeLastLocation(userLocation);
+			LatLng userLocation = new LatLng(this.locationService.getLastLocation().getLatitude(), this.locationService.getLastLocation().getLongitude());
+			this.locationService.storeLastLocation(userLocation);
 			if (this.map != null)
 			{
-				if (this.isFirstRequest)
+				if (this.isFirstRequest && this.args == null)
 				{
 					this.map.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
-					this.isFirstRequest = false;
 				}
 				if (this.userMarker == null)
 				{
@@ -224,35 +244,61 @@ public class MapsFragment extends PlacesObserverFragment implements Observer, On
 					this.userMarker = this.map.addMarker(this.userLocationMarkerOptions);
 				}
 				this.userMarker.setPosition(userLocation);
+				this.isFirstRequest = false;
 			}
+			getNearbyPlaces();
 		}
 	}
 
 	public void restoreLastLocation()
 	{
-		this.locationManager.updateLocationFromPreferences();
+		this.locationService.updateLocationFromPreferences();
 		update();
+	}
+
+	public void getNearbyPlaces()
+	{
+		this.nearbyAttractionsController.getNearbyPlaces();
 	}
 
 	@Override
 	public void updatePlaces(ArrayList<Place> places)
 	{
+		this.removeMarkers();
+		this.places.clear();
 		this.places.addAll(places);
-		for (Place p: this.places)
+		addPlacesMarkers();
+	}
+
+	public void addPlacesMarkers()
+	{
+		for (Place place: this.places)
 		{
-			try
+			LatLng location = new LatLng(place.getLatitude(), place.getLongitude());
+			MarkerOptions options = new MarkerOptions().title(place.getName()).position(location);
+			options.icon(BitmapDescriptorFactory.defaultMarker(getPlaceMarkerColor(place)));
+			Marker marker = this.map.addMarker(options);
+			this.placesMarkers.add(marker);
+
+			// Open info window of the place marker if the user has clicked one attraction from NearbyAttractionsFragment
+			if (this.args != null)
 			{
-				LatLng location = new LatLng(p.getLatitude(), p.getLongitude());
-				MarkerOptions options = new MarkerOptions().title(p.getName()).position(location);
-				options.icon(BitmapDescriptorFactory.defaultMarker(getPlaceMarkerColor(p)));
-				Marker marker = this.map.addMarker(options);
-				this.placesMarkers.add(marker);
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
+				LatLng placeLocation = new LatLng(this.args.getDouble("latitude"), this.args.getDouble("longitude"));
+				if (location.equals(placeLocation))
+				{
+					marker.showInfoWindow();
+				}
 			}
 		}
+	}
+
+	public void removeMarkers()
+	{
+		for (Marker m: this.placesMarkers)
+		{
+			m.remove();
+		}
+		this.placesMarkers.clear();
 	}
 
 	@Override

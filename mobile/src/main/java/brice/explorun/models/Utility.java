@@ -7,9 +7,10 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+
+import brice.explorun.R;
 
 public class Utility
 {
@@ -88,7 +89,7 @@ public class Utility
 		switch (type)
 		{
 			case "park":
-				res = colorToHue(context, R.color.green);
+				res = colorToHue(context, R.color.dark_green);
 				break;
 
 			case "museum":

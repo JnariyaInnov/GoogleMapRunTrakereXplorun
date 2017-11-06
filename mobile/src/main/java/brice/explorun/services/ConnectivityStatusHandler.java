@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import brice.explorun.R;
+import brice.explorun.fragments.MapFragment;
 import brice.explorun.models.Utility;
 import brice.explorun.fragments.NearbyAttractionsFragment;
 
@@ -53,6 +54,11 @@ public class ConnectivityStatusHandler extends Handler
 							if (fragment instanceof NearbyAttractionsFragment)
 							{
 								NearbyAttractionsFragment frag = (NearbyAttractionsFragment) fragment;
+								frag.getNearbyPlaces();
+							}
+							else if (fragment instanceof MapFragment)
+							{
+								MapFragment frag = (MapFragment) fragment;
 								frag.getNearbyPlaces();
 							}
 						}

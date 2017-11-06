@@ -3,8 +3,10 @@ package brice.explorun.fragments;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
@@ -15,6 +17,7 @@ import com.google.android.gms.location.places.Places;
 import java.util.ArrayList;
 import java.util.Comparator;
 
+import brice.explorun.activities.MainActivity;
 import brice.explorun.models.Utility;
 import brice.explorun.adapters.NearbyAttractionsAdapter;
 import brice.explorun.models.Photo;
@@ -65,6 +68,14 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 		ListView list = view.findViewById(R.id.list_nearby_attractions);
 		this.adapter = new NearbyAttractionsAdapter(this.getActivity(), places);
 		list.setAdapter(this.adapter);
+		list.setOnItemClickListener(new AdapterView.OnItemClickListener()
+		{
+			@Override
+			public void onItemClick(AdapterView<?> adapterView, View view, int i, long l)
+			{
+				viewPlaceOnMap(places.get(i));
+			}
+		});
 
 		this.progressBarLayout = view.findViewById(R.id.progress_layout);
 
@@ -149,5 +160,18 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 	public synchronized void updatePlacePhoto(Photo photo)
 	{
 		this.adapter.notifyDataSetChanged();
+	}
+
+	public void viewPlaceOnMap(Place place)
+	{
+		Bundle args = new Bundle();
+		args.putDouble("latitude", place.getLatitude());
+		args.putDouble("longitude", place.getLongitude());
+		MapFragment fragment = new MapFragment();
+		fragment.setArguments(args);
+		// Setting the new fragment in MainActivity
+		MainActivity activity = (MainActivity) this.getActivity();
+		activity.getSupportActionBar().setTitle(activity.getResources().getString(R.string.app_name));
+		activity.selectItem(activity.getNavigationView().getMenu().getItem(0), args);
 	}
 }

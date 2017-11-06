@@ -26,11 +26,14 @@ public class MainActivity extends AppCompatActivity
 
 	private DrawerLayout mDrawerLayout;
 	private ActionBarDrawerToggle mDrawerToggle;
+	private NavigationView navigationView;
 
 	private String mTitle;
 	private int selectedItemId;
 
 	private ConnectivityStatusHandler connectivityStatusHandler;
+
+	public NavigationView getNavigationView() { return this.navigationView; }
 
 	@Override
     protected void onCreate(Bundle savedInstanceState)
@@ -39,14 +42,14 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
 		this.mDrawerLayout = findViewById(R.id.drawer_layout);
-		NavigationView navigationView =  findViewById(R.id.navigation);
+		this.navigationView = findViewById(R.id.navigation);
 
 		//setting up selected item listener
-		navigationView.setNavigationItemSelectedListener(
+		this.navigationView.setNavigationItemSelectedListener(
 				new NavigationView.OnNavigationItemSelectedListener() {
 					@Override
 					public boolean onNavigationItemSelected(MenuItem menuItem) {
-						selectItem(menuItem);
+						selectItem(menuItem, null);
 						return true;
 					}
 				});
@@ -85,7 +88,7 @@ public class MainActivity extends AppCompatActivity
 		}
 		else
 		{
-			selectItem(navigationView.getMenu().getItem(0));
+			selectItem(this.navigationView.getMenu().getItem(0), null);
 		}
     }
 
@@ -140,7 +143,7 @@ public class MainActivity extends AppCompatActivity
 	}
 
 
-	public void selectItem(MenuItem item)
+	public void selectItem(MenuItem item, Bundle args)
 	{
 		int itemId = item.getItemId();
 		if (itemId != this.selectedItemId)
@@ -170,6 +173,7 @@ public class MainActivity extends AppCompatActivity
 					break;
 			}
 
+			this.fragment.setArguments(args);
 			// Insert the fragment by replacing any existing fragment
 			FragmentManager fragmentManager = getSupportFragmentManager();
 			fragmentManager.beginTransaction()

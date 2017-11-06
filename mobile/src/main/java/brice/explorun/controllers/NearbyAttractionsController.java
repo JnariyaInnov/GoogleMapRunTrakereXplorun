@@ -51,10 +51,6 @@ public class NearbyAttractionsController
 		this.mGoogleApiClient = googleApiClient;
 		this.asyncTasks = new ArrayList<>();
 
-		// Retrieve user's location in the SharedPreferences
-		SharedPreferences prefs = this.observer.getActivity().getPreferences(Context.MODE_PRIVATE);
-		this.latitude = prefs.getFloat("latitude", -1);
-		this.longitude = prefs.getFloat("longitude", -1);
 		this.types = this.observer.getResources().getStringArray(R.array.places_types);
 		this.requestsCount = types.length;
 
@@ -76,8 +72,18 @@ public class NearbyAttractionsController
 
 	public void getNearbyPlaces()
 	{
-		if (Utility.isOnline(this.observer.getActivity()))
+		// Retrieve user's location in the SharedPreferences
+		SharedPreferences prefs = this.observer.getActivity().getPreferences(Context.MODE_PRIVATE);
+		float latitude = prefs.getFloat("latitude", -1);
+		float longitude = prefs.getFloat("longitude", -1);
+
+		double distance = Utility.distanceBetweenCoordinates(latitude, longitude, this.latitude, this.longitude);
+
+		if (Utility.isOnline(this.observer.getActivity()) && distance > 0.1)
 		{
+			this.latitude = latitude;
+			this.longitude = longitude;
+
 			this.places.clear();
 
 			for (String type : this.types)

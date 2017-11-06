@@ -55,7 +55,7 @@ public class Photo implements Parcelable
 	{
 		this.placeId = in.readString();
 		this.attribution = in.readString();
-		this.bitmap = (Bitmap) in.readValue(Bitmap.class.getClassLoader());
+		this.bitmap = null;
 	}
 
 	@Override
@@ -69,7 +69,6 @@ public class Photo implements Parcelable
 	{
 		dest.writeString(this.placeId);
 		dest.writeString(this.attribution);
-		dest.writeValue(this.bitmap);
 	}
 
 	@SuppressWarnings("unused")
