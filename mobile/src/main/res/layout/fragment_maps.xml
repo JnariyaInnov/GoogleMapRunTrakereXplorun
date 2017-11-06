@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout android:id="@+id/map_fragment_view"
+<RelativeLayout android:id="@+id/map_fragment_view"
 			  xmlns:android="http://schemas.android.com/apk/res/android"
 			  android:orientation="vertical"
 			  android:layout_width="match_parent"
@@ -16,19 +16,7 @@
 			android:visibility="gone"
 			android:text="@string/no_network" />
 
-	<Button
-		android:id="@+id/form_btn"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:text="Open"/>
 
-    <FrameLayout
-        android:id="@+id/form"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:context="brice.explorun.fragments.MapsFragment"
-        android:layout_weight="1"/>
 
     <fragment android:id="@+id/map"
 			  android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -38,5 +26,26 @@
 			  android:layout_height="match_parent"
 			  tools:context="brice.explorun.fragments.MapsFragment" />
 
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/form_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start an Activity"
+            android:layout_alignParentBottom="true"/>
+    </RelativeLayout>
 
-</LinearLayout>
+    <FrameLayout
+        android:id="@+id/form"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:layout_above="@+id/map"
+        android:layout_alignParentBottom="true"
+        tools:context="brice.explorun.fragments.MapsFragment" />
+
+
+</RelativeLayout>

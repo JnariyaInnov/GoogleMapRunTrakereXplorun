@@ -1048,7 +1048,6 @@ public class RangeBar extends View {
      * @param attrs   AttributeSet from the constructor.
      */
     private void rangeBarInit(Context context, AttributeSet attrs) {
-        //TODO tick value map
         if (mTickMap == null) {
             mTickMap = new HashMap<Float, String>();
         }
