@@ -10,6 +10,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -18,6 +19,7 @@ import brice.explorun.fragments.AboutFragment;
 import brice.explorun.fragments.MapFragment;
 import brice.explorun.fragments.NearbyAttractionsFragment;
 import brice.explorun.services.ConnectivityStatusHandler;
+import brice.explorun.services.LocationService;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -40,6 +42,7 @@ public class MainActivity extends AppCompatActivity
 	{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.i("eX_app", "Application started !");
 
 		this.mDrawerLayout = findViewById(R.id.drawer_layout);
 		this.navigationView = findViewById(R.id.navigation);
@@ -92,10 +95,21 @@ public class MainActivity extends AppCompatActivity
 		}
     }
 
+    protected void onDestroy(){
+		//Stop location service
+		if(!isChangingConfigurations()){
+			Log.i("explorun_location","Stopping location service");
+			Intent intent = new Intent(this, LocationService.class);
+			stopService(intent);
+		}
+		super.onDestroy();
+	}
+
     protected void onStart()
 	{
 		this.connectivityStatusHandler = ConnectivityStatusHandler.getInstance(this);
 		this.connectivityStatusHandler.run();
+
 		super.onStart();
 	}
 
@@ -108,12 +122,10 @@ public class MainActivity extends AppCompatActivity
 				switch (resultCode)
 				{
 					case Activity.RESULT_OK:
-						// Access to location granted by the user
-						if (this.fragment instanceof MapFragment)
-						{
-							MapFragment fragment = (MapFragment) this.fragment;
-							fragment.getLocationService().initLocation();
-						}
+						// Access to location granted by the user => Start location service
+						Log.i("eX_location","Starting location service");
+						Intent intent = new Intent(this, LocationService.class);
+						startService(intent);
 						break;
 
 					case Activity.RESULT_CANCELED:
@@ -206,6 +218,7 @@ public class MainActivity extends AppCompatActivity
 	protected void onStop()
 	{
 		this.connectivityStatusHandler.stopThread();
+
 		super.onStop();
 	}
 }

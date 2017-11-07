@@ -1,8 +1,10 @@
 package brice.explorun.services;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -50,6 +52,7 @@ public class ConnectivityStatusHandler extends Handler
 						{
 							// Retrieving the current displayed fragment
 							Fragment fragment = activity.getSupportFragmentManager().findFragmentById(R.id.container);
+							//TODO: IMO, gerNearbyPlaces shouldn't be called everytime HERE
 							// If the user is on the NearbyAttractionsFragment, we update the list
 							if (fragment instanceof NearbyAttractionsFragment)
 							{
@@ -61,6 +64,15 @@ public class ConnectivityStatusHandler extends Handler
 								MapFragment frag = (MapFragment) fragment;
 								frag.getNearbyPlaces();
 							}
+						}
+						Log.i("eX_location","Checking if location service is started...");
+						Intent intent = new Intent(activity, LocationService.class);
+						if(!LocationService.isStarted){
+							Log.i("eX_location","Starting Location service");
+							activity.startService(intent);
+						}
+						else{
+							Log.i("eX_location", "Location service already started");
 						}
 						isConnected = true;
 						noNetworkLabel.setVisibility(View.GONE);
