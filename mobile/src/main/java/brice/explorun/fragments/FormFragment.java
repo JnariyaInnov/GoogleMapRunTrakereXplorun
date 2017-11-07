@@ -17,17 +17,25 @@ import brice.explorun.R;
 
 public class FormFragment extends Fragment implements View.OnClickListener{
 
+	public RangeBar mDurationRangeBar;
+	private RadioButton mWalkRadioButton;
+	private RadioButton mRunRadioButton;
+	private RadioButton mTrailRadioButton;
+	private Button mValidateButton;
+	private TextView mDurationText;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 		View v = inflater.inflate(R.layout.fragment_form,container,false);
-		RangeBar mDurationRangeBar = v.findViewById(R.id.fragment_form_duration_range_bar);
-		RadioButton mWalkRadioButton = v.findViewById(R.id.fragment_form_walk_radio);
-		RadioButton mRunRadioButton = v.findViewById(R.id.fragment_form_run_radio);
-		RadioButton mTrailRadioButton = v.findViewById(R.id.fragment_form_trail_radio);
-		Button mValidateButton = v.findViewById(R.id.fragment_form_validate_button);
-		final TextView mDurationText = v.findViewById(R.id.fragment_form_duration_text);
+
+		mDurationRangeBar = v.findViewById(R.id.fragment_form_duration_range_bar);
+		mWalkRadioButton = v.findViewById(R.id.fragment_form_walk_radio);
+		mRunRadioButton = v.findViewById(R.id.fragment_form_run_radio);
+		mTrailRadioButton = v.findViewById(R.id.fragment_form_trail_radio);
+		mValidateButton = v.findViewById(R.id.fragment_form_validate_button);
+		mDurationText = v.findViewById(R.id.fragment_form_duration_text);
+
 		mWalkRadioButton.setOnClickListener(this);
 		mRunRadioButton.setOnClickListener(this);
 		mTrailRadioButton.setOnClickListener(this);
@@ -36,9 +44,7 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 		mDurationRangeBar.setOnRangeBarChangeListener(new RangeBar.OnRangeBarChangeListener() {
 			@Override
 			public void onRangeChangeListener(RangeBar rangeBar, int leftPinIndex,int rightPinIndex, String leftPinValue, String rightPinValue) {
-				String s;
-				s ="Durée : " + rangeDuration(leftPinValue,rightPinValue);
-				mDurationText.setText(s);
+				mDurationText.setText(String.format(getResources().getString(R.string.form_duration_text),rangeDuration(leftPinValue),rangeDuration(rightPinValue)));
 			}
 
 		});
@@ -49,7 +55,6 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 
 	@Override
 	public void onClick(View v) {
-		RangeBar mDurationRangeBar = getView().findViewById(R.id.fragment_form_duration_range_bar);
 
 		String CHOICE = "WALK";
 		switch (v.getId()){
@@ -77,34 +82,22 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 		}
 	}
 
-	public String rangeDuration(String leftPin, String rightPin){
+	public String rangeDuration(String Pin){
 		String s;
-		int leftPinInt = Integer.parseInt(leftPin);
-		int rightPinInt = Integer.parseInt(rightPin);
+		int leftPinInt = Integer.parseInt(Pin);
 
 		if (leftPinInt < 60 ){
-			s = String.format("%02d", leftPinInt) + " min ";
+			s = String.format("%02d", leftPinInt) + getString(R.string.form_min_text);
 		}
 		else{
 			long hours = TimeUnit.MINUTES.toHours(leftPinInt);
-			s = String.format("%02d", hours) + " H " ;
+			s = String.format("%02d", hours) + getString(R.string.form_h_text) ;
 			long minutes = TimeUnit.MINUTES.toMinutes(leftPinInt - TimeUnit.HOURS.toMinutes(hours));
 			if (minutes != 0){
-				s +=  String.format("%02d", minutes) + " min " ;
+				s +=  String.format("%02d", minutes) + getString(R.string.form_min_text);
 			}
 		}
 
-		if (rightPinInt < 60 ){
-			s +="- " + String.format("%02d", rightPinInt) + " min";
-		}
-		else{
-			long hours = TimeUnit.MINUTES.toHours(rightPinInt);
-			s +="- " + String.format("%02d", hours) + " H ";
-			long minutes = TimeUnit.MINUTES.toMinutes(rightPinInt - TimeUnit.HOURS.toMinutes(hours));
-			if (minutes != 0){
-				s +=  String.format("%02d", minutes) + " min" ;
-			}
-		}
 		return s;
 	}
 

@@ -164,10 +164,6 @@ public class MainActivity extends AppCompatActivity
 					this.fragment = new NearbyAttractionsFragment();
 					break;
 
-				case R.id.nav_form:
-					this.fragment = new FormFragment();
-					break;
-
 				default:
 					// Set title for main fragment = app name
 					this.mTitle = getResources().getString(R.string.app_name);
