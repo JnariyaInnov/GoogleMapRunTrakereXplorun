@@ -34,7 +34,7 @@
     <string name="form_run_radio">Run</string>
     <string name="form_trail_radio" translatable="false">Trail</string>
     <string name="form_duration_text">Duration : %1s - %2s</string>
-    <string name="form_min_text" translatable="false"> min </string>
-    <string name="form_h_text" translatable="false"> H </string>
+    <string name="form_min_text" translatable="false">\u0020min\u0020</string>
+    <string name="form_h_text" translatable="false">\u0020H\u0020</string>
 
 </resources>

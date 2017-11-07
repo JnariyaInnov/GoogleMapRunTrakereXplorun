@@ -38,7 +38,7 @@
         android:id="@+id/fragment_form_duration_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Durée : 10 min - 03 H"
+        android:text="@string/form_duration_text"
         android:layout_marginTop="10dp"
         android:layout_marginHorizontal="10dp"
         android:layout_alignParentLeft="true"

@@ -17,7 +17,7 @@ import brice.explorun.R;
 
 public class FormFragment extends Fragment implements View.OnClickListener{
 
-	public RangeBar mDurationRangeBar;
+	private RangeBar mDurationRangeBar;
 	private RadioButton mWalkRadioButton;
 	private RadioButton mRunRadioButton;
 	private RadioButton mTrailRadioButton;
@@ -40,6 +40,8 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 		mRunRadioButton.setOnClickListener(this);
 		mTrailRadioButton.setOnClickListener(this);
 		mValidateButton.setOnClickListener(this);
+
+		mDurationText.setText(String.format(getResources().getString(R.string.form_duration_text),rangeDuration(mDurationRangeBar.getLeftPinValue()),rangeDuration(mDurationRangeBar.getRightPinValue())));
 
 		mDurationRangeBar.setOnRangeBarChangeListener(new RangeBar.OnRangeBarChangeListener() {
 			@Override
