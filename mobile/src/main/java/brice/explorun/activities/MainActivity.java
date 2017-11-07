@@ -41,8 +41,8 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
 	{
         super.onCreate(savedInstanceState);
+        Log.d("eX_lifeCycle", "main => onCreate()");
         setContentView(R.layout.activity_main);
-        Log.i("eX_app", "Application started !");
 
 		this.mDrawerLayout = findViewById(R.id.drawer_layout);
 		this.navigationView = findViewById(R.id.navigation);
@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     protected void onDestroy(){
+		Log.d("eX_lifeCycle", "main => onDestroy()");
 		//Stop location service
 		if(!isChangingConfigurations()){
 			Log.i("explorun_location","Stopping location service");
@@ -107,10 +108,47 @@ public class MainActivity extends AppCompatActivity
 
     protected void onStart()
 	{
+		Log.d("eX_lifeCycle", "main => onStart()");
 		this.connectivityStatusHandler = ConnectivityStatusHandler.getInstance(this);
 		this.connectivityStatusHandler.run();
 
 		super.onStart();
+	}
+
+	protected void onStop()
+	{
+		Log.d("eX_lifeCycle", "main => onStop()");
+		this.connectivityStatusHandler.stopThread();
+
+		super.onStop();
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState)
+	{
+		Log.d("eX_lifeCycle", "main => onSaveInstanceState");
+		super.onSaveInstanceState(outState);
+		outState.putString("title", this.mTitle);
+		outState.putInt("selectedItemId", this.selectedItemId);
+		//Save the fragment's instance
+		getSupportFragmentManager().putFragment(outState, "fragment", this.fragment);
+	}
+
+	@Override
+	protected void onPostCreate(Bundle savedInstanceState)
+	{
+		Log.d("eX_lifeCycle", "main => onPostCreate()");
+		super.onPostCreate(savedInstanceState);
+		// Sync the toggle state after onRestoreInstanceState has occurred.
+		this.mDrawerToggle.syncState();
+	}
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig)
+	{
+		Log.d("eX_lifeCycle", "main => onConfigurationChanged()");
+		super.onConfigurationChanged(newConfig);
+		this.mDrawerToggle.onConfigurationChanged(newConfig);
 	}
 
 	@Override
@@ -137,21 +175,6 @@ public class MainActivity extends AppCompatActivity
 				}
 				break;
 		}
-	}
-
-	@Override
-	protected void onPostCreate(Bundle savedInstanceState)
-	{
-		super.onPostCreate(savedInstanceState);
-		// Sync the toggle state after onRestoreInstanceState has occurred.
-		this.mDrawerToggle.syncState();
-	}
-
-	@Override
-	public void onConfigurationChanged(Configuration newConfig)
-	{
-		super.onConfigurationChanged(newConfig);
-		this.mDrawerToggle.onConfigurationChanged(newConfig);
 	}
 
 
@@ -204,21 +227,4 @@ public class MainActivity extends AppCompatActivity
 		return (this.mDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item));
 	}
 
-
-	@Override
-	protected void onSaveInstanceState(Bundle outState)
-	{
-		super.onSaveInstanceState(outState);
-		outState.putString("title", this.mTitle);
-		outState.putInt("selectedItemId", this.selectedItemId);
-		//Save the fragment's instance
-		getSupportFragmentManager().putFragment(outState, "fragment", this.fragment);
-	}
-
-	protected void onStop()
-	{
-		this.connectivityStatusHandler.stopThread();
-
-		super.onStop();
-	}
 }

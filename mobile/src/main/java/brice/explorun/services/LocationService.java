@@ -24,6 +24,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Places;
 
 import brice.explorun.R;
+import brice.explorun.activities.MainActivity;
 
 /**
  * Created by germain on 11/6/17.
@@ -57,8 +58,9 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             Log.e("eX_location", "Google api client not properly connected, trying again later");
         }
 
-        Intent notificationIntent = new Intent(this, LocationService.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, MainActivity.class)
+                        .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 
         Notification notification = new NotificationCompat.Builder(this, notificationChannel)
             .setContentTitle(getText(R.string.notification_title))
