@@ -13,8 +13,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.LinearLayout;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -29,10 +31,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import brice.explorun.Utility;
 import brice.explorun.models.Observer;
 import brice.explorun.observables.LocationManager;
-import brice.explorun.models.NetworkHandler;
 import brice.explorun.R;
 
 public class MapsFragment extends Fragment implements Observer, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
@@ -50,6 +50,8 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 	private LocationManager locationManager;
 
 	private Button mFormButton;
+	private LinearLayout formLayout;
+	private Animation animation;
 
 	public LocationManager getLocationManager()
 	{
@@ -70,16 +72,16 @@ public class MapsFragment extends Fragment implements Observer, OnMapReadyCallba
 					.build();
 		}
 
+		this.formLayout = view.findViewById(R.id.form);
+		this.animation = AnimationUtils.loadAnimation(getActivity(), R.anim.slide_up);
+		this.formLayout.setAnimation(animation);
 
 		mFormButton = view.findViewById(R.id.form_btn);
 		mFormButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				android.support.v4.app.FragmentManager fragmentManager = getChildFragmentManager();
-				fragmentManager.beginTransaction()
-						.replace(R.id.form, new FormFragment())
-						.commit();
-
+				formLayout.setVisibility(View.VISIBLE);
+				formLayout.startAnimation(animation);
 			}
 		});
 

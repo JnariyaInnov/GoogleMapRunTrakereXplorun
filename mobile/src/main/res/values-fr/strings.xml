@@ -20,6 +20,6 @@
 	<string name="form_validate_button">Valider</string>
 	<string name="form_walk_radio">Marche</string>
 	<string name="form_run_radio">Course</string>
-	<string name="form_duration_text">Durée : %1s - %2s</string>
-	<string name="start_form">Commencer une activitée</string>
+	<string name="form_duration_text">Durée : %1$s - %2$s</string>
+	<string name="start_form">Commencer une activité</string>
 </resources>

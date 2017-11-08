@@ -4,34 +4,39 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="brice.explorun.fragments.FormFragment"
-    android:orientation="vertical">
+  	android:background="@android:color/white"
+	android:visibility="gone"
+    android:orientation="vertical"
+	android:id="@+id/form">
+
     <RadioGroup
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <RadioButton
-            android:id="@+id/fragment_form_walk_radio"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:text="@string/form_walk_radio"
-            android:layout_alignParentLeft="true"
-            android:layout_weight="1"
-            android:checked="true" />
-        <RadioButton
-            android:id="@+id/fragment_form_run_radio"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:text="@string/form_run_radio"
-            android:layout_weight="1"/>
-        <RadioButton
-            android:id="@+id/fragment_form_trail_radio"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/form_trail_radio"
-            android:layout_margin="10dp"
-            android:layout_weight="1"/>
+        android:orientation="horizontal"
+		android:layout_margin="10dp">
+
+		<RadioButton
+			android:id="@+id/fragment_form_walk_radio"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:text="@string/form_walk_radio"
+			android:checked="true"/>
+
+		<RadioButton
+			android:id="@+id/fragment_form_run_radio"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:text="@string/form_run_radio"/>
+
+		<RadioButton
+				android:id="@+id/fragment_form_trail_radio"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:text="@string/form_trail_radio"/>
+
     </RadioGroup>
 
     <TextView
@@ -40,25 +45,33 @@
         android:layout_height="wrap_content"
         android:text="@string/form_duration_text"
         android:layout_marginTop="10dp"
-        android:layout_marginHorizontal="10dp"
-        android:layout_alignParentLeft="true"
-        android:layout_centerInParent="true" />
+		android:layout_marginStart="10dp"
+		android:layout_marginLeft="10dp"/>
 
-    <com.appyvet.materialrangebar.RangeBar
-        android:id="@+id/fragment_form_duration_range_bar"
-        android:layout_width="match_parent"
-        android:layout_height="72dp"
-        app:mrb_selectorBoundaryColor="@color/colorAccent"
-        app:mrb_tickStart="10"
-        app:mrb_tickEnd="180"
-        app:mrb_tickInterval="10"
-        app:mrb_selectorSize="10dp"
-        app:mrb_pinTextColor="@color/colorAccent"
-        app:mrb_pinColor="@color/colorPrimaryDark"
-        app:mrb_pinMaxFont="10sp"
-        app:mrb_connectingLineColor="@color/colorPrimary"
-        app:mrb_selectorColor="@color/colorPrimaryDark"/>
+	<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:weightSum="4"
+			android:orientation="horizontal"
+			android:gravity="center">
 
+		<com.appyvet.materialrangebar.RangeBar
+				android:id="@+id/fragment_form_duration_range_bar"
+				android:layout_width="0dp"
+				android:layout_height="72dp"
+				android:layout_weight="3"
+				app:mrb_selectorBoundaryColor="@color/colorAccent"
+				app:mrb_tickStart="10"
+				app:mrb_tickEnd="180"
+				app:mrb_tickInterval="10"
+				app:mrb_selectorSize="10dp"
+				app:mrb_pinTextColor="@color/colorAccent"
+				app:mrb_pinColor="@color/colorPrimaryDark"
+				app:mrb_pinMaxFont="10sp"
+				app:mrb_connectingLineColor="@color/colorPrimary"
+				app:mrb_selectorColor="@color/colorPrimaryDark"/>
+
+	</LinearLayout>
 
     <Button
         android:id="@+id/fragment_form_validate_button"
@@ -66,7 +79,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="@string/form_validate_button"
-        android:layout_margin="10dp"/>
+        android:layout_margin="10dp"
+		android:shadowRadius="3"
+		android:background="@color/lightGrey"/>
 
 </LinearLayout>
 

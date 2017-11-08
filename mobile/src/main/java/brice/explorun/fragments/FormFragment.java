@@ -5,7 +5,10 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
@@ -23,6 +26,9 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 	private RadioButton mTrailRadioButton;
 	private Button mValidateButton;
 	private TextView mDurationText;
+
+	private LinearLayout layout;
+	private Animation animation;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -51,6 +57,21 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 
 		});
 
+		this.layout = v.findViewById(R.id.form);
+		this.animation = AnimationUtils.loadAnimation(getActivity(), R.anim.slide_down);
+		this.animation.setAnimationListener(new Animation.AnimationListener()
+		{
+			@Override
+			public void onAnimationStart(Animation animation) {	}
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				layout.setVisibility(View.GONE);
+			}
+			@Override
+			public void onAnimationRepeat(Animation animation) {}
+		});
+		this.layout.setAnimation(this.animation);
+
 		return v;
 
 	}
@@ -77,7 +98,7 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 
 			case R.id.fragment_form_validate_button:
 				//TODO Return result for another fragment.
-				getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
+				layout.startAnimation(animation);
 				break;
 
 
@@ -89,14 +110,17 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 		int leftPinInt = Integer.parseInt(Pin);
 
 		if (leftPinInt < 60 ){
-			s = String.format("%02d", leftPinInt) + getString(R.string.form_min_text);
+			s = String.format(getString(R.string.form_min_text), leftPinInt);
 		}
-		else{
+		else {
 			long hours = TimeUnit.MINUTES.toHours(leftPinInt);
-			s = String.format("%02d", hours) + getString(R.string.form_h_text) ;
 			long minutes = TimeUnit.MINUTES.toMinutes(leftPinInt - TimeUnit.HOURS.toMinutes(hours));
-			if (minutes != 0){
-				s +=  String.format("%02d", minutes) + getString(R.string.form_min_text);
+
+			if (minutes != 0) {
+				s = String.format(getString(R.string.form_h_min_text), hours, minutes);
+			}
+			else {
+				s = String.format(getString(R.string.form_h_text), hours);
 			}
 		}
 

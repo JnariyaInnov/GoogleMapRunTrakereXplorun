@@ -17,7 +17,6 @@
 			android:text="@string/no_network" />
 
 
-
     <fragment android:id="@+id/map"
 			  android:name="com.google.android.gms.maps.SupportMapFragment"
 			  xmlns:android="http://schemas.android.com/apk/res/android"
@@ -37,12 +36,12 @@
             android:layout_alignParentBottom="true"/>
     </RelativeLayout>
 
-    <FrameLayout
+    <fragment
         android:id="@+id/form"
         xmlns:tools="http://schemas.android.com/tools"
+		android:name="brice.explorun.fragments.FormFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
         android:layout_above="@+id/map"
         android:layout_alignParentBottom="true"
         tools:context="brice.explorun.fragments.MapsFragment" />
