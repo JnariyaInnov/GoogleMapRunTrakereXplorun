@@ -17,6 +17,7 @@
 			android:text="@string/no_network" />
 
 	<fragment android:id="@+id/map"
+			  android:layout_below="@id/no_network_label"
 			  android:name="com.google.android.gms.maps.SupportMapFragment"
 			  xmlns:android="http://schemas.android.com/apk/res/android"
 			  xmlns:tools="http://schemas.android.com/tools"

@@ -9,6 +9,6 @@ import brice.explorun.models.Place;
 
 public abstract class PlacesObserverFragment extends Fragment
 {
-	public abstract void updatePlaces(ArrayList<Place> places, boolean error);
+	public abstract void updatePlaces(ArrayList<Place> places, int errorsCount);
 	public abstract void updatePlacePhoto(Photo photo);
 }

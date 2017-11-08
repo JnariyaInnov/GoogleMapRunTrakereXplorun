@@ -44,7 +44,7 @@ public class NearbyAttractionsController
 	private String[] types;
 	private int requestsCount; // Number of API requests to do
 	private int responsesCount = 0; // Number of received API responses
-	private boolean error = false;
+	private int errorsCount = 0; // Number of API requests errors
 
 	private ArrayList<Place> places;
 
@@ -152,13 +152,13 @@ public class NearbyAttractionsController
 		}
 		else
 		{
-			this.error = true;
+			this.errorsCount++;
 		}
 		if (this.responsesCount == this.requestsCount)
 		{
 			this.responsesCount = 0;
-			this.observer.updatePlaces(this.places, this.error);
-			this.error = false;
+			this.observer.updatePlaces(this.places, this.errorsCount);
+			this.errorsCount = 0;
 		}
 	}
 

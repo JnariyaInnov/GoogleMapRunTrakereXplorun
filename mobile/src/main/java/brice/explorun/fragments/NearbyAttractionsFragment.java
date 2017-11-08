@@ -16,7 +16,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 import brice.explorun.activities.MainActivity;
 import brice.explorun.models.Utility;
@@ -30,6 +32,7 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 {
 	private GoogleApiClient mGoogleApiClient;
 
+	private List<String> types;
 	private ArrayList<Place> places;
 	private NearbyAttractionsAdapter adapter;
 
@@ -55,6 +58,8 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 		}
 
 		this.manager = new NearbyAttractionsController(this, this.mGoogleApiClient);
+
+		this.types = Arrays.asList(getResources().getStringArray(R.array.places_types));
 
 		// Setting up the list of places
 		if (savedInstanceState != null)
@@ -129,13 +134,14 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 		this.manager.getNearbyPlaces(true);
 	}
 
-	public void updatePlaces(ArrayList<Place> places, boolean error)
+	@Override
+	public void updatePlaces(ArrayList<Place> places, int errorsCount)
 	{
-		if (error)
+		if (errorsCount > 0)
 		{
 			Toast.makeText(this.getActivity(), R.string.api_request_error, Toast.LENGTH_LONG).show();
 		}
-		if (places.size() > 0)
+		if (errorsCount < this.types.size())
 		{
 			this.adapter.clear();
 		}
