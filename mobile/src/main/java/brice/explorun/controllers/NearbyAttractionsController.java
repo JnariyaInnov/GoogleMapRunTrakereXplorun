@@ -35,7 +35,6 @@ public class NearbyAttractionsController
 	private final int RADIUS = 5000; // 5km around user's location
 
 	private PlacesObserverFragment observer;
-	private GoogleApiClient mGoogleApiClient;
 	private ArrayList<AsyncTask> asyncTasks;
 
 	private float latitude = -1;
@@ -48,10 +47,9 @@ public class NearbyAttractionsController
 
 	private ArrayList<Place> places;
 
-	public NearbyAttractionsController(PlacesObserverFragment observer, GoogleApiClient googleApiClient)
+	public NearbyAttractionsController(PlacesObserverFragment observer)
 	{
 		this.observer = observer;
-		this.mGoogleApiClient = googleApiClient;
 		this.asyncTasks = new ArrayList<>();
 
 		this.types = this.observer.getResources().getStringArray(R.array.places_types);
@@ -167,7 +165,7 @@ public class NearbyAttractionsController
 		Photo photo = place.getPhoto();
 		if (photo != null)
 		{
-			PhotoRetriever task = new PhotoRetriever(this, this.mGoogleApiClient);
+			PhotoRetriever task = new PhotoRetriever(this);
 			this.asyncTasks.add(task);
 			task.execute(photo);
 		}

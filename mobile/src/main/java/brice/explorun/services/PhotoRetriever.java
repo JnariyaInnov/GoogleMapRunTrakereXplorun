@@ -16,12 +16,9 @@ public class PhotoRetriever extends AsyncTask<Photo, Void, Photo>
 {
 	private NearbyAttractionsController manager;
 
-	private GoogleApiClient mGoogleApiClient;
-
-	public PhotoRetriever(NearbyAttractionsController manager, GoogleApiClient googleApiClient)
+	public PhotoRetriever(NearbyAttractionsController manager)
 	{
 		this.manager = manager;
-		this.mGoogleApiClient = googleApiClient;
 	}
 
 	/**
@@ -37,7 +34,7 @@ public class PhotoRetriever extends AsyncTask<Photo, Void, Photo>
 		}
 
 		Photo photo = params[0];
-		PlacePhotoMetadataResult result = Places.GeoDataApi.getPlacePhotos(this.mGoogleApiClient, photo.getPlaceId()).await();
+		PlacePhotoMetadataResult result = Places.GeoDataApi.getPlacePhotos(LocationService.mGoogleApiClient, photo.getPlaceId()).await();
 
 		if (result.getStatus().isSuccess())
 		{
@@ -50,7 +47,7 @@ public class PhotoRetriever extends AsyncTask<Photo, Void, Photo>
 				{
 					String attribution = photoMetadata.getAttributions().toString();
 					// Load a bitmap for this photo.
-					Bitmap image = photoMetadata.getPhoto(this.mGoogleApiClient).await().getBitmap();
+					Bitmap image = photoMetadata.getPhoto(LocationService.mGoogleApiClient).await().getBitmap();
 
 					photo.setAttribution(attribution);
 					photo.setBitmap(image);

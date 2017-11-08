@@ -54,7 +54,7 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 
 		}
 
-		this.manager = new NearbyAttractionsController(this, this.mGoogleApiClient);
+		this.manager = new NearbyAttractionsController(this);
 
 		// Setting up the list of places
 		if (savedInstanceState != null)
@@ -175,6 +175,7 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 		Bundle args = new Bundle();
 		args.putDouble("latitude", place.getLatitude());
 		args.putDouble("longitude", place.getLongitude());
+		args.putParcelableArrayList("places", places);
 		MapFragment fragment = new MapFragment();
 		fragment.setArguments(args);
 		// Setting the new fragment in MainActivity

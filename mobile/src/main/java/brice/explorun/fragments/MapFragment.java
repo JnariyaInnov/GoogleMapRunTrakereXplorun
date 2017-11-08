@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -26,6 +27,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -78,10 +80,9 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 		this.types = Arrays.asList(getResources().getStringArray(R.array.places_types));
 
-		this.nearbyAttractionsController = new NearbyAttractionsController(this, LocationService.mGoogleApiClient);
+		this.nearbyAttractionsController = new NearbyAttractionsController(this);
 		IntentFilter filter = new IntentFilter("ex_location");
 		getActivity().registerReceiver(locReceiver, filter);
-		restoreLastLocation();
 
 		return view;
 	}
@@ -195,13 +196,29 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		settings.setZoomControlsEnabled(true);
 		this.map = googleMap;
 		initializeMyLocationButton();
+		restoreLastLocation();
+		if(this.places.size() == 0 && this.args != null){
+			this.places = args.getParcelableArrayList("places");
+		}
 		// Retrieve places markers if orientation has changed
 		addPlacesMarkers();
 		// Move the camera over a place if the user has clicked on one attraction in the list in the NearbyAttractionsFragment
-		if (this.isFirstRequest && this.args != null)
+		if (this.args != null)
 		{
-			LatLng placeLocation = new LatLng(this.args.getDouble("latitude"), this.args.getDouble("longitude"));
-			this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(placeLocation, 15));
+			LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+			for (Marker marker : this.placesMarkers) {
+				builder.include(marker.getPosition());
+			}
+			LatLngBounds bounds = builder.build();
+
+			int width = getResources().getDisplayMetrics().widthPixels;
+			int height = getResources().getDisplayMetrics().heightPixels;
+			int padding = (int) (width * 0.10); // offset from edges of the map 10% of screen
+
+			CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
+
+			map.moveCamera(cu);
 		}
 	}
 
