@@ -6,11 +6,16 @@ import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -61,6 +66,10 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 
 	private List<String> types;
 
+	private Button mFormButton;
+	private LinearLayout formLayout;
+	private Animation animation;
+
 	public LocationService getLocationService()
 	{
 		return this.locationService;
@@ -91,6 +100,19 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 		this.types = Arrays.asList(getResources().getStringArray(R.array.places_types));
 
 		this.nearbyAttractionsController = new NearbyAttractionsController(this, this.mGoogleApiClient);
+
+		this.formLayout = view.findViewById(R.id.form);
+		this.animation = AnimationUtils.loadAnimation(getActivity(), R.anim.slide_up);
+		this.formLayout.setAnimation(animation);
+
+		mFormButton = view.findViewById(R.id.form_btn);
+		mFormButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				formLayout.setVisibility(View.VISIBLE);
+				formLayout.startAnimation(animation);
+			}
+		});
 
 		return view;
 	}

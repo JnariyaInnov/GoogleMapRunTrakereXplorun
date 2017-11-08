@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout android:id="@+id/map_fragment_view"
+<RelativeLayout android:id="@+id/map_fragment_view"
 			  xmlns:android="http://schemas.android.com/apk/res/android"
 			  android:orientation="vertical"
 			  android:layout_width="match_parent"
@@ -24,5 +24,26 @@
 			  android:layout_height="match_parent"
 			  tools:context="brice.explorun.fragments.MapFragment"/>
 
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/form_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/start_form"
+            android:layout_alignParentBottom="true"/>
+    </RelativeLayout>
 
-</LinearLayout>
+    <fragment
+        android:id="@+id/form"
+        xmlns:tools="http://schemas.android.com/tools"
+		android:name="brice.explorun.fragments.FormFragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/map"
+        android:layout_alignParentBottom="true"
+        tools:context="brice.explorun.fragments.MapsFragment" />
+
+
+</RelativeLayout>

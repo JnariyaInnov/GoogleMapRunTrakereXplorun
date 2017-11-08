@@ -10,12 +10,14 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
 import brice.explorun.R;
 import brice.explorun.fragments.AboutFragment;
 import brice.explorun.fragments.MapFragment;
+import brice.explorun.fragments.FormFragment;
 import brice.explorun.fragments.NearbyAttractionsFragment;
 import brice.explorun.services.ConnectivityStatusHandler;
 
