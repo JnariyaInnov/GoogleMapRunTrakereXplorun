@@ -2,7 +2,6 @@
 
 <RelativeLayout android:id="@+id/map_fragment_view"
 			  xmlns:android="http://schemas.android.com/apk/res/android"
-			  android:orientation="vertical"
 			  android:layout_width="match_parent"
 			  android:layout_height="match_parent">
 
@@ -11,40 +10,40 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:gravity="center_horizontal"
-			android:background="@android:color/holo_red_dark"
+			android:layout_alignParentTop="true"
 			android:textColor="@android:color/white"
-			android:visibility="gone"
-			android:text="@string/no_network" />
+			android:background="@android:color/holo_red_dark"
+			android:text="@string/no_network"
+			android:visibility="gone"/>
 
 	<fragment android:id="@+id/map"
-			  android:layout_below="@id/no_network_label"
 			  android:name="com.google.android.gms.maps.SupportMapFragment"
+			  android:layout_below="@id/no_network_label"
 			  xmlns:android="http://schemas.android.com/apk/res/android"
 			  xmlns:tools="http://schemas.android.com/tools"
 			  android:layout_width="match_parent"
 			  android:layout_height="match_parent"
 			  tools:context="brice.explorun.fragments.MapFragment"/>
 
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-        <Button
-            android:id="@+id/form_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/start_form"
-            android:layout_alignParentBottom="true"/>
-    </RelativeLayout>
+	<RelativeLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentBottom="true">
+		<Button
+				android:id="@+id/form_btn"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="@string/start_form"/>
+	</RelativeLayout>
 
-    <fragment
-        android:id="@+id/form"
-        xmlns:tools="http://schemas.android.com/tools"
-		android:name="brice.explorun.fragments.FormFragment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/map"
-        android:layout_alignParentBottom="true"
-        tools:context="brice.explorun.fragments.MapsFragment" />
-
+	<fragment
+			android:id="@+id/form"
+			xmlns:tools="http://schemas.android.com/tools"
+			android:name="brice.explorun.fragments.FormFragment"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_above="@id/map"
+			android:layout_alignParentBottom="true"
+			tools:context="brice.explorun.fragments.MapsFragment" />
 
 </RelativeLayout>

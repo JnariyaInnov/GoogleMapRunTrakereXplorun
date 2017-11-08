@@ -6,7 +6,6 @@ import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -49,6 +48,7 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 	private final String LOCATION_KEY = "location";
 	private final String FIRST_REQUEST_KEY = "first_request";
 	private final String PLACES_KEY = "places";
+	private final String FORM_OPEN_KEY = "form_open";
 	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
 
 	private Bundle args = null;
@@ -102,8 +102,8 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 		this.nearbyAttractionsController = new NearbyAttractionsController(this, this.mGoogleApiClient);
 
 		this.formLayout = view.findViewById(R.id.form);
-		this.animation = AnimationUtils.loadAnimation(getActivity(), R.anim.slide_up);
-		this.formLayout.setAnimation(animation);
+		this.animation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_up);
+		this.formLayout.setAnimation(this.animation);
 
 		mFormButton = view.findViewById(R.id.form_btn);
 		mFormButton.setOnClickListener(new View.OnClickListener() {
@@ -143,6 +143,11 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 			{
 				this.places = savedInstanceState.getParcelableArrayList(PLACES_KEY);
 			}
+
+			if (savedInstanceState.keySet().contains(FORM_OPEN_KEY))
+			{
+				this.formLayout.setVisibility(savedInstanceState.getInt(FORM_OPEN_KEY));
+			}
 		}
 	}
 
@@ -178,6 +183,7 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 	{
 		this.locationService.onSaveInstanceState(savedInstanceState);
 		savedInstanceState.putBoolean(FIRST_REQUEST_KEY, this.isFirstRequest);
+		savedInstanceState.putInt(FORM_OPEN_KEY, this.formLayout.getVisibility());
 		savedInstanceState.putParcelableArrayList(PLACES_KEY, this.places);
 		super.onSaveInstanceState(savedInstanceState);
 	}
@@ -259,7 +265,7 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 			{
 				if (this.isFirstRequest && this.args == null)
 				{
-					this.map.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
+					this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
 				}
 				if (this.userMarker == null)
 				{

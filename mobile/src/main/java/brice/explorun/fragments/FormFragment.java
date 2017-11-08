@@ -58,18 +58,7 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 		});
 
 		this.layout = v.findViewById(R.id.form);
-		this.animation = AnimationUtils.loadAnimation(getActivity(), R.anim.slide_down);
-		this.animation.setAnimationListener(new Animation.AnimationListener()
-		{
-			@Override
-			public void onAnimationStart(Animation animation) {	}
-			@Override
-			public void onAnimationEnd(Animation animation) {
-				layout.setVisibility(View.GONE);
-			}
-			@Override
-			public void onAnimationRepeat(Animation animation) {}
-		});
+		this.animation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_down);
 		this.layout.setAnimation(this.animation);
 
 		return v;
@@ -98,6 +87,7 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 
 			case R.id.fragment_form_validate_button:
 				//TODO Return result for another fragment.
+				layout.setVisibility(View.GONE);
 				layout.startAnimation(animation);
 				break;
 
