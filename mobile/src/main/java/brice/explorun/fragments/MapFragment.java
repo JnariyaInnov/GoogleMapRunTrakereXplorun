@@ -293,10 +293,7 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 	@Override
 	public void updatePlaces(ArrayList<Place> places, int errorsCount)
 	{
-		if (errorsCount > 0)
-		{
-			Toast.makeText(this.getActivity(), R.string.api_request_error, Toast.LENGTH_LONG).show();
-		}
+		super.updatePlaces(places, errorsCount);
 		if (errorsCount < this.types.size())
 		{
 			this.removeMarkers();

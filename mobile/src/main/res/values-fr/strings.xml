@@ -22,4 +22,5 @@
 	<string name="form_run_radio">Course</string>
 	<string name="form_duration_text">Durée : %1$s - %2$s</string>
 	<string name="start_form">Commencer une activité</string>
+	<string name="no_nearby_attraction">Il n\'y a aucune curiosité proche</string>
 </resources>

@@ -245,6 +245,10 @@ public class NearbyAttractionsController
 				}
 				this.updatePlaces(places);
 			}
+			else if (status.equals("ZERO_RESULTS"))
+			{
+				this.updatePlaces(new ArrayList<Place>());
+			}
 			else
 			{
 				this.updatePlaces(null);
