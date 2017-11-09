@@ -2,7 +2,9 @@ package brice.explorun.activities;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.net.ConnectivityManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -36,6 +38,8 @@ public class MainActivity extends AppCompatActivity
 	private ConnectivityStatusHandler connectivityStatusHandler;
 
 	public NavigationView getNavigationView() { return this.navigationView; }
+
+	public ConnectivityStatusHandler getConnectivityStatusHandler() { return this.connectivityStatusHandler; }
 
 	@Override
     protected void onCreate(Bundle savedInstanceState)
@@ -96,8 +100,9 @@ public class MainActivity extends AppCompatActivity
 
     protected void onStart()
 	{
-		this.connectivityStatusHandler = ConnectivityStatusHandler.getInstance(this);
-		this.connectivityStatusHandler.run();
+		// Register broadcast receiver for connectivity changes
+		this.connectivityStatusHandler = new ConnectivityStatusHandler(this);
+		this.registerReceiver(this.connectivityStatusHandler, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 		super.onStart();
 	}
 
@@ -207,7 +212,7 @@ public class MainActivity extends AppCompatActivity
 
 	protected void onStop()
 	{
-		this.connectivityStatusHandler.stopThread();
+		this.unregisterReceiver(this.connectivityStatusHandler);
 		super.onStop();
 	}
 }

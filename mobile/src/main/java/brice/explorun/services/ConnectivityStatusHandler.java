@@ -1,91 +1,66 @@
 package brice.explorun.services;
 
-import android.os.Handler;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import brice.explorun.R;
+import brice.explorun.activities.MainActivity;
 import brice.explorun.fragments.MapFragment;
 import brice.explorun.models.Utility;
 import brice.explorun.fragments.NearbyAttractionsFragment;
 
-public class ConnectivityStatusHandler extends Handler
+public class ConnectivityStatusHandler extends BroadcastReceiver
 {
-	private static ConnectivityStatusHandler instance = null;
+	private MainActivity activity; // Parent activity
 
-	private final int CHECK_INTERVAL = 5000; // Interval between two checks of the user's connection (in ms)
-	private Runnable runnable; // Thread checking the internet connection
-
-	private boolean isConnected; // True if the user has an internet connection, else false
-
-	public static ConnectivityStatusHandler getInstance(AppCompatActivity activity)
+	public ConnectivityStatusHandler(MainActivity activity)
 	{
-		if (instance == null)
-		{
-			instance = new ConnectivityStatusHandler(activity);
-		}
-		return instance;
+		this.activity = activity;
 	}
 
-	private ConnectivityStatusHandler(final AppCompatActivity activity)
+	public void onReceive(Context context, Intent intent)
 	{
-		this.runnable = new Runnable()
+		if(intent == null || intent.getExtras() == null)
+			return;
+
+		updateNoNetworkLabel();
+	}
+
+	public void updateNoNetworkLabel()
+	{
+		// Retrieving label to show if the user has no internet connection
+		TextView noNetworkLabel = this.activity.findViewById(R.id.no_network_label);
+
+		// The label can be null if we are on an offline fragment
+		if (noNetworkLabel != null)
 		{
-			@Override
-			public void run()
+			//call function
+			if (Utility.isOnline(this.activity.getBaseContext()))
 			{
-				// Retrieving label to show if the user has no internet connection
-				TextView noNetworkLabel = activity.findViewById(R.id.no_network_label);
-
-				// The label can be null if we are on an offline fragment
-				if (noNetworkLabel != null)
+				// Retrieving the current displayed fragment
+				Fragment fragment = this.activity.getSupportFragmentManager().findFragmentById(R.id.container);
+				// If the user is on the NearbyAttractionsFragment, we update the list
+				if (fragment instanceof NearbyAttractionsFragment)
 				{
-					//call function
-					if (Utility.isOnline(activity.getBaseContext()))
-					{
-						// If the user's internet connection is back, we can resend requests
-						if (!isConnected)
-						{
-							// Retrieving the current displayed fragment
-							Fragment fragment = activity.getSupportFragmentManager().findFragmentById(R.id.container);
-							// If the user is on the NearbyAttractionsFragment, we update the list
-							if (fragment instanceof NearbyAttractionsFragment)
-							{
-								NearbyAttractionsFragment frag = (NearbyAttractionsFragment) fragment;
-								frag.getNearbyPlaces();
-							}
-							else if (fragment instanceof MapFragment)
-							{
-								MapFragment frag = (MapFragment) fragment;
-								frag.getNearbyPlaces();
-							}
-						}
-						isConnected = true;
-						noNetworkLabel.setVisibility(View.GONE);
-					}
-					else
-					{
-						isConnected = false;
-						noNetworkLabel.setVisibility(View.VISIBLE);
-					}
+					NearbyAttractionsFragment frag = (NearbyAttractionsFragment) fragment;
+					frag.getNearbyPlaces();
 				}
-				postDelayed(this, CHECK_INTERVAL);
+				else if (fragment instanceof MapFragment)
+				{
+					MapFragment frag = (MapFragment) fragment;
+					frag.getNearbyPlaces();
+				}
+				noNetworkLabel.setVisibility(View.GONE);
 			}
-		};
-
-		this.isConnected = Utility.isOnline(activity.getApplicationContext());
-	}
-
-	public void run()
-	{
-		this.post(this.runnable);
-	}
-
-	public void stopThread()
-	{
-		this.removeCallbacks(this.runnable);
-		instance = null; // Manage change of orientation: a new activity is created
+			else
+			{
+				noNetworkLabel.setVisibility(View.VISIBLE);
+			}
+		}
 	}
 }

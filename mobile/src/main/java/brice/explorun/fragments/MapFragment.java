@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import brice.explorun.activities.MainActivity;
 import brice.explorun.models.Utility;
 import brice.explorun.controllers.NearbyAttractionsController;
 import brice.explorun.models.Observer;
@@ -158,6 +159,8 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 		updateValuesFromBundle(savedInstanceState);
 		SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.map);
 		mapFragment.getMapAsync(this);
+		MainActivity activity = (MainActivity) this.getActivity();
+		activity.getConnectivityStatusHandler().updateNoNetworkLabel();
 	}
 
 	public void onStart()

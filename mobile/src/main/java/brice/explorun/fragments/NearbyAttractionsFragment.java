@@ -2,6 +2,7 @@ package brice.explorun.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -97,6 +98,14 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 		{
 			this.mGoogleApiClient.connect();
 		}
+	}
+
+	@Override
+	public void onActivityCreated(@Nullable Bundle savedInstanceState)
+	{
+		super.onActivityCreated(savedInstanceState);
+		MainActivity activity = (MainActivity) this.getActivity();
+		activity.getConnectivityStatusHandler().updateNoNetworkLabel();
 	}
 
 	public void onStop()
