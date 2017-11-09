@@ -128,13 +128,4 @@ public class Utility
 		res[1] = sharedPref.getFloat("longitude", -1);
 		return res;
 	}
-
-	public static void storeLastLocation(Context context, Location location)
-	{
-		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-		SharedPreferences.Editor editor = sharedPref.edit();
-		editor.putFloat("latitude", (float) location.getLatitude());
-		editor.putFloat("longitude", (float) location.getLongitude());
-		editor.apply();
-	}
 }

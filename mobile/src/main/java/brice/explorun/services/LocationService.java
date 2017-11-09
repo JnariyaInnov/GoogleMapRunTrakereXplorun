@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -151,7 +152,11 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     @Override
     public void onLocationChanged(final Location loc) {
         Log.i("explorun_location", "Location changed");
-		Utility.storeLastLocation(this, loc);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putFloat("latitude", (float) loc.getLatitude());
+        editor.putFloat("longitude", (float) loc.getLongitude());
+        editor.apply();
         sendBroadcast(intent);
     }
 }
