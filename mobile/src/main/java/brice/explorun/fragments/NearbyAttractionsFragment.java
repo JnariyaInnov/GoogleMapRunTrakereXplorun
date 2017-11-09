@@ -1,5 +1,9 @@
 package brice.explorun.fragments;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
@@ -33,11 +37,16 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 	private ArrayList<Place> places;
 	private NearbyAttractionsAdapter adapter;
 
-	private NearbyAttractionsController manager;
-
-	private LinearLayout progressBarLayout;
-
 	private final String PLACES_KEY = "places";
+
+	private BroadcastReceiver locReceiver = new BroadcastReceiver()
+	{
+		@Override
+		public void onReceive(Context context, Intent intent)
+		{
+			getNearbyPlaces();
+		}
+	};
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -54,7 +63,7 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 
 		}
 
-		this.manager = new NearbyAttractionsController(this);
+		this.nearbyAttractionsController = new NearbyAttractionsController(this);
 
 		// Setting up the list of places
 		if (savedInstanceState != null)
@@ -77,6 +86,9 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 				viewPlaceOnMap(places.get(i));
 			}
 		});
+
+		IntentFilter filter = new IntentFilter("ex_location");
+		getActivity().registerReceiver(this.locReceiver, filter);
 
 		this.progressBarLayout = view.findViewById(R.id.progress_layout);
 
@@ -105,7 +117,8 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 
 	public void onDestroy()
 	{
-		this.manager.cancelAllAsyncTasks();
+		this.nearbyAttractionsController.cancelAllAsyncTasks();
+		this.getActivity().unregisterReceiver(this.locReceiver);
 		super.onDestroy();
 	}
 
@@ -118,15 +131,6 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 	public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
 	{
 
-	}
-
-	public void getNearbyPlaces()
-	{
-		if (Utility.isOnline(this.getActivity()))
-		{
-			this.progressBarLayout.setVisibility(View.VISIBLE);
-		}
-		this.manager.getNearbyPlaces(true);
 	}
 
 	public void updatePlaces(ArrayList<Place> places, boolean error)
@@ -161,7 +165,7 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 	{
 		for (Place p: this.places)
 		{
-			this.manager.getPlacePhoto(p);
+			this.nearbyAttractionsController.getPlacePhoto(p);
 		}
 	}
 

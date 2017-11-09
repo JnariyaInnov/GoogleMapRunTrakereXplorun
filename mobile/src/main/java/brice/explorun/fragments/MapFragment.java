@@ -47,7 +47,6 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	private final String FIRST_REQUEST_KEY = "first_request";
 	private final String PLACES_KEY = "places";
 	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
-	private Location mLastLocation;
 
 	private Bundle args = null;
 	private GoogleMap map = null;
@@ -55,11 +54,10 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	private Marker userMarker;
 	private boolean isFirstRequest = true;
 
-	private NearbyAttractionsController nearbyAttractionsController;
 	private BroadcastReceiver locReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			update(intent.getDoubleExtra("latitude", -1), intent.getDoubleExtra("longitude", -1));
+			update();
 		}
 	};
 
@@ -196,7 +194,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		settings.setZoomControlsEnabled(true);
 		this.map = googleMap;
 		initializeMyLocationButton();
-		restoreLastLocation();
+		update();
 		if(this.places.size() == 0 && this.args != null){
 			this.places = args.getParcelableArrayList("places");
 		}
@@ -230,17 +228,19 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		}
 	}
 
-	public void update(double latitude, double longitude)
+	public void update()
 	{
-		if (latitude != -1d && longitude != -1d)
+		float[] loc = Utility.getLocationFromPreferences(this.getActivity());
+		float latitude = loc[0];
+		float longitude = loc[1];
+		if (latitude != -1f && longitude != -1f)
 		{
 			LatLng userLocation = new LatLng(latitude, longitude);
-			storeLastLocation(userLocation);
 			if (this.map != null)
 			{
 				if (this.isFirstRequest && this.args == null)
 				{
-					this.map.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
+					this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
 				}
 				if (this.userMarker == null)
 				{
@@ -252,35 +252,6 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			}
 			getNearbyPlaces();
 		}
-	}
-
-	public float[] getLocationFromPreferences()
-	{
-		float[] res = new float[2];
-		SharedPreferences sharedPref = this.getActivity().getPreferences(Context.MODE_PRIVATE);
-		res[0] = sharedPref.getFloat("latitude", -1);
-		res[1] = sharedPref.getFloat("longitude", -1);
-		return res;
-	}
-
-	public void storeLastLocation(LatLng loc)
-	{
-		SharedPreferences sharedPref = this.getActivity().getPreferences(Context.MODE_PRIVATE);
-		SharedPreferences.Editor editor = sharedPref.edit();
-		editor.putFloat("latitude", (float) loc.latitude);
-		editor.putFloat("longitude", (float) loc.longitude);
-		editor.apply();
-	}
-
-	public void restoreLastLocation()
-	{
-		float[] loc = getLocationFromPreferences();
-		update(loc[0], loc[1]);
-	}
-
-	public void getNearbyPlaces()
-	{
-		this.nearbyAttractionsController.getNearbyPlaces(false);
 	}
 
 	@Override
