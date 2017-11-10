@@ -7,11 +7,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.graphics.drawable.GradientDrawable;
 import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -190,23 +193,49 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		}
 		// Retrieve places markers if orientation has changed
 		addPlacesMarkers();
-		// Move the camera over a place if the user has clicked on one attraction in the list in the NearbyAttractionsFragment
+		// Move the camera if the user has clicked on one attraction in the list in the NearbyAttractionsFragment
 		if (this.isFirstRequest && this.args != null)
 		{
 			LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
-			for (Marker marker : this.placesMarkers) {
-				builder.include(marker.getPosition());
-			}
-			LatLngBounds bounds = builder.build();
+			double latitude = this.args.getDouble("latitude");
+			double longitude = this.args.getDouble("longitude");
+			// Include place's position
+			builder.include(new LatLng(latitude, longitude));
+			// Include user's position
+			float[] loc = Utility.getLocationFromPreferences(this.getActivity());
+			builder.include(new LatLng(loc[0], loc[1]));
+
+			double deltaLatitude = Math.abs(latitude - loc[0]);
+			double deltaLongitude = Math.abs(longitude - loc[1]);
+
+			double delta = deltaLongitude-deltaLatitude;
 
 			int width = getResources().getDisplayMetrics().widthPixels;
 			int height = getResources().getDisplayMetrics().heightPixels;
-			int padding = (int) (width * 0.10); // offset from edges of the map 10% of screen
+			int padding;
 
-			CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
+			Configuration config = getResources().getConfiguration();
+			if (config.orientation == Configuration.ORIENTATION_PORTRAIT)
+			{
+				padding = (int) (height * 0.2); // offset from edges of the map 20% of the height of the screen
+				if (delta > 0)
+				{
+					padding = (int) (width * 0.1); // offset from edges of the map 10% of the width of the screen
+				}
+			}
+			else // If we are in landscape mode
+			{
+				padding = (int) (width * 0.15); // offset from edges of the map 15% of the width of the screen
+				if (delta > 0)
+				{
+					padding = (int) (height * 0.25); // offset from edges of the map 25% of the height of the screen
+				}
+			}
 
-			map.moveCamera(cu);
+			LatLngBounds bounds = builder.build();
+
+			map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding));
 		}
 		update();
 	}
@@ -319,6 +348,6 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			}
 		}
 
-		return Utility.getColorFromType(this.getContext(), res);
+		return Utility.getColorFromType(this, res);
 	}
 }
