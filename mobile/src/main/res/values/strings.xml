@@ -28,6 +28,9 @@
 	<string name="distance_in_km" translatable="false">%1$.1f km</string>
 	<string name="distance_in_m" translatable="false">%1$.0f m</string>
 	<string name="no_photo">No photo found for this attraction</string>
+	<string name="notification_title">eXplorun</string>
+	<string name="notification_message">Background location service</string>
+	<string name="ticker_text">Background location</string>
 
 	<!-- Form activity -->
 	<string name="form_validate_button">Validate</string>

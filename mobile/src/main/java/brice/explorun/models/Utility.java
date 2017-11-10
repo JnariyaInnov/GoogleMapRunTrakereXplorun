@@ -2,13 +2,17 @@ package brice.explorun.models;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
 
 import brice.explorun.R;
 
@@ -114,5 +118,14 @@ public class Utility
 		float hsv[] = new float[3];
 		Color.colorToHSV(context.getResources().getColor(colorRes), hsv);
 		return hsv[0];
+	}
+
+	public static float[] getLocationFromPreferences(Context context)
+	{
+		float[] res = new float[2];
+		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+		res[0] = sharedPref.getFloat("latitude", -1);
+		res[1] = sharedPref.getFloat("longitude", -1);
+		return res;
 	}
 }

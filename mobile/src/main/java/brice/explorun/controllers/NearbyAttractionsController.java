@@ -2,6 +2,7 @@ package brice.explorun.controllers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -35,11 +36,9 @@ public class NearbyAttractionsController
 	private final int RADIUS = 5000; // 5km around user's location
 
 	private PlacesObserverFragment observer;
-	private GoogleApiClient mGoogleApiClient;
 	private ArrayList<AsyncTask> asyncTasks;
 
-	private float latitude = -1;
-	private float longitude = -1;
+	private Location location;
 
 	private String[] types;
 	private int requestsCount; // Number of API requests to do
@@ -48,10 +47,9 @@ public class NearbyAttractionsController
 
 	private ArrayList<Place> places;
 
-	public NearbyAttractionsController(PlacesObserverFragment observer, GoogleApiClient googleApiClient)
+	public NearbyAttractionsController(PlacesObserverFragment observer)
 	{
 		this.observer = observer;
-		this.mGoogleApiClient = googleApiClient;
 		this.asyncTasks = new ArrayList<>();
 
 		this.types = this.observer.getResources().getStringArray(R.array.places_types);
@@ -63,7 +61,7 @@ public class NearbyAttractionsController
 	private String getPlacesApiUrl(String type)
 	{
 		Uri builtUri = Uri.parse(PLACES_API_BASE_URL).buildUpon()
-				.appendQueryParameter("location", this.latitude + "," + this.longitude)
+				.appendQueryParameter("location", this.location.getLatitude() + "," + this.location.getLongitude())
 				.appendQueryParameter("radius", Integer.toString(this.RADIUS))
 				.appendQueryParameter("language", Locale.getDefault().getLanguage())
 				.appendQueryParameter("type", type)
@@ -73,20 +71,11 @@ public class NearbyAttractionsController
 		return builtUri.toString();
 	}
 
-	public void getNearbyPlaces(boolean checkNow)
+	public void getNearbyPlaces(Location location)
 	{
-		// Retrieve user's location in the SharedPreferences
-		SharedPreferences prefs = this.observer.getActivity().getPreferences(Context.MODE_PRIVATE);
-		float latitude = prefs.getFloat("latitude", -1);
-		float longitude = prefs.getFloat("longitude", -1);
-
-		double distance = Utility.distanceBetweenCoordinates(latitude, longitude, this.latitude, this.longitude);
-
-		if (Utility.isOnline(this.observer.getActivity()) && (checkNow || distance > 0.1))
+		this.location = location;
+		if (Utility.isOnline(this.observer.getActivity()))
 		{
-			this.latitude = latitude;
-			this.longitude = longitude;
-
 			this.places.clear();
 
 			for (String type : this.types)
@@ -143,7 +132,7 @@ public class NearbyAttractionsController
 				if (!found)
 				{
 					// Compute distance between the user and the place
-					double distance = Utility.distanceBetweenCoordinates(this.latitude, this.longitude, p1.getLatitude(), p1.getLongitude());
+					double distance = Utility.distanceBetweenCoordinates(this.location.getLatitude(), this.location.getLongitude(), p1.getLatitude(), p1.getLongitude());
 					p1.setDistance(distance);
 
 					this.places.add(p1);
@@ -167,7 +156,7 @@ public class NearbyAttractionsController
 		Photo photo = place.getPhoto();
 		if (photo != null)
 		{
-			PhotoRetriever task = new PhotoRetriever(this, this.mGoogleApiClient);
+			PhotoRetriever task = new PhotoRetriever(this);
 			this.asyncTasks.add(task);
 			task.execute(photo);
 		}

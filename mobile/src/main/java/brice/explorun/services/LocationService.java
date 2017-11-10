@@ -1,169 +1,162 @@
 package brice.explorun.services;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
-import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResult;
-import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.location.places.Places;
 
-import brice.explorun.fragments.MapFragment;
-import brice.explorun.models.Observable;
+import brice.explorun.R;
+import brice.explorun.activities.MainActivity;
+import brice.explorun.models.Utility;
 
-public class LocationService extends Observable implements LocationListener
-{
-	private final int REQUEST_CHECK_SETTINGS = 0x1;
+/**
+ * Created by germain on 11/6/17.
+ */
 
-	private MapFragment mapFragment;
-	private GoogleApiClient mGoogleApiClient;
-	private Location mLastLocation = null;
+public class LocationService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
-	private final String LOCATION_KEY = "location";
-	private final int refreshInterval = 10000; // Position refresh interval (in ms)
+    public static boolean isStarted = false;
+    public static GoogleApiClient mGoogleApiClient = null;
+    final int notificationId = 67;
+    final String notificationChannel = "locChannel";
+    Intent intent;
 
-	public LocationService(MapFragment mapFragment, GoogleApiClient googleApiClient)
-	{
-		this.mapFragment = mapFragment;
-		this.mGoogleApiClient = googleApiClient;
-		this.registerObserver(mapFragment);
-	}
+    final int refreshInterval = 10000; // Position refresh interval (in ms)
 
-	public Location getLastLocation() {
-		return mLastLocation;
-	}
 
-	public void setLastLocation(Location loc){
-		this.mLastLocation = loc;
-	}
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        isStarted = true;
+        mGoogleApiClient = new GoogleApiClient.Builder(LocationService.this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .addApi(Places.GEO_DATA_API)
+                .build();
+        try{
+            mGoogleApiClient.connect();
+        }
+        catch(Exception ex){
+            Log.e("eX_location", "Google api client not properly connected, trying again later");
+        }
 
-	public void onSaveInstanceState(Bundle savedInstanceState)
-	{
-		savedInstanceState.putParcelable(LOCATION_KEY, this.mLastLocation);
-	}
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, MainActivity.class)
+                        .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 
-	@Override
-	public void onLocationChanged(Location location)
-	{
-		Log.d("onLocationChanged", location.toString());
-		this.mLastLocation = location;
-		storeLastLocation(new LatLng(location.getLatitude(), location.getLongitude()));
-		this.notifyAllObservers();
-	}
+        Notification notification = new NotificationCompat.Builder(this, notificationChannel)
+            .setContentTitle(getText(R.string.notification_title))
+            .setContentText(getText(R.string.notification_message))
+            .setSmallIcon(R.drawable.ic_photo_camera)
+            .setContentIntent(pendingIntent)
+            .setTicker(getText(R.string.ticker_text))
+            .build();
 
-	public void initLocation()
-	{
-		if (ActivityCompat.checkSelfPermission(mapFragment.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-		{
-			this.mLastLocation = LocationServices.FusedLocationApi.getLastLocation(this.mGoogleApiClient);
-			if (this.mLastLocation != null)
-			{
-				this.notifyAllObservers();
-			}
-			else
-			{
-				mapFragment.restoreLastLocation();
-			}
-			startLocationUpdates();
-		}
-	}
+        startForeground(notificationId, notification);
+        intent = new Intent("ex_location");
+        startLocationUpdates();
+        Log.i("explorun_location", "Service successfully started");
+    }
 
-	public void updateLocationFromPreferences()
-	{
-		SharedPreferences sharedPref = this.mapFragment.getActivity().getPreferences(Context.MODE_PRIVATE);
-		float latitude = sharedPref.getFloat("latitude", -1);
-		float longitude = sharedPref.getFloat("longitude", -1);
-		if(latitude != -1 && longitude != -1)
-		{
-			mLastLocation = new Location("");
-			mLastLocation.setLatitude(latitude);
-			mLastLocation.setLongitude(longitude);
-		}
-	}
 
-	public void storeLastLocation(LatLng loc)
-	{
-		SharedPreferences sharedPref = this.mapFragment.getActivity().getPreferences(Context.MODE_PRIVATE);
-		SharedPreferences.Editor editor = sharedPref.edit();
-		editor.putFloat("latitude", (float) loc.latitude);
-		editor.putFloat("longitude", (float) loc.longitude);
-		editor.apply();
-	}
+    @Override
+    public void onDestroy() {
+        isStarted = false;
+        stopLocationUpdates();
+        super.onDestroy();
+    }
 
-	public void checkLocationEnabled()
-	{
-		LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-				.addLocationRequest(createLocationRequest());
+    private LocationRequest createLocationRequest()
+    {
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(refreshInterval);
+        mLocationRequest.setFastestInterval(refreshInterval);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        return mLocationRequest;
+    }
 
-		PendingResult<LocationSettingsResult> result =
-				LocationServices.SettingsApi.checkLocationSettings(this.mGoogleApiClient, builder.build());
+    private void startLocationUpdates()
+    {
+        if(!mGoogleApiClient.isConnected()){
+            Log.e("eX_location","Can't start location update, because not connected to google api");
+            Handler h = new Handler();
+            Runnable r = new Runnable()
+            {
+                @Override
+                public void run() {
+                    try{
+                        mGoogleApiClient.connect();
+                    }
+                    catch(Exception ex){
+                        Log.e("eX_location", "Google api client not properly connected, trying again later");
+                    }
+                    startLocationUpdates();
+                }
+            };
+            h.postDelayed(r, 5000);
+        }
+        else if (ActivityCompat.checkSelfPermission(this.getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+        {
+            LocationServices.FusedLocationApi.requestLocationUpdates(this.mGoogleApiClient, createLocationRequest(), this);
+        }
+    }
 
-		result.setResultCallback(new ResultCallback<LocationSettingsResult>()
-		{
-			@Override
-			public void onResult(LocationSettingsResult locationSettingsResult)
-			{
+    public void stopLocationUpdates()
+    {
+        LocationServices.FusedLocationApi.removeLocationUpdates(this.mGoogleApiClient, this);
+    }
 
-				final Status status = locationSettingsResult.getStatus();
-				switch (status.getStatusCode())
-				{
-					case LocationSettingsStatusCodes.SUCCESS:
-						// All location settings are satisfied. The client can initialize location requests here.
-						initLocation();
-						break;
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
 
-					case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-						// Location settings are not satisfied. But could be fixed by showing the user a dialog.
-						try {
-							// Show the dialog by calling startResolutionForResult() and check the result in onActivityResult().
-							status.startResolutionForResult(mapFragment.getActivity(), REQUEST_CHECK_SETTINGS);
-						}
-						catch (IntentSender.SendIntentException e) {
-							// Ignore the error.
-						}
-						break;
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
 
-					case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-						// Location settings are not satisfied.
-						break;
-				}
-			}
-		});
-	}
+    }
 
-	private LocationRequest createLocationRequest()
-	{
-		LocationRequest mLocationRequest = new LocationRequest();
-		mLocationRequest.setInterval(refreshInterval);
-		mLocationRequest.setFastestInterval(refreshInterval);
-		mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-		return mLocationRequest;
-	}
+    @Override
+    public void onConnectionSuspended(int i) {
 
-	private void startLocationUpdates()
-	{
-		if (ActivityCompat.checkSelfPermission(this.mapFragment.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-		{
-			LocationServices.FusedLocationApi.requestLocationUpdates(this.mGoogleApiClient, createLocationRequest(), this);
-		}
-	}
+    }
 
-	public void stopLocationUpdates()
-	{
-		LocationServices.FusedLocationApi.removeLocationUpdates(this.mGoogleApiClient, this);
-	}
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public void onLocationChanged(final Location loc) {
+        Log.i("explorun_location", "Location changed");
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putFloat("latitude", (float) loc.getLatitude());
+        editor.putFloat("longitude", (float) loc.getLongitude());
+        editor.apply();
+        sendBroadcast(intent);
+    }
 }

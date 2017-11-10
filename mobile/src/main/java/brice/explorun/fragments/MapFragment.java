@@ -1,13 +1,17 @@
 package brice.explorun.fragments;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,8 +23,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.Places;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -28,6 +31,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -38,13 +42,12 @@ import java.util.List;
 import brice.explorun.activities.MainActivity;
 import brice.explorun.models.Utility;
 import brice.explorun.controllers.NearbyAttractionsController;
-import brice.explorun.models.Observer;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
 import brice.explorun.services.LocationService;
 import brice.explorun.R;
 
-public class MapFragment extends PlacesObserverFragment implements Observer, OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
+public class MapFragment extends PlacesObserverFragment implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
 {
 	private final String LOCATION_KEY = "location";
 	private final String FIRST_REQUEST_KEY = "first_request";
@@ -58,9 +61,12 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 	private Marker userMarker;
 	private boolean isFirstRequest = true;
 
-	private GoogleApiClient mGoogleApiClient = null;
-	private LocationService locationService;
-	private NearbyAttractionsController nearbyAttractionsController;
+	private BroadcastReceiver locReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			update();
+		}
+	};
 
 	private ArrayList<Place> places;
 	private ArrayList<Marker> placesMarkers;
@@ -71,36 +77,21 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 	private LinearLayout formLayout;
 	private Animation animation;
 
-	public LocationService getLocationService()
-	{
-		return this.locationService;
-	}
-
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
 		View view = inflater.inflate(R.layout.fragment_map, container, false);
-		// Create an instance of GoogleAPIClient.
-		if (this.mGoogleApiClient == null)
-		{
-			this.mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
-					.addConnectionCallbacks(this)
-					.addOnConnectionFailedListener(this)
-					.addApi(LocationServices.API)
-					.addApi(Places.GEO_DATA_API)
-					.build();
-		}
 
 		this.args = this.getArguments();
-
-		this.locationService = new LocationService(this, this.mGoogleApiClient);
 
 		this.places = new ArrayList<>();
 		this.placesMarkers = new ArrayList<>();
 
 		this.types = Arrays.asList(getResources().getStringArray(R.array.places_types));
 
-		this.nearbyAttractionsController = new NearbyAttractionsController(this, this.mGoogleApiClient);
+		this.nearbyAttractionsController = new NearbyAttractionsController(this);
+		IntentFilter filter = new IntentFilter("ex_location");
+		getActivity().registerReceiver(locReceiver, filter);
 
 		this.formLayout = view.findViewById(R.id.form);
 		this.animation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_up);
@@ -118,6 +109,12 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 		return view;
 	}
 
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		getActivity().unregisterReceiver(this.locReceiver);
+	}
+
 	private void updateValuesFromBundle(Bundle savedInstanceState)
 	{
 		if (savedInstanceState != null)
@@ -125,12 +122,12 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 			// Update the value of mCurrentLocation from the Bundle and update the UI to show the correct latitude and longitude.
 			if (savedInstanceState.keySet().contains(LOCATION_KEY))
 			{
+				savedInstanceState.getParcelable(LOCATION_KEY);
 				// Since LOCATION_KEY was found in the Bundle, we can be sure that LastLocation is not null.
-				this.locationService.setLastLocation((Location) savedInstanceState.getParcelable(LOCATION_KEY));
-				Location loc = this.locationService.getLastLocation();
-				if (loc != null)
+				mLastLocation = savedInstanceState.getParcelable(LOCATION_KEY);
+				if (mLastLocation != null)
 				{
-					LatLng position = new LatLng(loc.getLatitude(), loc.getLongitude());
+					LatLng position = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
 					this.userLocationMarkerOptions = new MarkerOptions().position(position).title(getContext().getResources().getString(R.string.your_position)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
 				}
 			}
@@ -166,28 +163,19 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 	public void onStart()
 	{
 		super.onStart();
-		if (!this.mGoogleApiClient.isConnected())
-		{
-			this.mGoogleApiClient.connect();
-		}
 	}
 
 	public void onStop()
 	{
-		if (this.mGoogleApiClient.isConnected())
-		{
-			this.locationService.stopLocationUpdates();
-			this.mGoogleApiClient.disconnect();
-		}
 		super.onStop();
 	}
 
 	public void onSaveInstanceState(Bundle savedInstanceState)
 	{
-		this.locationService.onSaveInstanceState(savedInstanceState);
 		savedInstanceState.putBoolean(FIRST_REQUEST_KEY, this.isFirstRequest);
 		savedInstanceState.putInt(FORM_OPEN_KEY, this.formLayout.getVisibility());
 		savedInstanceState.putParcelableArrayList(PLACES_KEY, this.places);
+		savedInstanceState.putParcelable(LOCATION_KEY, this.mLastLocation);
 		super.onSaveInstanceState(savedInstanceState);
 	}
 
@@ -198,9 +186,8 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 		{
 			requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_GPS);
 		}
-		else
-		{
-			this.locationService.checkLocationEnabled();
+		else{
+			//todo: Check location enabled
 		}
 	}
 
@@ -220,7 +207,7 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 				// If request is cancelled, the result arrays are empty.
 				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
 				{
-					this.getLocationService().checkLocationEnabled();
+					//todo: Check location enabled
 					if (this.map != null)
 					{
 						initializeMyLocationButton();
@@ -239,13 +226,29 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 		settings.setZoomControlsEnabled(true);
 		this.map = googleMap;
 		initializeMyLocationButton();
+		update();
+		if(this.places.size() == 0 && this.args != null){
+			this.places = args.getParcelableArrayList("places");
+		}
 		// Retrieve places markers if orientation has changed
 		addPlacesMarkers();
 		// Move the camera over a place if the user has clicked on one attraction in the list in the NearbyAttractionsFragment
-		if (this.isFirstRequest && this.args != null)
+		if (this.args != null)
 		{
-			LatLng placeLocation = new LatLng(this.args.getDouble("latitude"), this.args.getDouble("longitude"));
-			this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(placeLocation, 15));
+			LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+			for (Marker marker : this.placesMarkers) {
+				builder.include(marker.getPosition());
+			}
+			LatLngBounds bounds = builder.build();
+
+			int width = getResources().getDisplayMetrics().widthPixels;
+			int height = getResources().getDisplayMetrics().heightPixels;
+			int padding = (int) (width * 0.10); // offset from edges of the map 10% of screen
+
+			CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
+
+			map.moveCamera(cu);
 		}
 	}
 
@@ -257,13 +260,14 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 		}
 	}
 
-	@Override
 	public void update()
 	{
-		if (this.locationService.getLastLocation() != null)
+		float[] loc = Utility.getLocationFromPreferences(this.getActivity());
+		float latitude = loc[0];
+		float longitude = loc[1];
+		if (latitude != -1f && longitude != -1f)
 		{
-			LatLng userLocation = new LatLng(this.locationService.getLastLocation().getLatitude(), this.locationService.getLastLocation().getLongitude());
-			this.locationService.storeLastLocation(userLocation);
+			LatLng userLocation = new LatLng(latitude, longitude);
 			if (this.map != null)
 			{
 				if (this.isFirstRequest && this.args == null)
@@ -280,17 +284,6 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 			}
 			getNearbyPlaces();
 		}
-	}
-
-	public void restoreLastLocation()
-	{
-		this.locationService.updateLocationFromPreferences();
-		update();
-	}
-
-	public void getNearbyPlaces()
-	{
-		this.nearbyAttractionsController.getNearbyPlaces(false);
 	}
 
 	@Override
@@ -340,7 +333,7 @@ public class MapFragment extends PlacesObserverFragment implements Observer, OnM
 	@Override
 	public void updatePlacePhoto(Photo photo)
 	{
-
+		//todo
 	}
 
 	public float getPlaceMarkerColor(Place place)
