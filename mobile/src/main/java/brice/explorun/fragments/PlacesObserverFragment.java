@@ -24,6 +24,12 @@ public abstract class PlacesObserverFragment extends Fragment
 	protected Location mLastLocation = new Location("");
 	protected LinearLayout progressBarLayout = null;
 
+	public PlacesObserverFragment()
+	{
+		this.mLastLocation.setLatitude(-1);
+		this.mLastLocation.setLongitude(-1);
+	}
+
 	public void getNearbyPlaces()
 	{
 		float[] loc = Utility.getLocationFromPreferences(this.getActivity());

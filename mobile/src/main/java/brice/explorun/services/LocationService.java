@@ -5,6 +5,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -21,9 +22,15 @@ import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.location.places.Places;
 
 import brice.explorun.R;
@@ -34,7 +41,7 @@ import brice.explorun.models.Utility;
  * Created by germain on 11/6/17.
  */
 
-public class LocationService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class LocationService extends Service implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     public static boolean isStarted = false;
     public static GoogleApiClient mGoogleApiClient = null;
@@ -42,7 +49,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     final String notificationChannel = "locChannel";
     Intent intent;
 
-    final int refreshInterval = 10000; // Position refresh interval (in ms)
+    final static int refreshInterval = 10000; // Position refresh interval (in ms)
 
 
     @Override
@@ -55,12 +62,6 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
                 .addApi(LocationServices.API)
                 .addApi(Places.GEO_DATA_API)
                 .build();
-        try{
-            mGoogleApiClient.connect();
-        }
-        catch(Exception ex){
-            Log.e("eX_location", "Google api client not properly connected, trying again later");
-        }
 
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, MainActivity.class)
@@ -69,26 +70,58 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         Notification notification = new NotificationCompat.Builder(this, notificationChannel)
             .setContentTitle(getText(R.string.notification_title))
             .setContentText(getText(R.string.notification_message))
-            .setSmallIcon(R.drawable.ic_photo_camera)
+            .setSmallIcon(R.drawable.ic_location)
             .setContentIntent(pendingIntent)
             .setTicker(getText(R.string.ticker_text))
             .build();
 
         startForeground(notificationId, notification);
         intent = new Intent("ex_location");
-        startLocationUpdates();
         Log.i("explorun_location", "Service successfully started");
     }
 
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId)
+	{
+		// Connection to Google API
+		if (!mGoogleApiClient.isConnected())
+		{
+			try{
+				mGoogleApiClient.connect();
+			}
+			catch(Exception ex){
+				Log.e("eX_location", "Google api client not properly connected, trying again later");
+			}
+		}
+		return super.onStartCommand(intent, flags, startId);
+	}
 
-    @Override
+	@Override
+	public void onConnected(@Nullable Bundle bundle)
+	{
+		startLocationUpdates();
+	}
+
+	@Override
+	public void onConnectionSuspended(int i)
+	{
+
+	}
+
+	@Override
+	public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
+	{
+
+	}
+
+	@Override
     public void onDestroy() {
         isStarted = false;
         stopLocationUpdates();
         super.onDestroy();
     }
 
-    private LocationRequest createLocationRequest()
+    public static LocationRequest createLocationRequest()
     {
         LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(refreshInterval);
@@ -119,34 +152,19 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         }
         else if (ActivityCompat.checkSelfPermission(this.getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         {
-            LocationServices.FusedLocationApi.requestLocationUpdates(this.mGoogleApiClient, createLocationRequest(), this);
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, createLocationRequest(), this);
         }
     }
 
     public void stopLocationUpdates()
     {
-        LocationServices.FusedLocationApi.removeLocationUpdates(this.mGoogleApiClient, this);
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
     }
 
     @Override

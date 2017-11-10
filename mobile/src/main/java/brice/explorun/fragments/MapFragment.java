@@ -47,13 +47,12 @@ import brice.explorun.models.Place;
 import brice.explorun.services.LocationService;
 import brice.explorun.R;
 
-public class MapFragment extends PlacesObserverFragment implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
+public class MapFragment extends PlacesObserverFragment implements OnMapReadyCallback
 {
 	private final String LOCATION_KEY = "location";
 	private final String FIRST_REQUEST_KEY = "first_request";
 	private final String PLACES_KEY = "places";
 	private final String FORM_OPEN_KEY = "form_open";
-	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
 
 	private Bundle args = null;
 	private GoogleMap map = null;
@@ -180,60 +179,19 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	}
 
 	@Override
-	public void onConnected(Bundle connectionHint)
-	{
-		if (ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-		{
-			requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_GPS);
-		}
-		else{
-			//todo: Check location enabled
-		}
-	}
-
-	@Override
-	public void onConnectionSuspended(int i) {}
-
-	@Override
-	public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {}
-
-	@Override
-	public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults)
-	{
-		switch (requestCode)
-		{
-			case MY_PERMISSIONS_REQUEST_GPS:
-			{
-				// If request is cancelled, the result arrays are empty.
-				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-				{
-					//todo: Check location enabled
-					if (this.map != null)
-					{
-						initializeMyLocationButton();
-					}
-				}
-			}
-			break;
-		}
-	}
-
-	@Override
 	public void onMapReady(final GoogleMap googleMap)
 	{
 		//Initialize map
 		UiSettings settings = googleMap.getUiSettings();
 		settings.setZoomControlsEnabled(true);
 		this.map = googleMap;
-		initializeMyLocationButton();
-		update();
 		if(this.places.size() == 0 && this.args != null){
 			this.places = args.getParcelableArrayList("places");
 		}
 		// Retrieve places markers if orientation has changed
 		addPlacesMarkers();
 		// Move the camera over a place if the user has clicked on one attraction in the list in the NearbyAttractionsFragment
-		if (this.args != null)
+		if (this.isFirstRequest && this.args != null)
 		{
 			LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
@@ -250,6 +208,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 			map.moveCamera(cu);
 		}
+		update();
 	}
 
 	public void initializeMyLocationButton()
@@ -270,6 +229,10 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			LatLng userLocation = new LatLng(latitude, longitude);
 			if (this.map != null)
 			{
+				if (!this.map.isMyLocationEnabled())
+				{
+					initializeMyLocationButton();
+				}
 				if (this.isFirstRequest && this.args == null)
 				{
 					this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
@@ -356,6 +319,6 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			}
 		}
 
-		return Utility.getColorFromType(this.getActivity(), res);
+		return Utility.getColorFromType(this.getContext(), res);
 	}
 }

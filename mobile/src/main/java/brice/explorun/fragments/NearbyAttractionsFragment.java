@@ -191,8 +191,6 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 		args.putDouble("latitude", place.getLatitude());
 		args.putDouble("longitude", place.getLongitude());
 		args.putParcelableArrayList("places", places);
-		MapFragment fragment = new MapFragment();
-		fragment.setArguments(args);
 		// Setting the new fragment in MainActivity
 		MainActivity activity = (MainActivity) this.getActivity();
 		activity.getSupportActionBar().setTitle(activity.getResources().getString(R.string.app_name));
