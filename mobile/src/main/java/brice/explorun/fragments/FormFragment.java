@@ -10,6 +10,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.appyvet.materialrangebar.RangeBar;
@@ -27,7 +28,7 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 	private Button mValidateButton;
 	private TextView mDurationText;
 
-	private LinearLayout layout;
+	private ScrollView layout;
 	private Animation animation;
 
 	@Override

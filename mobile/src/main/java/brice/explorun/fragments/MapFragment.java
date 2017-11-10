@@ -22,6 +22,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -76,7 +77,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	private List<String> types;
 
 	private Button mFormButton;
-	private LinearLayout formLayout;
+	private ScrollView formLayout;
 	private Animation animation;
 
 	@Override

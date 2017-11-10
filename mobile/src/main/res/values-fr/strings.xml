@@ -17,21 +17,15 @@
 		peuvent manquer
 	</string>
 	<string name="no_photo">Pas de photo trouvée pour cette curiosité</string>
-	<string name="form_validate_button">Valider</string>
-	<string name="form_walk_radio">Marche</string>
-	<string name="form_run_radio">Course</string>
-	<string name="form_duration_text">Durée : %1$s - %2$s</string>
-	<string name="start_form">Commencer une activité</string>
-	<string name="no_nearby_attraction">Il n\'y a aucune curiosité proche</string>
-	<string name="start_form">Démarrer une activité</string>
 	<string name="no_gps">La localisation est désactivée</string>
 	<string name="loc_request">Veuillez activer la localisation pour utiliser l\'application</string>
-	<string name="no_nearby_attraction">Aucun curiosité à proximité</string>
+	<string name="no_nearby_attraction">Il n\'y a aucune curiosité à proximité</string>
 	<string name="notification_message">Service de localisation</string>
 	<string name="ticker_text">Localisation en arrière-plan</string>
 	<string name="form_validate_button">Valider</string>
 	<string name="form_walk_radio">Marcher</string>
 	<string name="form_run_radio">Courir</string>
-	<string name="form_duration_text">"Durée : "</string>
+	<string name="form_duration_text">Durée : %1$s - %2$s</string>
 	<string name="cancel">Annuler</string>
+	<string name="start_form">Commencer une activité</string>
 </resources>
