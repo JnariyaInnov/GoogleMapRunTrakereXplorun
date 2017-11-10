@@ -123,8 +123,15 @@ public class Utility
 	private static float colorToHue(Fragment context, int colorRes)
 	{
 		float hsv[] = new float[3];
-		Color.colorToHSV(context.getResources().getColor(colorRes), hsv);
-		return hsv[0];
+		if (context != null)
+		{
+			Color.colorToHSV(context.getResources().getColor(colorRes), hsv);
+			return hsv[0];
+		}
+		else
+		{
+			return 0;
+		}
 	}
 
 	public static float[] getLocationFromPreferences(Context context)

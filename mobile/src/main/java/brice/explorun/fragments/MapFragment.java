@@ -298,16 +298,19 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			LatLng location = new LatLng(place.getLatitude(), place.getLongitude());
 			MarkerOptions options = new MarkerOptions().title(place.getName()).position(location);
 			options.icon(BitmapDescriptorFactory.defaultMarker(getPlaceMarkerColor(place)));
-			Marker marker = this.map.addMarker(options);
-			this.placesMarkers.add(marker);
-
-			// Open info window of the place marker if the user has clicked one attraction from NearbyAttractionsFragment
-			if (this.args != null)
+			if (this.map != null)
 			{
-				LatLng placeLocation = new LatLng(this.args.getDouble("latitude"), this.args.getDouble("longitude"));
-				if (location.equals(placeLocation))
+				Marker marker = this.map.addMarker(options);
+				this.placesMarkers.add(marker);
+
+				// Open info window of the place marker if the user has clicked one attraction from NearbyAttractionsFragment
+				if (this.args != null)
 				{
-					marker.showInfoWindow();
+					LatLng placeLocation = new LatLng(this.args.getDouble("latitude"), this.args.getDouble("longitude"));
+					if (location.equals(placeLocation))
+					{
+						marker.showInfoWindow();
+					}
 				}
 			}
 		}
