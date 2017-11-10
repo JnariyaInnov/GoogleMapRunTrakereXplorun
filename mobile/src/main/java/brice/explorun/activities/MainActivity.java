@@ -2,12 +2,16 @@ package brice.explorun.activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -16,6 +20,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -47,8 +52,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 	private final int REQUEST_CHECK_SETTINGS = 0x1;
 	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
 
-	public GoogleApiClient mGoogleApiClient = null;
-
 	private DrawerLayout mDrawerLayout;
 	private ActionBarDrawerToggle mDrawerToggle;
 	private NavigationView navigationView;
@@ -68,17 +71,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onCreate(savedInstanceState);
         Log.d("eX_lifeCycle", "main => onCreate()");
         setContentView(R.layout.activity_main);
-
-		// Create an instance of GoogleAPIClient.
-		if (this.mGoogleApiClient == null)
-		{
-			this.mGoogleApiClient = new GoogleApiClient.Builder(this)
-					.addConnectionCallbacks(this)
-					.addOnConnectionFailedListener(this)
-					.addApi(LocationServices.API)
-					.addApi(Places.GEO_DATA_API)
-					.build();
-		}
 
 		this.mDrawerLayout = findViewById(R.id.drawer_layout);
 		this.navigationView = findViewById(R.id.navigation);
@@ -134,14 +126,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 	@Override
 	public void onConnected(@Nullable Bundle bundle)
 	{
-		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-		{
-			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_GPS);
-		}
-		else
-		{
-			this.checkLocationEnabled();
-		}
+
 	}
 
 	@Override
@@ -179,10 +164,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 		// Register broadcast receiver for connectivity changes
 		this.connectivityStatusHandler = new ConnectivityStatusHandler(this);
 		this.registerReceiver(this.connectivityStatusHandler, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-		// Connection to Google API
-		if (!this.mGoogleApiClient.isConnected())
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
 		{
-			this.mGoogleApiClient.connect();
+			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_GPS);
+		}
+		else
+		{
+			this.checkLocationEnabled();
 		}
 		super.onStart();
 	}
@@ -212,10 +200,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 			Log.i("explorun_location","Stopping location service");
 			Intent intent = new Intent(this, LocationService.class);
 			stopService(intent);
-		}
-		if (this.mGoogleApiClient.isConnected())
-		{
-			this.mGoogleApiClient.disconnect();
 		}
 		super.onDestroy();
 	}
@@ -263,45 +247,48 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
 	public void checkLocationEnabled()
 	{
-		LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-				.addLocationRequest(LocationService.createLocationRequest());
+		LocationManager lm = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
+		boolean gps_enabled = false;
+		boolean network_enabled = false;
 
-		PendingResult<LocationSettingsResult> result =
-				LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
+		try {
+			gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+		} catch(Exception ex) {}
 
-		result.setResultCallback(new ResultCallback<LocationSettingsResult>()
-		{
+		try {
+			network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+		} catch(Exception ex) {}
+
+		if(!gps_enabled && !network_enabled) {
+			openLocationSettings();
+		}
+		else {
+			startService();
+		}
+
+		//status.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
+	}
+
+	private void openLocationSettings(){
+		AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+		dialog.setMessage(this.getResources().getString(R.string.no_gps));
+		dialog.setPositiveButton(this.getResources().getString(R.string.loc_request), new DialogInterface.OnClickListener() {
 			@Override
-			public void onResult(LocationSettingsResult locationSettingsResult)
-			{
-
-				final Status status = locationSettingsResult.getStatus();
-				switch (status.getStatusCode())
-				{
-					case LocationSettingsStatusCodes.SUCCESS:
-						// All location settings are satisfied. The client can initialize location requests here.
-						startService();
-						break;
-
-					case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-						// Location settings are not satisfied. But could be fixed by showing the user a dialog.
-						try
-						{
-							// Show the dialog by calling startResolutionForResult() and check the result in onActivityResult().
-							status.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
-						}
-						catch (IntentSender.SendIntentException e)
-						{
-							// Ignore the error.
-						}
-						break;
-
-					case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-						// Location settings are not satisfied.
-						break;
-				}
+			public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+				// TODO Auto-generated method stub
+				Intent myIntent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+				getApplicationContext().startActivity(myIntent);
+				//get gps
 			}
 		});
+		dialog.setNegativeButton(this.getString(R.string.cancel), new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+				Log.e("eX_location","User refused to share location ...");
+			}
+		});
+		dialog.show();
 	}
 
 	public void startService()
