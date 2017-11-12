@@ -25,6 +25,7 @@
 	<string name="http_error">Error with the request, please try again later</string>
 	<string name="api_request_error">An error occurred with the request, some elements might be missing</string>
 	<string name="no_nearby_attraction">There are no tourist attractions nearby</string>
+	<string name="no_route_found">No route found for this duration</string>
 
 	<!-- Nearby tourist attractions -->
 	<string name="distance_in_km" translatable="false">%1$.1f km</string>

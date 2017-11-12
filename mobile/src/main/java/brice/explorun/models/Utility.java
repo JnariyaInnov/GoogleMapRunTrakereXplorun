@@ -17,6 +17,13 @@ import brice.explorun.R;
 
 public class Utility
 {
+	public enum SPORTS { WALK, RUNNING, TRAIL }
+
+	// Average speeds for each sport (in km/h)
+	private static int WALK_SPEED = 3;
+	private static int RUNNING_SPEED = 9;
+	private static int TRAIL_SPEED = 11;
+
 	/**
 	 * Method to know if the user is connected to the Internet
 	 *
@@ -60,7 +67,6 @@ public class Utility
 
 	/**
 	 * Function which converts degrees in radians
-	 *
 	 * @param degrees Value in degrees to convert
 	 * @return The converted value in radians
 	 */
@@ -71,7 +77,6 @@ public class Utility
 
 	/**
 	 * Function which computes the distance between two GPS coordinates
-	 *
 	 * @param lat1 First latitude
 	 * @param lon1 First longitude
 	 * @param lat2 Second latitude
@@ -140,6 +145,32 @@ public class Utility
 		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 		res[0] = sharedPref.getFloat("latitude", -1);
 		res[1] = sharedPref.getFloat("longitude", -1);
+		return res;
+	}
+
+	/**
+	 * Function which returns the average speed of a sport
+	 * @param sport Sport of the user
+	 * @return The average speed of the sport selected by the user
+	 */
+	public static int getAverageSpeedFromSport(SPORTS sport)
+	{
+		int res;
+		switch (sport)
+		{
+			case TRAIL:
+				res = TRAIL_SPEED;
+				break;
+
+			case RUNNING:
+				res = RUNNING_SPEED;
+				break;
+
+			default:
+				res = WALK_SPEED;
+				break;
+		}
+
 		return res;
 	}
 }

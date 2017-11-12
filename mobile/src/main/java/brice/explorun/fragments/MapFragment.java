@@ -10,6 +10,7 @@ import android.content.res.Configuration;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ScrollView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -35,13 +37,14 @@ import java.util.List;
 
 import brice.explorun.activities.MainActivity;
 import brice.explorun.controllers.RoutesController;
+import brice.explorun.models.FormObserver;
 import brice.explorun.models.Utility;
 import brice.explorun.controllers.NearbyAttractionsController;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
 import brice.explorun.R;
 
-public class MapFragment extends PlacesObserverFragment implements OnMapReadyCallback
+public class MapFragment extends PlacesObserverFragment implements OnMapReadyCallback, FormObserver
 {
 	private final String LOCATION_KEY = "location";
 	private final String FIRST_REQUEST_KEY = "first_request";
@@ -68,7 +71,10 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 	private Button mFormButton;
 	private ScrollView formLayout;
-	private Animation animation;
+	private Animation slideUpAnimation;
+	private Animation slideDownAnimation;
+
+	private RoutesController routesController;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -87,17 +93,21 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		getActivity().registerReceiver(locReceiver, filter);
 
 		this.formLayout = view.findViewById(R.id.form);
-		this.animation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_up);
-		this.formLayout.setAnimation(this.animation);
+		this.slideUpAnimation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_up);
+		this.slideDownAnimation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_down);
 
 		mFormButton = view.findViewById(R.id.form_btn);
 		mFormButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				formLayout.setAnimation(slideUpAnimation);
 				formLayout.setVisibility(View.VISIBLE);
-				formLayout.startAnimation(animation);
+				formLayout.startAnimation(slideUpAnimation);
 			}
 		});
+
+		float[] userLoc = Utility.getLocationFromPreferences(getActivity());
+		this.routesController = new RoutesController(places, userLoc);
 
 		return view;
 	}
@@ -244,6 +254,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		float[] loc = Utility.getLocationFromPreferences(this.getActivity());
 		float latitude = loc[0];
 		float longitude = loc[1];
+		this.routesController.setUserLocation(loc);
 		if (latitude != -1f && longitude != -1f)
 		{
 			LatLng userLocation = new LatLng(latitude, longitude);
@@ -277,6 +288,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		{
 			this.removeMarkers();
 			this.places.clear();
+			this.routesController.setPlaces(places);
 		}
 		this.places.addAll(places);
 		addPlacesMarkers();
@@ -345,11 +357,26 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		return Utility.getColorFromType(this, res);
 	}
 
-	public ArrayList<Place> generateRoute(){
-		float[] userLoc = Utility.getLocationFromPreferences(getActivity());
-		RoutesController pc = new RoutesController(places, userLoc);
-		ArrayList<Place> route = pc.generateRoute(5, 5.5);
-		pc.printRoute(route);
-		return route;
+	@Override
+	public void onFormValidate(Utility.SPORTS sport, String leftPinValue, String rightPinValue)
+	{
+		int minDuration = Integer.parseInt(leftPinValue);
+		int maxDuration = Integer.parseInt(rightPinValue);
+		int averageSpeed = Utility.getAverageSpeedFromSport(sport);
+		double minKM = minDuration / 60.0 * averageSpeed;
+		double maxKM = maxDuration / 60.0 * averageSpeed;
+
+		ArrayList<Place> route = this.routesController.generateRoute(minKM, maxKM);
+		if (route != null)
+		{
+			this.formLayout.setAnimation(this.slideDownAnimation);
+			this.formLayout.setVisibility(View.GONE);
+			this.formLayout.startAnimation(this.slideDownAnimation);
+			this.routesController.printRoute(route);
+		}
+		else
+		{
+			Toast.makeText(this.getActivity(), R.string.no_route_found, Toast.LENGTH_LONG).show();
+		}
 	}
 }

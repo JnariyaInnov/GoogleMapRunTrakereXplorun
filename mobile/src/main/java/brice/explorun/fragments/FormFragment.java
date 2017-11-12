@@ -2,6 +2,7 @@ package brice.explorun.fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,9 @@ import com.appyvet.materialrangebar.RangeBar;
 import java.util.concurrent.TimeUnit;
 
 import brice.explorun.R;
+import brice.explorun.models.FormObserver;
+import brice.explorun.models.Utility;
+import brice.explorun.models.Utility.*;
 
 public class FormFragment extends Fragment implements View.OnClickListener{
 
@@ -28,8 +32,11 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 	private Button mValidateButton;
 	private TextView mDurationText;
 
-	private ScrollView layout;
 	private Animation animation;
+
+	private SPORTS chosenSport;
+
+	private FormObserver observer;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -58,9 +65,16 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 
 		});
 
-		this.layout = v.findViewById(R.id.form);
-		this.animation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_down);
-		this.layout.setAnimation(this.animation);
+		this.chosenSport = SPORTS.WALK;
+
+		try
+		{
+			this.observer = (FormObserver) getParentFragment();
+		}
+		catch (ClassCastException e)
+		{
+			throw new ClassCastException(getParentFragment().toString() + " must implement FormObserver");
+		}
 
 		return v;
 
@@ -68,31 +82,28 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 
 	@Override
 	public void onClick(View v) {
-
-		String CHOICE = "WALK";
 		switch (v.getId()){
 			case R.id.fragment_form_walk_radio:
 				mDurationRangeBar.setTickEnd(180);
-				CHOICE = "WALK";
+				this.chosenSport = SPORTS.WALK;
 				break;
 
 			case R.id.fragment_form_run_radio:
 				mDurationRangeBar.setTickEnd(180);
-				CHOICE = "RUN";
+				this.chosenSport = SPORTS.RUNNING;
 				break;
 
 			case R.id.fragment_form_trail_radio:
 				mDurationRangeBar.setTickEnd(300);
-				CHOICE = "TRAIL";
+				this.chosenSport = SPORTS.TRAIL;
 				break;
 
 			case R.id.fragment_form_validate_button:
-				//TODO Return result for another fragment.
-				layout.setVisibility(View.GONE);
-				layout.startAnimation(animation);
+				if (this.observer != null)
+				{
+					this.observer.onFormValidate(this.chosenSport, this.mDurationRangeBar.getLeftPinValue(), this.mDurationRangeBar.getRightPinValue());
+				}
 				break;
-
-
 		}
 	}
 
@@ -117,5 +128,4 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 
 		return s;
 	}
-
 }

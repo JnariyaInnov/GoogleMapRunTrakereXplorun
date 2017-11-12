@@ -17,8 +17,17 @@ public class RoutesController
     private ArrayList<Place> places;
     private float[] userLocation;
 
+	public void setPlaces(ArrayList<Place> places)
+	{
+		this.places = places;
+	}
 
-    public RoutesController(ArrayList<Place> places, float[] userLocation){
+	public void setUserLocation(float[] userLocation)
+	{
+		this.userLocation = userLocation;
+	}
+
+	public RoutesController(ArrayList<Place> places, float[] userLocation){
         this.places = places;
         this.userLocation = userLocation;
     }
@@ -70,8 +79,11 @@ public class RoutesController
             placesLeft.remove(curPlace);
             lastPlace = curPlace;
         }
+
+        totalDistance += distanceToUserLocation(lastPlace);
+
         //If route is valid, return it
-        if(totalDistance > minKM && totalDistance < maxKM){
+        if(totalDistance >= minKM && totalDistance <= maxKM){
             return res;
         }
         //Random gone wrong, better luck next time
