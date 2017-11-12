@@ -44,6 +44,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import brice.explorun.activities.MainActivity;
+import brice.explorun.controllers.ParcoursController;
 import brice.explorun.models.Utility;
 import brice.explorun.controllers.NearbyAttractionsController;
 import brice.explorun.models.Photo;
@@ -353,5 +354,15 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		}
 
 		return Utility.getColorFromType(this, res);
+	}
+
+	public ArrayList<Place> generateParcours(){
+		float[] userLoc = Utility.getLocationFromPreferences(getActivity());
+		ParcoursController pc = new ParcoursController(places, userLoc ,10, 50);
+		ArrayList<Place> parcours = pc.generateParcours();
+		for(Place p : parcours){
+			Log.i("eX_parcours", p.getName());
+		}
+		return parcours;
 	}
 }
