@@ -358,11 +358,9 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 	public ArrayList<Place> generateParcours(){
 		float[] userLoc = Utility.getLocationFromPreferences(getActivity());
-		ParcoursController pc = new ParcoursController(places, userLoc ,10, 50);
-		ArrayList<Place> parcours = pc.generateParcours();
-		for(Place p : parcours){
-			Log.i("eX_parcours", p.getName());
-		}
+		ParcoursController pc = new ParcoursController(places, userLoc);
+		ArrayList<Place> parcours = pc.generateParcours(5, 5.5);
+		pc.printParcours(parcours);
 		return parcours;
 	}
 }

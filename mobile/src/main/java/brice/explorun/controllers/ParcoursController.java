@@ -3,6 +3,9 @@ package brice.explorun.controllers;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
 
 import brice.explorun.models.Place;
@@ -14,20 +17,17 @@ import brice.explorun.models.Utility;
 
 public class ParcoursController {
     private final int nbIterations = 100;
+    private final int nbPlaces = 3;
     private ArrayList<Place> places;
     private float[] userLocation;
-    private float minKM;
-    private float maxKM;
 
 
-    public ParcoursController(ArrayList<Place> places, float[] userLocation, float minKM, float maxKM){
+    public ParcoursController(ArrayList<Place> places, float[] userLocation){
         this.places = places;
         this.userLocation = userLocation;
-        this.minKM = minKM;
-        this.maxKM = maxKM;
     }
 
-    public ArrayList<Place> generateParcours(){
+    public ArrayList<Place> generateParcours(double minKM, double maxKM){
         ArrayList<Place> validPlaces = new ArrayList<Place>();
         ArrayList<Place> selectedPlaces = null;
         //Remove places that are too far away
@@ -40,14 +40,21 @@ public class ParcoursController {
         places = validPlaces;
         int i = 0;
         while(selectedPlaces == null && i++ < nbIterations){
-            selectedPlaces = getParcours();
+            selectedPlaces = getParcours(new ArrayList<Place>(places), minKM, maxKM);
         }
         return selectedPlaces;
     }
 
-    private  ArrayList<Place> getParcours(){
+    public void printParcours(ArrayList<Place> parcours){
+        String parcoursString = "";
+        for(Place p : parcours){
+            parcoursString += p.getName() + " => ";
+        }
+        Log.i("eX_parcours", parcoursString.substring(0, parcoursString.length() - 4));
+    }
+
+    private  ArrayList<Place> getParcours(ArrayList<Place> placesLeft, double minKM, double maxKM){
         ArrayList<Place> res = new ArrayList<Place>();
-        ArrayList<Place> placesLeft = new ArrayList<>(places);
         Random r = new Random();
         //Select a random place
         Place curPlace = placesLeft.get(r.nextInt(placesLeft.size()));
@@ -59,8 +66,9 @@ public class ParcoursController {
 
         //While totalDistance of the parcours is less than minKm
         while((total_distance + distanceToUserLocation(lastPlace) < minKM) && placesLeft.size() > 0){
-            //Select a random place and add it to current parcours
-            curPlace = placesLeft.get(r.nextInt(placesLeft.size()));
+            //Select a random place near lastPlace and add it to current parcours
+            ArrayList<Place> nearestPlaces = getNearestPlaces(placesLeft, lastPlace);
+            curPlace = nearestPlaces.get(r.nextInt(nearestPlaces.size()));
             total_distance += distanceBetweenPlace(lastPlace, curPlace);
             res.add(curPlace);
             placesLeft.remove(curPlace);
@@ -72,14 +80,35 @@ public class ParcoursController {
         }
         //Random gone wrong, better luck next time
         else if (total_distance > maxKM){
+            Log.d("eX_parcours", "Parcours is too long, trying again");
             return null;
         }
         //No parcours of this length can be created with current places list
         else {
-            Log.e("eX_parcours", "Not enough places to do a parcours of this length");
+            Log.d("eX_parcours", "Parcours is too short, trying again");
             return null;
         }
 
+    }
+
+    private ArrayList<Place> getNearestPlaces(ArrayList<Place> placesLeft, Place lastPlace){
+        //Compute distance to current place
+        for(Place p : placesLeft){
+            p.setDistance(distanceBetweenPlace(lastPlace, p));
+        }
+        //Sort placesLeft by distance
+        Collections.sort(placesLeft, new Comparator<Place>(){
+            public int compare(Place p1, Place p2) {
+                return Double.compare(p1.getDistance(), p2.getDistance());
+            }
+        });
+        //Return subset of places (0 to nbPlace - 1)
+        if(placesLeft.size() > nbPlaces){
+            return new ArrayList<Place>(placesLeft.subList(0, nbPlaces));
+        }
+        else{
+            return placesLeft;
+        }
     }
 
     private double distanceToUserLocation(Place p){
