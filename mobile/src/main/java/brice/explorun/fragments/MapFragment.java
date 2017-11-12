@@ -5,29 +5,19 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.drawable.GradientDrawable;
-import android.location.Location;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ScrollView;
-import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -44,12 +34,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import brice.explorun.activities.MainActivity;
-import brice.explorun.controllers.ParcoursController;
+import brice.explorun.controllers.RoutesController;
 import brice.explorun.models.Utility;
 import brice.explorun.controllers.NearbyAttractionsController;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
-import brice.explorun.services.LocationService;
 import brice.explorun.R;
 
 public class MapFragment extends PlacesObserverFragment implements OnMapReadyCallback
@@ -356,11 +345,11 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		return Utility.getColorFromType(this, res);
 	}
 
-	public ArrayList<Place> generateParcours(){
+	public ArrayList<Place> generateRoute(){
 		float[] userLoc = Utility.getLocationFromPreferences(getActivity());
-		ParcoursController pc = new ParcoursController(places, userLoc);
-		ArrayList<Place> parcours = pc.generateParcours(5, 5.5);
-		pc.printParcours(parcours);
-		return parcours;
+		RoutesController pc = new RoutesController(places, userLoc);
+		ArrayList<Place> route = pc.generateRoute(5, 5.5);
+		pc.printRoute(route);
+		return route;
 	}
 }

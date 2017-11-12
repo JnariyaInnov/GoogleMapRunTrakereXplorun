@@ -5,29 +5,25 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Random;
 
 import brice.explorun.models.Place;
 import brice.explorun.models.Utility;
 
-/**
- * Created by germain on 11/11/17.
- */
-
-public class ParcoursController {
+public class RoutesController
+{
     private final int nbIterations = 100;
     private final int nbPlaces = 3;
     private ArrayList<Place> places;
     private float[] userLocation;
 
 
-    public ParcoursController(ArrayList<Place> places, float[] userLocation){
+    public RoutesController(ArrayList<Place> places, float[] userLocation){
         this.places = places;
         this.userLocation = userLocation;
     }
 
-    public ArrayList<Place> generateParcours(double minKM, double maxKM){
+    public ArrayList<Place> generateRoute(double minKM, double maxKM){
         ArrayList<Place> validPlaces = new ArrayList<Place>();
         ArrayList<Place> selectedPlaces = null;
         //Remove places that are too far away
@@ -39,22 +35,22 @@ public class ParcoursController {
         //Begin to select places
         places = validPlaces;
         int i = 0;
-        while(selectedPlaces == null && i++ < nbIterations){
-            selectedPlaces = getParcours(new ArrayList<Place>(places), minKM, maxKM);
+        while(selectedPlaces == null && i++ < this.nbIterations){
+            selectedPlaces = getRoute(new ArrayList<>(this.places), minKM, maxKM);
         }
         return selectedPlaces;
     }
 
-    public void printParcours(ArrayList<Place> parcours){
-        String parcoursString = "";
-        for(Place p : parcours){
-            parcoursString += p.getName() + " => ";
+    public void printRoute(ArrayList<Place> route){
+        String routeString = "";
+        for(Place p : route){
+            routeString += p.getName() + " => ";
         }
-        Log.i("eX_parcours", parcoursString.substring(0, parcoursString.length() - 4));
+        Log.i("eX_route", routeString.substring(0, routeString.length() - 4));
     }
 
-    private  ArrayList<Place> getParcours(ArrayList<Place> placesLeft, double minKM, double maxKM){
-        ArrayList<Place> res = new ArrayList<Place>();
+    private  ArrayList<Place> getRoute(ArrayList<Place> placesLeft, double minKM, double maxKM){
+        ArrayList<Place> res = new ArrayList<>();
         Random r = new Random();
         //Select a random place
         Place curPlace = placesLeft.get(r.nextInt(placesLeft.size()));
@@ -62,30 +58,30 @@ public class ParcoursController {
         res.add(curPlace);
         placesLeft.remove(curPlace);
         //Init distance to distance to selected place
-        double total_distance = distanceToUserLocation(lastPlace);
+        double totalDistance = distanceToUserLocation(lastPlace);
 
-        //While totalDistance of the parcours is less than minKm
-        while((total_distance + distanceToUserLocation(lastPlace) < minKM) && placesLeft.size() > 0){
-            //Select a random place near lastPlace and add it to current parcours
+        //While totalDistance of the route is less than minKm
+        while((totalDistance + distanceToUserLocation(lastPlace) < minKM) && placesLeft.size() > 0){
+            //Select a random place near lastPlace and add it to current route
             ArrayList<Place> nearestPlaces = getNearestPlaces(placesLeft, lastPlace);
             curPlace = nearestPlaces.get(r.nextInt(nearestPlaces.size()));
-            total_distance += distanceBetweenPlace(lastPlace, curPlace);
+            totalDistance += distanceBetweenPlace(lastPlace, curPlace);
             res.add(curPlace);
             placesLeft.remove(curPlace);
             lastPlace = curPlace;
         }
-        //If parcours is valid, return it
-        if(total_distance > minKM && total_distance < maxKM){
+        //If route is valid, return it
+        if(totalDistance > minKM && totalDistance < maxKM){
             return res;
         }
         //Random gone wrong, better luck next time
-        else if (total_distance > maxKM){
-            Log.d("eX_parcours", "Parcours is too long, trying again");
+        else if (totalDistance > maxKM){
+            Log.d("eX_route", "Route is too long, trying again");
             return null;
         }
-        //No parcours of this length can be created with current places list
+        //No route of this length can be created with current places list
         else {
-            Log.d("eX_parcours", "Parcours is too short, trying again");
+            Log.d("eX_route", "Route is too short, trying again");
             return null;
         }
 
@@ -102,9 +98,9 @@ public class ParcoursController {
                 return Double.compare(p1.getDistance(), p2.getDistance());
             }
         });
-        //Return subset of places (0 to nbPlace - 1)
-        if(placesLeft.size() > nbPlaces){
-            return new ArrayList<Place>(placesLeft.subList(0, nbPlaces));
+        //Return subset of places (0 to nbPlaces - 1)
+        if(placesLeft.size() > this.nbPlaces){
+            return new ArrayList<>(placesLeft.subList(0, this.nbPlaces));
         }
         else{
             return placesLeft;
@@ -112,7 +108,7 @@ public class ParcoursController {
     }
 
     private double distanceToUserLocation(Place p){
-        return Utility.distanceBetweenCoordinates(userLocation[0], userLocation[1], p.getLatitude(), p.getLongitude());
+        return Utility.distanceBetweenCoordinates(this.userLocation[0], this.userLocation[1], p.getLatitude(), p.getLongitude());
     }
 
     private double distanceBetweenPlace(Place p1, Place p2){
