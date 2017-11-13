@@ -37,10 +37,6 @@ import brice.explorun.R;
 import brice.explorun.activities.MainActivity;
 import brice.explorun.models.Utility;
 
-/**
- * Created by germain on 11/6/17.
- */
-
 public class LocationService extends Service implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     public static boolean isStarted = false;
@@ -117,7 +113,11 @@ public class LocationService extends Service implements LocationListener, Google
 	@Override
     public void onDestroy() {
         isStarted = false;
-        stopLocationUpdates();
+        if (mGoogleApiClient.isConnected())
+		{
+			stopLocationUpdates();
+			mGoogleApiClient.disconnect();
+		}
         super.onDestroy();
     }
 
@@ -158,7 +158,10 @@ public class LocationService extends Service implements LocationListener, Google
 
     public void stopLocationUpdates()
     {
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+    	if (mGoogleApiClient.isConnected())
+		{
+			LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+		}
     }
 
     @Nullable

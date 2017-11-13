@@ -193,7 +193,7 @@ public class NearbyAttractionsController
 					// Get the icon of the place
 					String iconUrl = object.getString("icon");
 
-					if (!iconUrl.contains("shopping"))
+					if (!iconUrl.contains("shopping") && !iconUrl.contains("business") && !iconUrl.contains("camping"))
 					{
 						// Get the location of the place
 						JSONObject geometry = object.getJSONObject("geometry");

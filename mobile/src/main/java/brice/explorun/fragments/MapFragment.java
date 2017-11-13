@@ -30,6 +30,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
@@ -297,10 +298,10 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		for (Place place: this.places)
 		{
 			LatLng location = new LatLng(place.getLatitude(), place.getLongitude());
-			MarkerOptions options = new MarkerOptions().title(place.getName()).position(location);
-			options.icon(BitmapDescriptorFactory.defaultMarker(getPlaceMarkerColor(place)));
 			if (this.map != null)
 			{
+				MarkerOptions options = new MarkerOptions().title(place.getName()).position(location);
+				options.icon(BitmapDescriptorFactory.defaultMarker(getPlaceMarkerColor(place)));
 				Marker marker = this.map.addMarker(options);
 				this.placesMarkers.add(marker);
 
