@@ -46,10 +46,9 @@ import brice.explorun.fragments.NearbyAttractionsFragment;
 import brice.explorun.services.ConnectivityStatusHandler;
 import brice.explorun.services.LocationService;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
+public class MainActivity extends AppCompatActivity
 {
 	private Fragment fragment;
-	private final int REQUEST_CHECK_SETTINGS = 0x1;
 	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
 
 	private DrawerLayout mDrawerLayout;
@@ -64,6 +63,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 	public NavigationView getNavigationView() { return this.navigationView; }
 
 	public ConnectivityStatusHandler getConnectivityStatusHandler() { return this.connectivityStatusHandler; }
+
+	public static GoogleApiClient mGoogleApiClient = null;
 
 	@Override
     protected void onCreate(Bundle savedInstanceState)
@@ -124,24 +125,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 	@Override
-	public void onConnected(@Nullable Bundle bundle)
-	{
-
-	}
-
-	@Override
-	public void onConnectionSuspended(int i)
-	{
-
-	}
-
-	@Override
-	public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
-	{
-
-	}
-
-	@Override
 	protected void onPostCreate(Bundle savedInstanceState)
 	{
 		Log.d("eX_lifeCycle", "main => onPostCreate()");
@@ -164,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 		// Register broadcast receiver for connectivity changes
 		this.connectivityStatusHandler = new ConnectivityStatusHandler(this);
 		this.registerReceiver(this.connectivityStatusHandler, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+		if (ActivityCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
 		{
 			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_GPS);
 		}
@@ -221,30 +204,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 		}
 	}
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data)
-	{
-		switch (requestCode)
-		{
-			case REQUEST_CHECK_SETTINGS:
-				switch (resultCode)
-				{
-					case Activity.RESULT_OK:
-						// Access to location granted by the user => Start location service
-						startService();
-						break;
-
-					case Activity.RESULT_CANCELED:
-						// The user was asked to change settings, but chose not to
-						break;
-
-					default:
-						break;
-				}
-				break;
-		}
-	}
-
 	public void checkLocationEnabled()
 	{
 		LocationManager lm = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
@@ -265,8 +224,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 		else {
 			startService();
 		}
-
-		//status.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
 	}
 
 	private void openLocationSettings(){
