@@ -10,6 +10,7 @@ import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
@@ -123,9 +124,9 @@ public class Utility
 	private static float colorToHue(Fragment context, int colorRes)
 	{
 		float hsv[] = new float[3];
-		if (context != null)
+		if (context.getActivity() != null)
 		{
-			Color.colorToHSV(context.getResources().getColor(colorRes), hsv);
+			Color.colorToHSV(context.getActivity().getResources().getColor(colorRes), hsv);
 			return hsv[0];
 		}
 		else

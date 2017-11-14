@@ -5,32 +5,21 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.drawable.GradientDrawable;
-import android.location.Location;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ScrollView;
-import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
@@ -49,7 +38,6 @@ import brice.explorun.models.Utility;
 import brice.explorun.controllers.NearbyAttractionsController;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
-import brice.explorun.services.LocationService;
 import brice.explorun.R;
 
 public class MapFragment extends PlacesObserverFragment implements OnMapReadyCallback
@@ -123,10 +111,14 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	{
 		if (savedInstanceState != null)
 		{
-			// Update the value of mCurrentLocation from the Bundle and update the UI to show the correct latitude and longitude.
-			if (savedInstanceState.keySet().contains(LOCATION_KEY))
+			if (savedInstanceState.keySet().contains(PLACES_KEY))
 			{
-				savedInstanceState.getParcelable(LOCATION_KEY);
+				this.places = savedInstanceState.getParcelableArrayList(PLACES_KEY);
+			}
+
+			// Update the value of mCurrentLocation from the Bundle and update the UI to show the correct latitude and longitude.
+			if (savedInstanceState.keySet().contains(LOCATION_KEY) && this.places.size() > 0)
+			{
 				// Since LOCATION_KEY was found in the Bundle, we can be sure that LastLocation is not null.
 				mLastLocation = savedInstanceState.getParcelable(LOCATION_KEY);
 				if (mLastLocation != null)
@@ -139,11 +131,6 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			if (savedInstanceState.keySet().contains(FIRST_REQUEST_KEY))
 			{
 				this.isFirstRequest = savedInstanceState.getBoolean(FIRST_REQUEST_KEY);
-			}
-
-			if (savedInstanceState.keySet().contains(PLACES_KEY))
-			{
-				this.places = savedInstanceState.getParcelableArrayList(PLACES_KEY);
 			}
 
 			if (savedInstanceState.keySet().contains(FORM_OPEN_KEY))
@@ -275,8 +262,8 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 				}
 				this.userMarker.setPosition(userLocation);
 				this.isFirstRequest = false;
+				getNearbyPlaces();
 			}
-			getNearbyPlaces();
 		}
 	}
 
