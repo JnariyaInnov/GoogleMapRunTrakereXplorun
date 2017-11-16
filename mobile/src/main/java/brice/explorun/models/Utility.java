@@ -25,12 +25,18 @@ import brice.explorun.R;
 
 public class Utility
 {
-	public enum SPORTS {WALKING, RUNNING, TRAIL }
+	// Class to define the sports
+	public static class Sport {
+		public static final int WALKING = 0;
+		public static final int RUNNING = 1;
+		public static final int TRAIL = 2;
 
-	// Average speeds for each sport (in km/h)
-	private static final int WALKING_SPEED = 3;
-	private static final int RUNNING_SPEED = 9;
-	private static final int TRAIL_SPEED = 11;
+		// Average speeds for each sport (in km/h)
+		private static final int WALKING_SPEED = 3;
+		private static final int RUNNING_SPEED = 9;
+		private static final int TRAIL_SPEED = 11;
+	}
+
 
 	/**
 	 * Method to know if the user is connected to the Internet
@@ -111,24 +117,20 @@ public class Utility
 	{
 		List<String> appTypes = Arrays.asList(context.getResources().getStringArray(R.array.places_types));
 		ArrayList<String> types = place.getTypes();
-		String res = "";
 		int i = 0;
-		boolean found = false;
-		while (!found && i < types.size())
+		while(i < types.size() && !appTypes.contains(types.get(i)))
 		{
-			String type = types.get(i);
-			if (appTypes.contains(type))
-			{
-				found = true;
-				res = type;
-			}
-			else
-			{
-				i++;
-			}
+			i++;
 		}
 
-		return Utility.getColorFromType(context, res);
+		if (i == types.size())
+		{
+			return Utility.getColorFromType(context, "");
+		}
+		else
+		{
+			return Utility.getColorFromType(context, types.get(i));
+		}
 	}
 
 	private static float getColorFromType(Fragment context, String type)
@@ -185,21 +187,21 @@ public class Utility
 	 * @param sport Sport of the user
 	 * @return The average speed of the sport selected by the user
 	 */
-	public static int getAverageSpeedFromSport(SPORTS sport)
+	public static int getAverageSpeedFromSport(int sport)
 	{
 		int res;
 		switch (sport)
 		{
-			case TRAIL:
-				res = TRAIL_SPEED;
+			case Sport.TRAIL:
+				res = Sport.TRAIL_SPEED;
 				break;
 
-			case RUNNING:
-				res = RUNNING_SPEED;
+			case Sport.RUNNING:
+				res = Sport.RUNNING_SPEED;
 				break;
 
 			default:
-				res = WALKING_SPEED;
+				res = Sport.WALKING_SPEED;
 				break;
 		}
 

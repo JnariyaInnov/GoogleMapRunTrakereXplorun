@@ -1,6 +1,8 @@
 package brice.explorun.fragments;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 
 import brice.explorun.R;
 import brice.explorun.models.FormObserver;
-import brice.explorun.models.Utility;
 import brice.explorun.models.Utility.*;
 
 public class FormFragment extends Fragment implements View.OnClickListener{
@@ -28,9 +29,7 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 	private Button mValidateButton;
 	private TextView mDurationText;
 
-	private Animation animation;
-
-	private SPORTS chosenSport;
+	private int chosenSport;
 
 	private FormObserver observer;
 
@@ -61,7 +60,10 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 
 		});
 
-		this.chosenSport = SPORTS.WALKING;
+		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
+		this.chosenSport = sharedPref.getInt("sport", Sport.WALKING);
+
+		checkRadioButton();
 
 		try
 		{
@@ -76,25 +78,45 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 
 	}
 
+	public void checkRadioButton()
+	{
+		switch (this.chosenSport)
+		{
+			case Sport.TRAIL:
+				this.mTrailRadioButton.setChecked(true);
+				break;
+
+			case Sport.RUNNING:
+				this.mRunRadioButton.setChecked(true);
+				break;
+
+			default:
+				this.mWalkRadioButton.setChecked(true);
+		}
+	}
+
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()){
 			case R.id.fragment_form_walk_radio:
 				mDurationRangeBar.setTickEnd(180);
-				this.chosenSport = SPORTS.WALKING;
+				this.chosenSport = Sport.WALKING;
 				break;
 
 			case R.id.fragment_form_run_radio:
 				mDurationRangeBar.setTickEnd(180);
-				this.chosenSport = SPORTS.RUNNING;
+				this.chosenSport = Sport.RUNNING;
 				break;
 
 			case R.id.fragment_form_trail_radio:
 				mDurationRangeBar.setTickEnd(300);
-				this.chosenSport = SPORTS.TRAIL;
+				this.chosenSport = Sport.TRAIL;
 				break;
 
 			case R.id.fragment_form_validate_button:
+				SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this.getActivity()).edit();
+				editor.putInt("sport", this.chosenSport);
+				editor.apply();
 				if (this.observer != null)
 				{
 					this.observer.onFormValidate(this.chosenSport, this.mDurationRangeBar.getLeftPinValue(), this.mDurationRangeBar.getRightPinValue());

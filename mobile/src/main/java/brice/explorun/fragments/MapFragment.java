@@ -373,7 +373,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	}
 
 	@Override
-	public void onFormValidate(Utility.SPORTS sport, String leftPinValue, String rightPinValue)
+	public void onFormValidate(int sport, String leftPinValue, String rightPinValue)
 	{
 		int minDuration = Integer.parseInt(leftPinValue);
 		int maxDuration = Integer.parseInt(rightPinValue);

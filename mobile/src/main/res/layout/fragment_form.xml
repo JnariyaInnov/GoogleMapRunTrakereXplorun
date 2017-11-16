@@ -25,8 +25,7 @@
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:layout_weight="1"
-				android:text="@string/form_walk_radio"
-				android:checked="true"/>
+				android:text="@string/form_walk_radio"/>
 
 			<RadioButton
 				android:id="@+id/fragment_form_run_radio"
