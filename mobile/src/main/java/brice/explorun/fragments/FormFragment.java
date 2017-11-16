@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import brice.explorun.R;
 import brice.explorun.models.FormObserver;
+import brice.explorun.models.Utility;
 import brice.explorun.models.Utility.*;
 
 public class FormFragment extends Fragment implements View.OnClickListener{

@@ -21,9 +21,12 @@ import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.Toast;
 
+import com.akexorcist.googledirection.model.Coordination;
 import com.akexorcist.googledirection.model.Direction;
 import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
+import com.akexorcist.googledirection.model.Step;
+import com.akexorcist.googledirection.model.Waypoint;
 import com.akexorcist.googledirection.util.DirectionConverter;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -86,6 +89,9 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	private ArrayList<Polyline> polylines;
 	private Route route;
 
+	private int width;
+	private int height;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
@@ -120,6 +126,9 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		this.routesController = new RoutesController(this, places, userLoc);
 		this.polylines = new ArrayList<>();
 		this.route = new Route();
+
+		this.width = getResources().getDisplayMetrics().widthPixels;
+		this.height = getResources().getDisplayMetrics().heightPixels;
 
 		return view;
 	}
@@ -217,48 +226,48 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		// Move the camera if the user has clicked on one attraction in the list in the NearbyAttractionsFragment
 		if (this.isFirstRequest && this.args != null)
 		{
-			LatLngBounds.Builder builder = new LatLngBounds.Builder();
+			LatLng loc1 = new LatLng(this.args.getDouble("latitude"), this.args.getDouble("longitude"));
 
-			double latitude = this.args.getDouble("latitude");
-			double longitude = this.args.getDouble("longitude");
-			// Include place's position
-			builder.include(new LatLng(latitude, longitude));
-			// Include user's position
 			float[] loc = Utility.getLocationFromPreferences(this.getActivity());
-			builder.include(new LatLng(loc[0], loc[1]));
+			LatLng loc2 = new LatLng(loc[0], loc[1]);
 
-			double deltaLatitude = Math.abs(latitude - loc[0]);
-			double deltaLongitude = Math.abs(longitude - loc[1]);
+			List<LatLng> locations = Arrays.asList(loc1, loc2);
 
-			double delta = deltaLongitude-deltaLatitude;
+			int padding = getPaddingForCameraBetweenTwoLocations(loc1, loc2);
 
-			int width = getResources().getDisplayMetrics().widthPixels;
-			int height = getResources().getDisplayMetrics().heightPixels;
-			int padding;
-
-			Configuration config = getResources().getConfiguration();
-			if (config.orientation == Configuration.ORIENTATION_PORTRAIT)
-			{
-				padding = (int) (height * 0.2); // offset from edges of the map 20% of the height of the screen
-				if (delta > 0)
-				{
-					padding = (int) (width * 0.1); // offset from edges of the map 10% of the width of the screen
-				}
-			}
-			else // If we are in landscape mode
-			{
-				padding = (int) (width * 0.15); // offset from edges of the map 15% of the width of the screen
-				if (delta > 0)
-				{
-					padding = (int) (height * 0.25); // offset from edges of the map 25% of the height of the screen
-				}
-			}
-
-			LatLngBounds bounds = builder.build();
-
-			map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding));
+			map.moveCamera(Utility.getCameraUpdateBounds(this.width, this.height, padding, locations));
 		}
 		update();
+	}
+
+	public int getPaddingForCameraBetweenTwoLocations(LatLng loc1, LatLng loc2)
+	{
+		double deltaLatitude = Math.abs(loc1.latitude - loc2.latitude);
+		double deltaLongitude = Math.abs(loc1.longitude - loc2.longitude);
+
+		double delta = deltaLongitude-deltaLatitude;
+
+		int padding;
+
+		Configuration config = getResources().getConfiguration();
+		if (config.orientation == Configuration.ORIENTATION_PORTRAIT)
+		{
+			padding = (int) (this.height * 0.2); // offset from edges of the map 20% of the height of the screen
+			if (delta > 0)
+			{
+				padding = (int) (this.width * 0.1); // offset from edges of the map 10% of the width of the screen
+			}
+		}
+		else // If we are in landscape mode
+		{
+			padding = (int) (this.width * 0.15); // offset from edges of the map 15% of the width of the screen
+			if (delta > 0)
+			{
+				padding = (int) (this.height * 0.25); // offset from edges of the map 25% of the height of the screen
+			}
+		}
+
+		return padding;
 	}
 
 	public void initializeMyLocationButton()
@@ -375,7 +384,14 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		ArrayList<Place> route = this.routesController.generateRoute(minKM, maxKM);
 		if (route != null)
 		{
-			this.routesController.getRouteFromAPI(route);
+			if (Utility.isOnline(this.getActivity()))
+			{
+				this.routesController.getRouteFromAPI(route);
+			}
+			else
+			{
+				Toast.makeText(this.getActivity(), R.string.no_network, Toast.LENGTH_LONG).show();
+			}
 		}
 		else
 		{
@@ -385,6 +401,26 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 	public void drawRouteOnMap(Route route)
 	{
+		if (this.map != null)
+		{
+			this.route = route;
+			this.removePolylines();
+
+			List<Leg> legList = route.getLegList();
+
+			if (legList != null)
+			{
+				for (Leg leg : legList)
+				{
+					PolylineOptions polylineOptions = DirectionConverter.createPolyline(this.getActivity(), leg.getDirectionPoint(), 4, Color.BLUE);
+					this.polylines.add(this.map.addPolyline(polylineOptions));
+				}
+			}
+		}
+	}
+
+	public void onDirectionAPIResponse(Route route)
+	{
 		if (route != null)
 		{
 			// Close form fragment
@@ -392,21 +428,20 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			this.formLayout.setVisibility(View.GONE);
 			this.formLayout.startAnimation(this.slideDownAnimation);
 
-			if (this.map != null)
-			{
-				this.route = route;
-				this.removePolylines();
+			this.drawRouteOnMap(route);
 
-				List<Leg> legList = route.getLegList();
-				if (legList != null)
+			List<LatLng> locations = new ArrayList<>();
+
+			for (Leg leg: route.getLegList())
+			{
+				for (Step step: leg.getStepList())
 				{
-					for (Leg leg : legList)
-					{
-						PolylineOptions polylineOptions = DirectionConverter.createPolyline(this.getActivity(), leg.getDirectionPoint(), 4, Color.BLUE);
-						this.polylines.add(this.map.addPolyline(polylineOptions));
-					}
+					Coordination coordination = step.getStartLocation();
+					locations.add(new LatLng(coordination.getLatitude(), coordination.getLongitude()));
 				}
 			}
+
+			this.map.animateCamera(Utility.getCameraUpdateBounds(this.width, this.height, (int) (this.width*0.1), locations));
 		}
 		else
 		{

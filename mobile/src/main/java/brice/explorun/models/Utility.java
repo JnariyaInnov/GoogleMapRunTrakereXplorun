@@ -11,7 +11,11 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -200,5 +204,18 @@ public class Utility
 		}
 
 		return res;
+	}
+
+	public static CameraUpdate getCameraUpdateBounds(int width, int height, int padding, List<LatLng> points)
+	{
+		LatLngBounds.Builder builder = new LatLngBounds.Builder();
+		for (LatLng point: points)
+		{
+			builder.include(point);
+		}
+
+		LatLngBounds bounds = builder.build();
+
+		return CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
 	}
 }

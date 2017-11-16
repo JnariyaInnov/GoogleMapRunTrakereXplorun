@@ -54,17 +54,21 @@ public class RoutesController implements DirectionCallback
         ArrayList<Place> validPlaces = new ArrayList<>();
         ArrayList<Place> selectedPlaces = null;
         //Remove places that are too far away
-        for (Place p : places) {
+        for (Place p : this.places) {
             if(2.0 * distanceToUserLocation(p) < maxKM){
                 validPlaces.add(p);
             }
         }
         //Begin to select places
-        places = validPlaces;
-        int i = 0;
-        while(selectedPlaces == null && i++ < this.nbIterations){
-            selectedPlaces = getRoute(new ArrayList<>(this.places), minKM, maxKM);
-        }
+        this.places = validPlaces;
+        if (this.places.size() > 0)
+		{
+			int i = 0;
+			while (selectedPlaces == null && i++ < this.nbIterations)
+			{
+				selectedPlaces = getRoute(new ArrayList<>(this.places), minKM, maxKM);
+			}
+		}
         return selectedPlaces;
     }
 
@@ -155,12 +159,12 @@ public class RoutesController implements DirectionCallback
     {
         if (direction.isOK())
         {
-            this.fragment.drawRouteOnMap(direction.getRouteList().get(0	));
+            this.fragment.onDirectionAPIResponse(direction.getRouteList().get(0));
         }
         else
         {
         	Log.e("eX_route", "Error with Direction API request: " + direction.getErrorMessage());
-            this.fragment.drawRouteOnMap(null);
+            this.fragment.onDirectionAPIResponse(null);
         }
     }
 
@@ -168,7 +172,7 @@ public class RoutesController implements DirectionCallback
     public void onDirectionFailure(Throwable t)
     {
     	Log.e("eX_route", "Error with Direction API request: " + t.getMessage());
-        this.fragment.drawRouteOnMap(null);
+        this.fragment.onDirectionAPIResponse(null);
     }
 
     private DirectionRequest getDirectionRequest(ArrayList<Place> route)
