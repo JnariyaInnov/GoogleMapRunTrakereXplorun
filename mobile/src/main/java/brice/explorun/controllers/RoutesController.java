@@ -2,20 +2,36 @@ package brice.explorun.controllers;
 
 import android.util.Log;
 
+import com.akexorcist.googledirection.DirectionCallback;
+import com.akexorcist.googledirection.GoogleDirection;
+import com.akexorcist.googledirection.constant.AvoidType;
+import com.akexorcist.googledirection.constant.Language;
+import com.akexorcist.googledirection.constant.TransportMode;
+import com.akexorcist.googledirection.constant.Unit;
+import com.akexorcist.googledirection.model.Direction;
+import com.akexorcist.googledirection.request.DirectionDestinationRequest;
+import com.akexorcist.googledirection.request.DirectionRequest;
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Random;
 
+import brice.explorun.R;
+import brice.explorun.fragments.MapFragment;
 import brice.explorun.models.Place;
 import brice.explorun.models.Utility;
 
-public class RoutesController
+public class RoutesController implements DirectionCallback
 {
     private final int nbIterations = 100;
     private final int nbPlaces = 3;
     private ArrayList<Place> places;
     private float[] userLocation;
+
+    private MapFragment fragment;
 
 	public void setPlaces(ArrayList<Place> places)
 	{
@@ -27,13 +43,15 @@ public class RoutesController
 		this.userLocation = userLocation;
 	}
 
-	public RoutesController(ArrayList<Place> places, float[] userLocation){
+	public RoutesController(MapFragment fragment, ArrayList<Place> places, float[] userLocation){
+	    this.fragment = fragment;
         this.places = places;
         this.userLocation = userLocation;
     }
 
     public ArrayList<Place> generateRoute(double minKM, double maxKM){
-        ArrayList<Place> validPlaces = new ArrayList<Place>();
+		Log.i("eX_route", "Generating route");
+        ArrayList<Place> validPlaces = new ArrayList<>();
         ArrayList<Place> selectedPlaces = null;
         //Remove places that are too far away
         for (Place p : places) {
@@ -125,5 +143,52 @@ public class RoutesController
 
     private double distanceBetweenPlace(Place p1, Place p2){
         return Utility.distanceBetweenCoordinates(p1.getLatitude(), p1.getLongitude(), p2.getLatitude(), p2.getLongitude());
+    }
+
+    public void getRouteFromAPI(ArrayList<Place> route)
+	{
+		getDirectionRequest(route).execute(this);
+	}
+
+    @Override
+    public void onDirectionSuccess(Direction direction, String rawBody)
+    {
+        if (direction.isOK())
+        {
+            this.fragment.drawRouteOnMap(direction.getRouteList().get(0	));
+        }
+        else
+        {
+        	Log.e("eX_route", "Error with Direction API request: " + direction.getErrorMessage());
+            this.fragment.drawRouteOnMap(null);
+        }
+    }
+
+    @Override
+    public void onDirectionFailure(Throwable t)
+    {
+    	Log.e("eX_route", "Error with Direction API request: " + t.getMessage());
+        this.fragment.drawRouteOnMap(null);
+    }
+
+    private DirectionRequest getDirectionRequest(ArrayList<Place> route)
+    {
+        LatLng userLoc = new LatLng(this.userLocation[0], this.userLocation[1]);
+
+        DirectionDestinationRequest request =
+                        GoogleDirection.withServerKey(this.fragment.getResources().getString(R.string.google_directions_web_key))
+                        .from(userLoc);
+
+        for (Place place: route)
+		{
+			request.and(new LatLng(place.getLatitude(), place.getLongitude()));
+		}
+
+		return request.to(userLoc)
+				.transportMode(TransportMode.WALKING)
+				.language(Locale.getDefault().getLanguage())
+				.unit(Unit.METRIC)
+				.avoid(AvoidType.FERRIES)
+				.avoid(AvoidType.HIGHWAYS);
     }
 }

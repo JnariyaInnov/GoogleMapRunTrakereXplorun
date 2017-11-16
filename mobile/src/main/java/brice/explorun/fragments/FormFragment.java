@@ -2,16 +2,12 @@ package brice.explorun.fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.RadioButton;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.appyvet.materialrangebar.RangeBar;
@@ -20,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 
 import brice.explorun.R;
 import brice.explorun.models.FormObserver;
-import brice.explorun.models.Utility;
 import brice.explorun.models.Utility.*;
 
 public class FormFragment extends Fragment implements View.OnClickListener{
@@ -65,7 +60,7 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 
 		});
 
-		this.chosenSport = SPORTS.WALK;
+		this.chosenSport = SPORTS.WALKING;
 
 		try
 		{
@@ -85,7 +80,7 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 		switch (v.getId()){
 			case R.id.fragment_form_walk_radio:
 				mDurationRangeBar.setTickEnd(180);
-				this.chosenSport = SPORTS.WALK;
+				this.chosenSport = SPORTS.WALKING;
 				break;
 
 			case R.id.fragment_form_run_radio:

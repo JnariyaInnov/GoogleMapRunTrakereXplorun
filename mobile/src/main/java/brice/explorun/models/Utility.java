@@ -13,16 +13,20 @@ import android.support.v7.app.AlertDialog;
 
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import brice.explorun.R;
 
 public class Utility
 {
-	public enum SPORTS { WALK, RUNNING, TRAIL }
+	public enum SPORTS {WALKING, RUNNING, TRAIL }
 
 	// Average speeds for each sport (in km/h)
-	private static int WALK_SPEED = 3;
-	private static int RUNNING_SPEED = 9;
-	private static int TRAIL_SPEED = 11;
+	private static final int WALKING_SPEED = 3;
+	private static final int RUNNING_SPEED = 9;
+	private static final int TRAIL_SPEED = 11;
 
 	/**
 	 * Method to know if the user is connected to the Internet
@@ -70,7 +74,7 @@ public class Utility
 	 * @param degrees Value in degrees to convert
 	 * @return The converted value in radians
 	 */
-	public static double degreesToRadians(double degrees)
+	private static double degreesToRadians(double degrees)
 	{
 		return degrees * Math.PI / 180;
 	}
@@ -99,7 +103,31 @@ public class Utility
 		return earthRadiusKm * c;
 	}
 
-	public static float getColorFromType(Fragment context, String type)
+	public static float getPlaceMarkerColor(Fragment context, Place place)
+	{
+		List<String> appTypes = Arrays.asList(context.getResources().getStringArray(R.array.places_types));
+		ArrayList<String> types = place.getTypes();
+		String res = "";
+		int i = 0;
+		boolean found = false;
+		while (!found && i < types.size())
+		{
+			String type = types.get(i);
+			if (appTypes.contains(type))
+			{
+				found = true;
+				res = type;
+			}
+			else
+			{
+				i++;
+			}
+		}
+
+		return Utility.getColorFromType(context, res);
+	}
+
+	private static float getColorFromType(Fragment context, String type)
 	{
 		float res;
 		switch (type)
@@ -167,7 +195,7 @@ public class Utility
 				break;
 
 			default:
-				res = WALK_SPEED;
+				res = WALKING_SPEED;
 				break;
 		}
 
