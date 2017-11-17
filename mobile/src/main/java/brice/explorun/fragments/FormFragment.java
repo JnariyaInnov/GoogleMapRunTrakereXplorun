@@ -26,6 +26,7 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 	private RadioButton mRunRadioButton;
 	private RadioButton mTrailRadioButton;
 	private Button mValidateButton;
+	private Button mCancelButton;
 	private TextView mDurationText;
 
 	private ScrollView layout;
@@ -41,12 +42,14 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 		mRunRadioButton = v.findViewById(R.id.fragment_form_run_radio);
 		mTrailRadioButton = v.findViewById(R.id.fragment_form_trail_radio);
 		mValidateButton = v.findViewById(R.id.fragment_form_validate_button);
+		mCancelButton = v.findViewById(R.id.fragment_form_cancel_button);
 		mDurationText = v.findViewById(R.id.fragment_form_duration_text);
 
 		mWalkRadioButton.setOnClickListener(this);
 		mRunRadioButton.setOnClickListener(this);
 		mTrailRadioButton.setOnClickListener(this);
 		mValidateButton.setOnClickListener(this);
+		mCancelButton.setOnClickListener(this);
 
 		mDurationText.setText(String.format(getResources().getString(R.string.form_duration_text),rangeDuration(mDurationRangeBar.getLeftPinValue()),rangeDuration(mDurationRangeBar.getRightPinValue())));
 
@@ -91,7 +94,10 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 				layout.setVisibility(View.GONE);
 				layout.startAnimation(animation);
 				break;
-
+			case R.id.fragment_form_cancel_button:
+				layout.setVisibility(View.GONE);
+				layout.startAnimation(animation);
+				break;
 
 		}
 	}

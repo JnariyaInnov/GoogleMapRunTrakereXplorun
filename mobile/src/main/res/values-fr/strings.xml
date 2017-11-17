@@ -28,4 +28,5 @@
 	<string name="form_duration_text">Durée : %1$s - %2$s</string>
 	<string name="cancel">Annuler</string>
 	<string name="start_form">Commencer une activité</string>
+	<string name="form_cancel_button">Annuler</string>
 </resources>

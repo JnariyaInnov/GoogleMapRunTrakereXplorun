@@ -36,6 +36,7 @@
 
 	<!-- Form activity -->
 	<string name="form_validate_button">Validate</string>
+	<string name="form_cancel_button">Cancel</string>
     <string name="form_walk_radio">Walk</string>
     <string name="form_run_radio">Run</string>
     <string name="form_trail_radio" translatable="false">Trail</string>
