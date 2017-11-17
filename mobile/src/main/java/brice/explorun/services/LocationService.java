@@ -74,23 +74,15 @@ public class LocationService extends Service implements LocationListener, Google
         startForeground(notificationId, notification);
         intent = new Intent("ex_location");
         Log.i("explorun_location", "Service successfully started");
-    }
 
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId)
-	{
 		// Connection to Google API
-		if (!mGoogleApiClient.isConnected())
-		{
-			try{
-				mGoogleApiClient.connect();
-			}
-			catch(Exception ex){
-				Log.e("eX_location", "Google api client not properly connected, trying again later");
-			}
+		try{
+			mGoogleApiClient.connect();
 		}
-		return super.onStartCommand(intent, flags, startId);
-	}
+		catch(Exception ex){
+			Log.e("explorun_location", "Can't connect to Google API Client: " + ex.getMessage());
+		}
+    }
 
 	@Override
 	public void onConnected(@Nullable Bundle bundle)
@@ -107,7 +99,6 @@ public class LocationService extends Service implements LocationListener, Google
 	@Override
 	public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
 	{
-
 	}
 
 	@Override
@@ -150,8 +141,10 @@ public class LocationService extends Service implements LocationListener, Google
             };
             h.postDelayed(r, 5000);
         }
-        else if (ActivityCompat.checkSelfPermission(this.getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+        else if (ActivityCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         {
+        	Log.i("explorun_location", "Requesting location updates");
+        	storeLastLocation(LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient));
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, createLocationRequest(), this);
         }
     }
@@ -173,11 +166,19 @@ public class LocationService extends Service implements LocationListener, Google
     @Override
     public void onLocationChanged(final Location loc) {
         Log.i("explorun_location", "Location changed");
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putFloat("latitude", (float) loc.getLatitude());
-        editor.putFloat("longitude", (float) loc.getLongitude());
-        editor.apply();
-        sendBroadcast(intent);
+        storeLastLocation(loc);
     }
+
+    public void storeLastLocation(final Location loc)
+	{
+		if (loc != null)
+		{
+			SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+			SharedPreferences.Editor editor = sharedPref.edit();
+			editor.putFloat("latitude", (float) loc.getLatitude());
+			editor.putFloat("longitude", (float) loc.getLongitude());
+			editor.apply();
+			sendBroadcast(intent);
+		}
+	}
 }
