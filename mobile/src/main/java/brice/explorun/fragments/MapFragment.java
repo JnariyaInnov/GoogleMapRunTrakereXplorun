@@ -434,7 +434,6 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 					legNumber++;
 				}
 			}
-			this.polylines.add(this.map.addPolyline(new PolylineOptions().add(new LatLng(48.41,-71)).add(new LatLng(48.40,-71.03)).color(Color.argb(50, 0, 0, 255))));
 		}
 	}
 
