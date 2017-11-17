@@ -11,22 +11,21 @@ import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.akexorcist.googledirection.model.Coordination;
-import com.akexorcist.googledirection.model.Direction;
 import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
-import com.akexorcist.googledirection.model.Step;
-import com.akexorcist.googledirection.model.Waypoint;
 import com.akexorcist.googledirection.util.DirectionConverter;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -35,7 +34,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -80,10 +78,12 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 	private List<String> types;
 
+	private RelativeLayout layout;
 	private Button mFormButton;
 	private ScrollView formLayout;
 	private Animation slideUpAnimation;
 	private Animation slideDownAnimation;
+	private ProgressBar progressBar = null;
 
 	private RoutesController routesController;
 	private ArrayList<Polyline> polylines;
@@ -108,6 +108,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		IntentFilter filter = new IntentFilter("ex_location");
 		getActivity().registerReceiver(locReceiver, filter);
 
+		this.layout = view.findViewById(R.id.map_fragment_view);
 		this.formLayout = view.findViewById(R.id.form);
 		this.slideUpAnimation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_up);
 		this.slideDownAnimation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_down);
@@ -121,6 +122,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 				formLayout.startAnimation(slideUpAnimation);
 			}
 		});
+		this.progressBar = view.findViewById(R.id.progress_bar);
 
 		float[] userLoc = Utility.getLocationFromPreferences(getActivity());
 		this.routesController = new RoutesController(this, places, userLoc);
@@ -375,6 +377,8 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	@Override
 	public void onFormValidate(int sport, String leftPinValue, String rightPinValue)
 	{
+		this.showProgressBar();
+
 		int minDuration = Integer.parseInt(leftPinValue);
 		int maxDuration = Integer.parseInt(rightPinValue);
 		int averageSpeed = Utility.getAverageSpeedFromSport(sport);
@@ -390,11 +394,13 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			}
 			else
 			{
+				this.hideProgressBar();
 				Toast.makeText(this.getActivity(), R.string.no_network, Toast.LENGTH_LONG).show();
 			}
 		}
 		else
 		{
+			this.hideProgressBar();
 			Toast.makeText(this.getActivity(), R.string.no_route_found, Toast.LENGTH_LONG).show();
 		}
 	}
@@ -408,19 +414,34 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 			List<Leg> legList = route.getLegList();
 
+			int blue = ContextCompat.getColor(this.getActivity(), R.color.lightBlue);
+
 			if (legList != null)
 			{
+				int legNumber = 0;
 				for (Leg leg : legList)
 				{
-					PolylineOptions polylineOptions = DirectionConverter.createPolyline(this.getActivity(), leg.getDirectionPoint(), 4, Color.BLUE);
+					ArrayList<LatLng> directionPoints = leg.getDirectionPoint();
+
+					PolylineOptions polylineOptions = DirectionConverter.createPolyline(this.getActivity(), directionPoints, 5, Color.BLACK);
+					polylineOptions.zIndex(-1);
 					this.polylines.add(this.map.addPolyline(polylineOptions));
+
+					PolylineOptions polylineOptions2 = DirectionConverter.createPolyline(this.getActivity(), directionPoints, 2, blue);
+					polylineOptions2.zIndex(legNumber);
+					this.polylines.add(this.map.addPolyline(polylineOptions2));
+
+					legNumber++;
 				}
 			}
+			this.polylines.add(this.map.addPolyline(new PolylineOptions().add(new LatLng(48.41,-71)).add(new LatLng(48.40,-71.03)).color(Color.argb(50, 0, 0, 255))));
 		}
 	}
 
 	public void onDirectionAPIResponse(Route route)
 	{
+		this.hideProgressBar();
+
 		if (route != null)
 		{
 			// Close form fragment
@@ -434,18 +455,27 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 			for (Leg leg: route.getLegList())
 			{
-				for (Step step: leg.getStepList())
-				{
-					Coordination coordination = step.getStartLocation();
-					locations.add(new LatLng(coordination.getLatitude(), coordination.getLongitude()));
-				}
+				Coordination coordination = leg.getStartLocation();
+				locations.add(new LatLng(coordination.getLatitude(), coordination.getLongitude()));
 			}
 
-			this.map.animateCamera(Utility.getCameraUpdateBounds(this.width, this.height, (int) (this.width*0.1), locations));
+			this.map.animateCamera(Utility.getCameraUpdateBounds(this.width, this.height, (int) (this.height*0.15), locations));
 		}
 		else
 		{
 			Toast.makeText(this.getActivity(), R.string.directions_api_request_error, Toast.LENGTH_LONG).show();
 		}
+	}
+
+	public void showProgressBar()
+	{
+		this.layout.setAlpha(0.6f);
+		this.progressBar.setVisibility(View.VISIBLE);
+	}
+
+	public void hideProgressBar()
+	{
+		this.progressBar.setVisibility(View.GONE);
+		this.layout.setAlpha(1);
 	}
 }

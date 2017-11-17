@@ -139,7 +139,7 @@ public class Utility
 		switch (type)
 		{
 			case "park":
-				res = colorToHue(context, R.color.dark_green);
+				res = colorToHue(context, R.color.darkGreen);
 				break;
 
 			case "museum":

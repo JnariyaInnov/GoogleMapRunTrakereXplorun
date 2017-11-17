@@ -5,7 +5,6 @@ import android.util.Log;
 import com.akexorcist.googledirection.DirectionCallback;
 import com.akexorcist.googledirection.GoogleDirection;
 import com.akexorcist.googledirection.constant.AvoidType;
-import com.akexorcist.googledirection.constant.Language;
 import com.akexorcist.googledirection.constant.TransportMode;
 import com.akexorcist.googledirection.constant.Unit;
 import com.akexorcist.googledirection.model.Direction;
@@ -163,7 +162,7 @@ public class RoutesController implements DirectionCallback
         }
         else
         {
-        	Log.e("eX_route", "Error with Direction API request: " + direction.getErrorMessage());
+        	Log.e("eX_route", "Success - Error with Direction API request: " + direction.getErrorMessage());
             this.fragment.onDirectionAPIResponse(null);
         }
     }
@@ -171,7 +170,7 @@ public class RoutesController implements DirectionCallback
     @Override
     public void onDirectionFailure(Throwable t)
     {
-    	Log.e("eX_route", "Error with Direction API request: " + t.getMessage());
+    	Log.e("eX_route", "Failure - Error with Direction API request: " + t.getLocalizedMessage());
         this.fragment.onDirectionAPIResponse(null);
     }
 
