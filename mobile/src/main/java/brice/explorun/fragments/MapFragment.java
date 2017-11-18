@@ -110,6 +110,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 		this.layout = view.findViewById(R.id.map_fragment_view);
 		this.formLayout = view.findViewById(R.id.form);
+		this.formLayout.setVisibility(View.GONE);
 		this.slideUpAnimation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_up);
 		this.slideDownAnimation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_down);
 
@@ -171,6 +172,11 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			if (savedInstanceState.keySet().contains(FORM_OPEN_KEY))
 			{
 				this.formLayout.setVisibility(savedInstanceState.getInt(FORM_OPEN_KEY));
+			}
+
+			if (savedInstanceState.keySet().contains(ROUTE_KEY))
+			{
+				this.route = savedInstanceState.getParcelable(ROUTE_KEY);
 			}
 		}
 	}

@@ -91,7 +91,6 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 
 		this.layout = v.findViewById(R.id.form);
 		this.animation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_down);
-		this.layout.setAnimation(this.animation);
 
 		return v;
 
@@ -146,8 +145,9 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 				break;
 
 			case R.id.fragment_form_cancel_button:
-				layout.setVisibility(View.GONE);
-				layout.startAnimation(animation);
+				this.layout.setAnimation(this.animation);
+				this.layout.setVisibility(View.GONE);
+				this.layout.startAnimation(this.animation);
 				break;
 
 		}

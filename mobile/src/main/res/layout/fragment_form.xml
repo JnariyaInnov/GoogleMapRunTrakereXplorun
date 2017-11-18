@@ -5,7 +5,6 @@
 	android:layout_height="match_parent"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	tools:context="brice.explorun.fragments.FormFragment"
-	android:visibility="gone"
 	android:id="@+id/form">
 
 	<LinearLayout
@@ -85,38 +84,38 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1">
-
-                <Button
-                    android:id="@+id/fragment_form_validate_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_margin="10dp"
-                    android:background="@color/lightGrey"
-                    android:shadowRadius="3"
-                    android:text="@string/form_validate_button" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1">
+                android:layout_weight="1"
+				android:gravity="center">
 
                 <Button
                     android:id="@+id/fragment_form_cancel_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
                     android:layout_margin="10dp"
                     android:background="@color/lightGrey"
                     android:gravity="center"
                     android:shadowRadius="3"
                     android:text="@string/form_cancel_button" />
             </LinearLayout>
-        </LinearLayout>
 
+			<LinearLayout
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:gravity="center">
+
+				<Button
+						android:id="@+id/fragment_form_validate_button"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_margin="10dp"
+						android:background="@color/lightGrey"
+						android:shadowRadius="3"
+						android:text="@string/form_validate_button"/>
+
+			</LinearLayout>
+
+        </LinearLayout>
 
 	</LinearLayout>
 

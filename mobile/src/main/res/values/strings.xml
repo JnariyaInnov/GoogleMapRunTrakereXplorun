@@ -39,8 +39,8 @@
 	<!-- Form fragment -->
 	<string name="form_validate_button">Validate</string>
 	<string name="form_cancel_button">Cancel</string>
-    <string name="form_walk_radio">Walking</string>
-    <string name="form_run_radio">Running</string>
+	<string name="form_walk_radio">Walking</string>
+	<string name="form_run_radio">Running</string>
     <string name="form_trail_radio" translatable="false">Trail</string>
     <string name="form_duration_text">Duration : %1$s - %2$s</string>
     <string name="form_min_text" translatable="false">%1$d min</string>
