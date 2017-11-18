@@ -375,15 +375,13 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	}
 
 	@Override
-	public void onFormValidate(int sport, String leftPinValue, String rightPinValue)
+	public void onFormValidate(int sport, int leftPinValue, int rightPinValue)
 	{
 		this.showProgressBar();
 
-		int minDuration = Integer.parseInt(leftPinValue);
-		int maxDuration = Integer.parseInt(rightPinValue);
 		int averageSpeed = Utility.getAverageSpeedFromSport(sport);
-		double minKM = minDuration / 60.0 * averageSpeed;
-		double maxKM = maxDuration / 60.0 * averageSpeed;
+		double minKM = leftPinValue / 60.0 * averageSpeed;
+		double maxKM = rightPinValue / 60.0 * averageSpeed;
 
 		ArrayList<Place> route = this.routesController.generateRoute(minKM, maxKM);
 		if (route != null)

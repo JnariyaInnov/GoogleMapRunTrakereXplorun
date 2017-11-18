@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -33,6 +32,11 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 
 	private FormObserver observer;
 
+	private SharedPreferences sharedPref;
+
+	private final int DEFAULT_MAX_RANGE = 180;
+	private final int TRAIL_MAX_RANGE = 300;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -50,20 +54,22 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 		mTrailRadioButton.setOnClickListener(this);
 		mValidateButton.setOnClickListener(this);
 
-		mDurationText.setText(String.format(getResources().getString(R.string.form_duration_text),rangeDuration(mDurationRangeBar.getLeftPinValue()),rangeDuration(mDurationRangeBar.getRightPinValue())));
+		this.sharedPref = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
+		this.chosenSport = this.sharedPref.getInt("sport", Sport.WALKING);
+
+		checkRadioButton();
+
+		mDurationText.setText(String.format(getResources().getString(R.string.form_duration_text),rangeDuration(Integer.parseInt(mDurationRangeBar.getLeftPinValue())),rangeDuration(Integer.parseInt(mDurationRangeBar.getRightPinValue()))));
 
 		mDurationRangeBar.setOnRangeBarChangeListener(new RangeBar.OnRangeBarChangeListener() {
 			@Override
 			public void onRangeChangeListener(RangeBar rangeBar, int leftPinIndex,int rightPinIndex, String leftPinValue, String rightPinValue) {
-				mDurationText.setText(String.format(getResources().getString(R.string.form_duration_text),rangeDuration(leftPinValue),rangeDuration(rightPinValue)));
+				int leftValue = getValidValue(leftPinValue);
+				int rightValue = getValidValue(rightPinValue);
+				mDurationText.setText(String.format(getResources().getString(R.string.form_duration_text),rangeDuration(leftValue),rangeDuration(rightValue)));
 			}
 
 		});
-
-		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
-		this.chosenSport = sharedPref.getInt("sport", Sport.WALKING);
-
-		checkRadioButton();
 
 		try
 		{
@@ -83,14 +89,17 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 		switch (this.chosenSport)
 		{
 			case Sport.TRAIL:
+				mDurationRangeBar.setTickEnd(TRAIL_MAX_RANGE);
 				this.mTrailRadioButton.setChecked(true);
 				break;
 
 			case Sport.RUNNING:
+				mDurationRangeBar.setTickEnd(DEFAULT_MAX_RANGE);
 				this.mRunRadioButton.setChecked(true);
 				break;
 
 			default:
+				mDurationRangeBar.setTickEnd(DEFAULT_MAX_RANGE);
 				this.mWalkRadioButton.setChecked(true);
 		}
 	}
@@ -99,17 +108,17 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 	public void onClick(View v) {
 		switch (v.getId()){
 			case R.id.fragment_form_walk_radio:
-				mDurationRangeBar.setTickEnd(180);
+				mDurationRangeBar.setTickEnd(DEFAULT_MAX_RANGE);
 				this.chosenSport = Sport.WALKING;
 				break;
 
 			case R.id.fragment_form_run_radio:
-				mDurationRangeBar.setTickEnd(180);
+				mDurationRangeBar.setTickEnd(DEFAULT_MAX_RANGE);
 				this.chosenSport = Sport.RUNNING;
 				break;
 
 			case R.id.fragment_form_trail_radio:
-				mDurationRangeBar.setTickEnd(300);
+				mDurationRangeBar.setTickEnd(TRAIL_MAX_RANGE);
 				this.chosenSport = Sport.TRAIL;
 				break;
 
@@ -119,22 +128,21 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 				editor.apply();
 				if (this.observer != null)
 				{
-					this.observer.onFormValidate(this.chosenSport, this.mDurationRangeBar.getLeftPinValue(), this.mDurationRangeBar.getRightPinValue());
+					this.observer.onFormValidate(this.chosenSport, getValidValue(this.mDurationRangeBar.getLeftPinValue()), getValidValue(this.mDurationRangeBar.getRightPinValue()));
 				}
 				break;
 		}
 	}
 
-	public String rangeDuration(String Pin){
+	public String rangeDuration(int pinInt){
 		String s;
-		int leftPinInt = Integer.parseInt(Pin);
 
-		if (leftPinInt < 60 ){
-			s = String.format(getString(R.string.form_min_text), leftPinInt);
+		if (pinInt < 60){
+			s = String.format(getString(R.string.form_min_text), pinInt);
 		}
 		else {
-			long hours = TimeUnit.MINUTES.toHours(leftPinInt);
-			long minutes = TimeUnit.MINUTES.toMinutes(leftPinInt - TimeUnit.HOURS.toMinutes(hours));
+			long hours = TimeUnit.MINUTES.toHours(pinInt);
+			long minutes = TimeUnit.MINUTES.toMinutes(pinInt - TimeUnit.HOURS.toMinutes(hours));
 
 			if (minutes != 0) {
 				s = String.format(getString(R.string.form_h_min_text), hours, minutes);
@@ -145,5 +153,32 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 		}
 
 		return s;
+	}
+
+	public int getValidValue(String pinValue)
+	{
+		int pinInt = Integer.parseInt(pinValue);
+
+		if (chosenSport == Sport.TRAIL)
+		{
+			if (pinInt > TRAIL_MAX_RANGE)
+			{
+				pinInt = TRAIL_MAX_RANGE;
+			}
+		}
+		else
+		{
+			if (pinInt > DEFAULT_MAX_RANGE)
+			{
+				pinInt = DEFAULT_MAX_RANGE;
+			}
+		}
+
+		if (pinInt < 10)
+		{
+			pinInt = 10;
+		}
+
+		return pinInt;
 	}
 }
