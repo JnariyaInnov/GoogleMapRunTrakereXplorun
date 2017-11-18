@@ -2,7 +2,10 @@
 	<string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
 		AIzaSyDNFNeWx_Hvonk4bMon_xkmxQ_ry8WQaW4
 	</string>
-	<string name="google_places_web_key" templateMergeStrategry="preserve" translatable="false">
+	<string name="google_places_web_key" templateMergeStrategy="preserve" translatable="false">
 		AIzaSyCDn9SWA9IUhHHkYp8SZZ_kIV_Ff8H8-M4
+	</string>
+	<string name="google_directions_web_key" templateMergeStrategy="preserve" translatable="false">
+		AIzaSyA4MpzHTZvxxVfFR7GUdmbuJDLLhSluicw
 	</string>
 </resources>

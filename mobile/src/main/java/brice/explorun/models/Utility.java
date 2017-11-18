@@ -12,12 +12,33 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import brice.explorun.R;
 
 public class Utility
 {
+	// Class to define the sports
+	public static class Sport {
+		public static final int WALKING = 0;
+		public static final int RUNNING = 1;
+		public static final int TRAIL = 2;
+
+		// Average speeds for each sport (in km/h)
+		private static final int WALKING_SPEED = 3;
+		private static final int RUNNING_SPEED = 9;
+		private static final int TRAIL_SPEED = 11;
+	}
+
+
 	/**
 	 * Method to know if the user is connected to the Internet
 	 *
@@ -61,18 +82,16 @@ public class Utility
 
 	/**
 	 * Function which converts degrees in radians
-	 *
 	 * @param degrees Value in degrees to convert
 	 * @return The converted value in radians
 	 */
-	public static double degreesToRadians(double degrees)
+	private static double degreesToRadians(double degrees)
 	{
 		return degrees * Math.PI / 180;
 	}
 
 	/**
 	 * Function which computes the distance between two GPS coordinates
-	 *
 	 * @param lat1 First latitude
 	 * @param lon1 First longitude
 	 * @param lat2 Second latitude
@@ -95,13 +114,33 @@ public class Utility
 		return earthRadiusKm * c;
 	}
 
-	public static float getColorFromType(Fragment context, String type)
+	public static float getPlaceMarkerColor(Fragment context, Place place)
+	{
+		List<String> appTypes = Arrays.asList(context.getResources().getStringArray(R.array.places_types));
+		ArrayList<String> types = place.getTypes();
+		int i = 0;
+		while(i < types.size() && !appTypes.contains(types.get(i)))
+		{
+			i++;
+		}
+
+		if (i == types.size())
+		{
+			return Utility.getColorFromType(context, "");
+		}
+		else
+		{
+			return Utility.getColorFromType(context, types.get(i));
+		}
+	}
+
+	private static float getColorFromType(Fragment context, String type)
 	{
 		float res;
 		switch (type)
 		{
 			case "park":
-				res = colorToHue(context, R.color.dark_green);
+				res = colorToHue(context, R.color.darkGreen);
 				break;
 
 			case "museum":
@@ -142,5 +181,44 @@ public class Utility
 		res[0] = sharedPref.getFloat("latitude", -1);
 		res[1] = sharedPref.getFloat("longitude", -1);
 		return res;
+	}
+
+	/**
+	 * Function which returns the average speed of a sport
+	 * @param sport Sport of the user
+	 * @return The average speed of the sport selected by the user
+	 */
+	public static int getAverageSpeedFromSport(int sport)
+	{
+		int res;
+		switch (sport)
+		{
+			case Sport.TRAIL:
+				res = Sport.TRAIL_SPEED;
+				break;
+
+			case Sport.RUNNING:
+				res = Sport.RUNNING_SPEED;
+				break;
+
+			default:
+				res = Sport.WALKING_SPEED;
+				break;
+		}
+
+		return res;
+	}
+
+	public static CameraUpdate getCameraUpdateBounds(int width, int height, int padding, List<LatLng> points)
+	{
+		LatLngBounds.Builder builder = new LatLngBounds.Builder();
+		for (LatLng point: points)
+		{
+			builder.include(point);
+		}
+
+		LatLngBounds bounds = builder.build();
+
+		return CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
 	}
 }

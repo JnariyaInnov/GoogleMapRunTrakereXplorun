@@ -24,7 +24,9 @@
 	<string name="network_error">Network error</string>
 	<string name="http_error">Error with the request, please try again later</string>
 	<string name="api_request_error">An error occurred with the request, some elements might be missing</string>
+	<string name="directions_api_request_error">An error occurred with the request, the route can\'t be displayed on the map</string>
 	<string name="no_nearby_attraction">There are no tourist attractions nearby</string>
+	<string name="no_route_found">No route of this duration has been found</string>
 
 	<!-- Nearby tourist attractions -->
 	<string name="distance_in_km" translatable="false">%1$.1f km</string>
@@ -34,11 +36,11 @@
 	<string name="notification_message">Background location service</string>
 	<string name="ticker_text">Background location</string>
 
-	<!-- Form activity -->
+	<!-- Form fragment -->
 	<string name="form_validate_button">Validate</string>
 	<string name="form_cancel_button">Cancel</string>
-    <string name="form_walk_radio">Walk</string>
-    <string name="form_run_radio">Run</string>
+    <string name="form_walk_radio">Walking</string>
+    <string name="form_run_radio">Running</string>
     <string name="form_trail_radio" translatable="false">Trail</string>
     <string name="form_duration_text">Duration : %1$s - %2$s</string>
     <string name="form_min_text" translatable="false">%1$d min</string>

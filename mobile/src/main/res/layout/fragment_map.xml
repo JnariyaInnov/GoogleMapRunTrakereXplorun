@@ -46,4 +46,13 @@
 			android:layout_alignParentBottom="true"
 			tools:context="brice.explorun.fragments.MapsFragment" />
 
+		<ProgressBar
+				android:id="@+id/progress_bar"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:theme="@style/AppTheme.BlueAccent"
+				android:visibility="gone"
+				android:layout_centerInParent="true">
+		</ProgressBar>
+
 </RelativeLayout>
