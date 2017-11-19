@@ -168,7 +168,7 @@ public class LocationService extends Service implements LocationListener, Google
     public void onLocationChanged(final Location loc) {
         Log.i("explorun_location", "Location changed");
         sendBroadcast(locationBroadcastIntent);
-        //Enunciate current instruction if distance is less than 200m
+        //Enunciate current instruction if distance is less than 100m
         if(instructions != null && instructionIndex < instructions.size()) {
             Step curStep = instructions.get(instructionIndex);
             if (Utility.distanceBetweenCoordinates(loc.getLatitude(), loc.getLongitude(), curStep.getStartLocation().getLatitude(), curStep.getStartLocation().getLongitude()) < 0.2) {

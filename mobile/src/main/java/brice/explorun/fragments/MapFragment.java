@@ -454,14 +454,13 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 			List<LatLng> locations = new ArrayList<>();
 			List<Step> instructions = new ArrayList<>();
-			String currentInstruction;
 
 			for (Leg leg: route.getLegList())
 			{
 				Coordination coordination = leg.getStartLocation();
 				locations.add(new LatLng(coordination.getLatitude(), coordination.getLongitude()));
 				for(Step step : leg.getStepList()){
-					step.setHtmlInstruction(step.getHtmlInstruction().replace("<div", ".<div").replaceAll("\\<.*?>",""));
+					step.setHtmlInstruction(step.getHtmlInstruction().replace("<div", ". <div").replaceAll("\\<.*?>",""));
 					instructions.add(step);
 					Log.d("eX_instruction", step.getHtmlInstruction());
 				}
