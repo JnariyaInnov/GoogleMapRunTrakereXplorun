@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,7 @@ import android.widget.Toast;
 import com.akexorcist.googledirection.model.Coordination;
 import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
+import com.akexorcist.googledirection.model.Step;
 import com.akexorcist.googledirection.util.DirectionConverter;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -118,9 +120,13 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		mFormButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				MainActivity act =  (MainActivity)getActivity();
+				act.speak("Bonjour, ici la voix !");
+				/*
 				formLayout.setAnimation(slideUpAnimation);
 				formLayout.setVisibility(View.VISIBLE);
 				formLayout.startAnimation(slideUpAnimation);
+				*/
 			}
 		});
 		this.progressBar = view.findViewById(R.id.progress_bar);
@@ -449,12 +455,20 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			this.drawRouteOnMap(route);
 
 			List<LatLng> locations = new ArrayList<>();
+			List<String> instructions = new ArrayList<>();
+			String currentInstruction;
 
 			for (Leg leg: route.getLegList())
 			{
 				Coordination coordination = leg.getStartLocation();
 				locations.add(new LatLng(coordination.getLatitude(), coordination.getLongitude()));
+				for(Step step : leg.getStepList()){
+					currentInstruction = step.getHtmlInstruction().replace("<div", ".<div").replaceAll("\\<.*?>","");
+					instructions.add(currentInstruction);
+					Log.d("eX_instruction", currentInstruction);
+				}
 			}
+
 
 			this.map.animateCamera(Utility.getCameraUpdateBounds(this.width, this.height, (int) (this.height*0.15), locations));
 		}

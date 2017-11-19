@@ -43,6 +43,7 @@ import brice.explorun.fragments.AboutFragment;
 import brice.explorun.fragments.MapFragment;
 import brice.explorun.fragments.FormFragment;
 import brice.explorun.fragments.NearbyAttractionsFragment;
+import brice.explorun.models.ttsUtility;
 import brice.explorun.services.ConnectivityStatusHandler;
 import brice.explorun.services.LocationService;
 
@@ -57,6 +58,8 @@ public class MainActivity extends AppCompatActivity
 
 	private String mTitle;
 	private int selectedItemId;
+
+	private ttsUtility tts;
 
 	private ConnectivityStatusHandler connectivityStatusHandler;
 
@@ -109,6 +112,7 @@ public class MainActivity extends AppCompatActivity
 
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);
+		tts = new ttsUtility(this);
 
 		if (savedInstanceState != null)
 		{
@@ -232,10 +236,8 @@ public class MainActivity extends AppCompatActivity
 		dialog.setPositiveButton(this.getResources().getString(R.string.loc_request), new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-				// TODO Auto-generated method stub
 				Intent myIntent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS);
 				getApplicationContext().startActivity(myIntent);
-				//get gps
 			}
 		});
 		dialog.setNegativeButton(this.getString(R.string.cancel), new DialogInterface.OnClickListener() {
@@ -308,6 +310,10 @@ public class MainActivity extends AppCompatActivity
 	{
 		// Pass the event to ActionBarDrawerToggle, if it returns true, then it has handled the app icon touch event
 		return (this.mDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item));
+	}
+
+	public void speak(String text){
+		tts.speak(text);
 	}
 
 }
