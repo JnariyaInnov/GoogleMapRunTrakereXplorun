@@ -4,14 +4,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import brice.explorun.R;
 import brice.explorun.activities.MainActivity;
 import brice.explorun.fragments.MapFragment;
-import brice.explorun.models.Utility;
+import brice.explorun.utilities.Utility;
 import brice.explorun.fragments.NearbyAttractionsFragment;
 
 public class ConnectivityStatusHandler extends BroadcastReceiver

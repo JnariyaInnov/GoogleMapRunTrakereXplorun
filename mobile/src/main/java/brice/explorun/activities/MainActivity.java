@@ -310,4 +310,20 @@ public class MainActivity extends AppCompatActivity
 		return (this.mDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item));
 	}
 
+	@Override
+	public void onBackPressed()
+	{
+		if (this.fragment instanceof MapFragment)
+		{
+			MapFragment fragment = (MapFragment) this.fragment;
+			if(!fragment.closeFragment())
+			{
+				this.finish();
+			}
+		}
+		else
+		{
+			this.finish();
+		}
+	}
 }

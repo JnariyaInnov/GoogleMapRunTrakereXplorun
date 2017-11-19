@@ -1,9 +1,6 @@
 package brice.explorun.fragments;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.location.Location;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.widget.Toast;
 import android.util.Log;
@@ -14,9 +11,10 @@ import java.util.ArrayList;
 
 import brice.explorun.controllers.NearbyAttractionsController;
 import brice.explorun.R;
+import brice.explorun.utilities.LocationUtility;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
-import brice.explorun.models.Utility;
+import brice.explorun.utilities.Utility;
 
 public abstract class PlacesObserverFragment extends Fragment
 {
@@ -32,11 +30,11 @@ public abstract class PlacesObserverFragment extends Fragment
 
 	public void getNearbyPlaces()
 	{
-		float[] loc = Utility.getLocationFromPreferences(this.getActivity());
+		float[] loc = LocationUtility.getLocationFromPreferences(this.getActivity());
 		float latitude = loc[0];
 		float longitude = loc[1];
 
-		double distance = Utility.distanceBetweenCoordinates(latitude, longitude, this.mLastLocation.getLatitude(), this.mLastLocation.getLongitude());
+		double distance = LocationUtility.distanceBetweenCoordinates(latitude, longitude, this.mLastLocation.getLatitude(), this.mLastLocation.getLongitude());
 
 		if (Utility.isOnline(this.getActivity()) && distance > 0.1)
 		{

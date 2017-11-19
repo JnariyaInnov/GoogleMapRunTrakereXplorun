@@ -45,8 +45,11 @@ import java.util.List;
 
 import brice.explorun.activities.MainActivity;
 import brice.explorun.controllers.RoutesController;
+import brice.explorun.models.CustomRoute;
 import brice.explorun.models.FormObserver;
-import brice.explorun.models.Utility;
+import brice.explorun.utilities.LocationUtility;
+import brice.explorun.utilities.SportUtility;
+import brice.explorun.utilities.Utility;
 import brice.explorun.controllers.NearbyAttractionsController;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
@@ -58,7 +61,9 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	private final String FIRST_REQUEST_KEY = "first_request";
 	private final String PLACES_KEY = "places";
 	private final String FORM_OPEN_KEY = "form_open";
+	private final String ROUTE_INFO_OPEN_KEY = "route_info_open";
 	private final String ROUTE_KEY = "route";
+	private final String CUSTOM_ROUTE_KEY = "custom_route";
 
 	private Bundle args = null;
 	private GoogleMap map = null;
@@ -72,6 +77,8 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			update();
 		}
 	};
+	private GoogleMap.OnPolylineClickListener polylineClickListener;
+	private GoogleMap.OnMapClickListener mapClickListener;
 
 	private ArrayList<Place> places;
 	private ArrayList<Marker> placesMarkers;
@@ -81,16 +88,20 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	private RelativeLayout layout;
 	private Button mFormButton;
 	private ScrollView formLayout;
+	private ScrollView routeInfoLayout;
 	private Animation slideUpAnimation;
 	private Animation slideDownAnimation;
 	private ProgressBar progressBar = null;
 
 	private RoutesController routesController;
 	private ArrayList<Polyline> polylines;
+	private CustomRoute customRoute;
 	private Route route;
 
 	private int width;
 	private int height;
+
+	private RouteInfoFragment routeInfoFragment;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -98,6 +109,26 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		View view = inflater.inflate(R.layout.fragment_map, container, false);
 
 		this.args = this.getArguments();
+
+		this.polylineClickListener = new GoogleMap.OnPolylineClickListener()
+		{
+			@Override
+			public void onPolylineClick(Polyline polyline)
+			{
+				if (routeInfoLayout.getVisibility() == View.GONE)
+				{
+					showRouteInfo();
+				}
+			}
+		};
+		this.mapClickListener = new GoogleMap.OnMapClickListener()
+		{
+			@Override
+			public void onMapClick(LatLng latLng)
+			{
+				closeFragment();
+			}
+		};
 
 		this.places = new ArrayList<>();
 		this.placesMarkers = new ArrayList<>();
@@ -110,7 +141,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 		this.layout = view.findViewById(R.id.map_fragment_view);
 		this.formLayout = view.findViewById(R.id.form);
-		this.formLayout.setVisibility(View.GONE);
+		this.routeInfoLayout = view.findViewById(R.id.route_info);
 		this.slideUpAnimation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_up);
 		this.slideDownAnimation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_down);
 
@@ -118,20 +149,20 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		mFormButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				formLayout.setAnimation(slideUpAnimation);
-				formLayout.setVisibility(View.VISIBLE);
-				formLayout.startAnimation(slideUpAnimation);
+				slideUpFragment(formLayout);
 			}
 		});
 		this.progressBar = view.findViewById(R.id.progress_bar);
 
-		float[] userLoc = Utility.getLocationFromPreferences(getActivity());
+		float[] userLoc = LocationUtility.getLocationFromPreferences(getActivity());
 		this.routesController = new RoutesController(this, places, userLoc);
 		this.polylines = new ArrayList<>();
 		this.route = new Route();
 
 		this.width = getResources().getDisplayMetrics().widthPixels;
 		this.height = getResources().getDisplayMetrics().heightPixels;
+
+		this.routeInfoFragment = (RouteInfoFragment) this.getChildFragmentManager().findFragmentById(R.id.route_info);
 
 		return view;
 	}
@@ -174,9 +205,19 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 				this.formLayout.setVisibility(savedInstanceState.getInt(FORM_OPEN_KEY));
 			}
 
+			if (savedInstanceState.keySet().contains(ROUTE_INFO_OPEN_KEY))
+			{
+				this.routeInfoLayout.setVisibility(savedInstanceState.getInt(ROUTE_INFO_OPEN_KEY));
+			}
+
 			if (savedInstanceState.keySet().contains(ROUTE_KEY))
 			{
 				this.route = savedInstanceState.getParcelable(ROUTE_KEY);
+			}
+
+			if (savedInstanceState.keySet().contains(CUSTOM_ROUTE_KEY))
+			{
+				this.customRoute = savedInstanceState.getParcelable(CUSTOM_ROUTE_KEY);
 			}
 		}
 	}
@@ -206,9 +247,11 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	{
 		savedInstanceState.putBoolean(FIRST_REQUEST_KEY, this.isFirstRequest);
 		savedInstanceState.putInt(FORM_OPEN_KEY, this.formLayout.getVisibility());
+		savedInstanceState.putInt(ROUTE_INFO_OPEN_KEY, this.routeInfoLayout.getVisibility());
 		savedInstanceState.putParcelableArrayList(PLACES_KEY, this.places);
 		savedInstanceState.putParcelable(LOCATION_KEY, this.mLastLocation);
 		savedInstanceState.putParcelable(ROUTE_KEY, this.route);
+		savedInstanceState.putParcelable(CUSTOM_ROUTE_KEY, this.customRoute);
 		super.onSaveInstanceState(savedInstanceState);
 	}
 
@@ -221,6 +264,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		this.map = googleMap;
 		if(this.places.size() == 0 && this.args != null){
 			this.places = args.getParcelableArrayList("places");
+			this.routesController.setPlaces(this.places);
 		}
 		// Retrieve places markers and route if orientation has changed
 		addPlacesMarkers();
@@ -230,7 +274,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		{
 			LatLng loc1 = new LatLng(this.args.getDouble("latitude"), this.args.getDouble("longitude"));
 
-			float[] loc = Utility.getLocationFromPreferences(this.getActivity());
+			float[] loc = LocationUtility.getLocationFromPreferences(this.getActivity());
 			LatLng loc2 = new LatLng(loc[0], loc[1]);
 
 			List<LatLng> locations = Arrays.asList(loc1, loc2);
@@ -239,6 +283,8 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 			map.moveCamera(Utility.getCameraUpdateBounds(this.width, this.height, padding, locations));
 		}
+		this.map.setOnPolylineClickListener(this.polylineClickListener);
+		this.map.setOnMapClickListener(this.mapClickListener);
 		update();
 	}
 
@@ -282,7 +328,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 	public void update()
 	{
-		float[] loc = Utility.getLocationFromPreferences(this.getActivity());
+		float[] loc = LocationUtility.getLocationFromPreferences(this.getActivity());
 		float latitude = loc[0];
 		float longitude = loc[1];
 		this.routesController.setUserLocation(loc);
@@ -379,11 +425,12 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	{
 		this.showProgressBar();
 
-		int averageSpeed = Utility.getAverageSpeedFromSport(sport);
+		float averageSpeed = SportUtility.getAverageSpeedFromSport(sport);
 		double minKM = leftPinValue / 60.0 * averageSpeed;
 		double maxKM = rightPinValue / 60.0 * averageSpeed;
 
 		ArrayList<Place> route = this.routesController.generateRoute(minKM, maxKM);
+		this.customRoute = new CustomRoute(sport, route);
 		if (route != null)
 		{
 			if (Utility.isOnline(this.getActivity()))
@@ -423,15 +470,30 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 					PolylineOptions polylineOptions = DirectionConverter.createPolyline(this.getActivity(), directionPoints, 5, Color.BLACK);
 					polylineOptions.zIndex(-1);
+					polylineOptions.clickable(true);
 					this.polylines.add(this.map.addPolyline(polylineOptions));
 
-					PolylineOptions polylineOptions2 = DirectionConverter.createPolyline(this.getActivity(), directionPoints, 2, blue);
-					polylineOptions2.zIndex(legNumber);
-					this.polylines.add(this.map.addPolyline(polylineOptions2));
+					polylineOptions = DirectionConverter.createPolyline(this.getActivity(), directionPoints, 2, blue);
+					polylineOptions.zIndex(legNumber);
+					polylineOptions.clickable(true);
+					this.polylines.add(this.map.addPolyline(polylineOptions));
 
 					legNumber++;
 				}
+				this.routeInfoFragment.update(this.customRoute);
 			}
+		}
+	}
+
+	public void showRouteInfo()
+	{
+		if (this.formLayout.getVisibility() == View.VISIBLE)
+		{
+			this.slideDownFragment(this.formLayout);
+		}
+		if (this.routeInfoLayout.getVisibility() == View.GONE)
+		{
+			this.slideUpFragment(this.routeInfoLayout);
 		}
 	}
 
@@ -442,19 +504,23 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		if (route != null)
 		{
 			// Close form fragment
-			this.formLayout.setAnimation(this.slideDownAnimation);
-			this.formLayout.setVisibility(View.GONE);
-			this.formLayout.startAnimation(this.slideDownAnimation);
-
-			this.drawRouteOnMap(route);
+			this.slideDownFragment(this.formLayout);
 
 			List<LatLng> locations = new ArrayList<>();
 
+			float distance = 0;
+
 			for (Leg leg: route.getLegList())
 			{
+				distance += Float.parseFloat(leg.getDistance().getValue());
 				Coordination coordination = leg.getStartLocation();
 				locations.add(new LatLng(coordination.getLatitude(), coordination.getLongitude()));
 			}
+
+			this.customRoute.setDistance(distance);
+
+			this.drawRouteOnMap(route);
+			this.showRouteInfo();
 
 			this.map.animateCamera(Utility.getCameraUpdateBounds(this.width, this.height, (int) (this.height*0.15), locations));
 		}
@@ -474,5 +540,35 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	{
 		this.progressBar.setVisibility(View.GONE);
 		this.layout.setAlpha(1);
+	}
+
+	public void slideUpFragment(ScrollView layout)
+	{
+		layout.setAnimation(slideUpAnimation);
+		layout.setVisibility(View.VISIBLE);
+		layout.startAnimation(slideUpAnimation);
+	}
+
+	public void slideDownFragment(ScrollView layout)
+	{
+		layout.setAnimation(this.slideDownAnimation);
+		layout.setVisibility(View.GONE);
+		layout.startAnimation(this.slideDownAnimation);
+	}
+
+	public boolean closeFragment()
+	{
+		boolean res = false;
+		if (this.routeInfoLayout.getVisibility() == View.VISIBLE)
+		{
+			slideDownFragment(this.routeInfoLayout);
+			res = true;
+		}
+		if (this.formLayout.getVisibility() == View.VISIBLE)
+		{
+			slideDownFragment(this.formLayout);
+			res = true;
+		}
+		return res;
 	}
 }
