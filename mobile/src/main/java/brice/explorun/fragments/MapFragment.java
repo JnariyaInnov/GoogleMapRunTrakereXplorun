@@ -87,7 +87,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 	private RelativeLayout layout;
 	private Button mFormButton;
-	private ScrollView formLayout;
+	private ScrollView routeCreationLayout;
 	private ScrollView routeInfoLayout;
 	private Animation slideUpAnimation;
 	private Animation slideDownAnimation;
@@ -126,7 +126,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			@Override
 			public void onMapClick(LatLng latLng)
 			{
-				closeFragment();
+				slideDownFragments();
 			}
 		};
 
@@ -140,7 +140,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		getActivity().registerReceiver(locReceiver, filter);
 
 		this.layout = view.findViewById(R.id.map_fragment_view);
-		this.formLayout = view.findViewById(R.id.form);
+		this.routeCreationLayout = view.findViewById(R.id.form);
 		this.routeInfoLayout = view.findViewById(R.id.route_info);
 		this.slideUpAnimation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_up);
 		this.slideDownAnimation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_down);
@@ -149,7 +149,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		mFormButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				slideUpFragment(formLayout);
+				slideUpFragment(routeCreationLayout);
 			}
 		});
 		this.progressBar = view.findViewById(R.id.progress_bar);
@@ -202,7 +202,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 			if (savedInstanceState.keySet().contains(FORM_OPEN_KEY))
 			{
-				this.formLayout.setVisibility(savedInstanceState.getInt(FORM_OPEN_KEY));
+				this.routeCreationLayout.setVisibility(savedInstanceState.getInt(FORM_OPEN_KEY));
 			}
 
 			if (savedInstanceState.keySet().contains(ROUTE_INFO_OPEN_KEY))
@@ -246,7 +246,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	public void onSaveInstanceState(Bundle savedInstanceState)
 	{
 		savedInstanceState.putBoolean(FIRST_REQUEST_KEY, this.isFirstRequest);
-		savedInstanceState.putInt(FORM_OPEN_KEY, this.formLayout.getVisibility());
+		savedInstanceState.putInt(FORM_OPEN_KEY, this.routeCreationLayout.getVisibility());
 		savedInstanceState.putInt(ROUTE_INFO_OPEN_KEY, this.routeInfoLayout.getVisibility());
 		savedInstanceState.putParcelableArrayList(PLACES_KEY, this.places);
 		savedInstanceState.putParcelable(LOCATION_KEY, this.mLastLocation);
@@ -487,9 +487,9 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 	public void showRouteInfo()
 	{
-		if (this.formLayout.getVisibility() == View.VISIBLE)
+		if (this.routeCreationLayout.getVisibility() == View.VISIBLE)
 		{
-			this.slideDownFragment(this.formLayout);
+			this.slideDownFragment(this.routeCreationLayout);
 		}
 		if (this.routeInfoLayout.getVisibility() == View.GONE)
 		{
@@ -504,7 +504,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		if (route != null)
 		{
 			// Close form fragment
-			this.slideDownFragment(this.formLayout);
+			this.slideDownFragment(this.routeCreationLayout);
 
 			List<LatLng> locations = new ArrayList<>();
 
@@ -556,7 +556,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		layout.startAnimation(this.slideDownAnimation);
 	}
 
-	public boolean closeFragment()
+	public boolean slideDownFragments()
 	{
 		boolean res = false;
 		if (this.routeInfoLayout.getVisibility() == View.VISIBLE)
@@ -564,9 +564,9 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			slideDownFragment(this.routeInfoLayout);
 			res = true;
 		}
-		if (this.formLayout.getVisibility() == View.VISIBLE)
+		if (this.routeCreationLayout.getVisibility() == View.VISIBLE)
 		{
-			slideDownFragment(this.formLayout);
+			slideDownFragment(this.routeCreationLayout);
 			res = true;
 		}
 		return res;

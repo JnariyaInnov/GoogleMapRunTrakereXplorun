@@ -316,7 +316,7 @@ public class MainActivity extends AppCompatActivity
 		if (this.fragment instanceof MapFragment)
 		{
 			MapFragment fragment = (MapFragment) this.fragment;
-			if(!fragment.closeFragment())
+			if(!fragment.slideDownFragments())
 			{
 				this.finish();
 			}
