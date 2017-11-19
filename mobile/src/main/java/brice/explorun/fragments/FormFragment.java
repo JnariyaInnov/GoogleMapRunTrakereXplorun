@@ -16,11 +16,10 @@ import android.widget.TextView;
 
 import com.appyvet.materialrangebar.RangeBar;
 
-import java.util.concurrent.TimeUnit;
-
 import brice.explorun.R;
 import brice.explorun.models.FormObserver;
-import brice.explorun.models.Utility.*;
+import brice.explorun.utilities.SportUtility;
+import brice.explorun.utilities.TimeUtility;
 
 public class FormFragment extends Fragment implements View.OnClickListener{
 
@@ -64,18 +63,20 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 		mCancelButton.setOnClickListener(this);
 
 		this.sharedPref = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
-		this.chosenSport = this.sharedPref.getInt("sport", Sport.WALKING);
+		this.chosenSport = this.sharedPref.getInt("sport", SportUtility.WALKING);
 
 		checkRadioButton();
 
-		mDurationText.setText(String.format(getResources().getString(R.string.form_duration_text),rangeDuration(Integer.parseInt(mDurationRangeBar.getLeftPinValue())),rangeDuration(Integer.parseInt(mDurationRangeBar.getRightPinValue()))));
+		int leftValue = Integer.parseInt(mDurationRangeBar.getLeftPinValue());
+		int rightValue = Integer.parseInt(mDurationRangeBar.getRightPinValue());
+		mDurationText.setText(String.format(getResources().getString(R.string.form_duration_text), TimeUtility.formatDuration(this.getActivity(), leftValue), TimeUtility.formatDuration(this.getActivity(), rightValue)));
 
 		mDurationRangeBar.setOnRangeBarChangeListener(new RangeBar.OnRangeBarChangeListener() {
 			@Override
 			public void onRangeChangeListener(RangeBar rangeBar, int leftPinIndex,int rightPinIndex, String leftPinValue, String rightPinValue) {
 				int leftValue = getValidValue(leftPinValue);
 				int rightValue = getValidValue(rightPinValue);
-				mDurationText.setText(String.format(getResources().getString(R.string.form_duration_text),rangeDuration(leftValue),rangeDuration(rightValue)));
+				mDurationText.setText(String.format(getResources().getString(R.string.form_duration_text),TimeUtility.formatDuration(getActivity(), leftValue),TimeUtility.formatDuration(getActivity(), rightValue)));
 			}
 
 		});
@@ -100,12 +101,12 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 	{
 		switch (this.chosenSport)
 		{
-			case Sport.TRAIL:
+			case SportUtility.TRAIL:
 				mDurationRangeBar.setTickEnd(TRAIL_MAX_RANGE);
 				this.mTrailRadioButton.setChecked(true);
 				break;
 
-			case Sport.RUNNING:
+			case SportUtility.RUNNING:
 				mDurationRangeBar.setTickEnd(DEFAULT_MAX_RANGE);
 				this.mRunRadioButton.setChecked(true);
 				break;
@@ -121,17 +122,17 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 		switch (v.getId()){
 			case R.id.fragment_form_walk_radio:
 				mDurationRangeBar.setTickEnd(DEFAULT_MAX_RANGE);
-				this.chosenSport = Sport.WALKING;
+				this.chosenSport = SportUtility.WALKING;
 				break;
 
 			case R.id.fragment_form_run_radio:
 				mDurationRangeBar.setTickEnd(DEFAULT_MAX_RANGE);
-				this.chosenSport = Sport.RUNNING;
+				this.chosenSport = SportUtility.RUNNING;
 				break;
 
 			case R.id.fragment_form_trail_radio:
 				mDurationRangeBar.setTickEnd(TRAIL_MAX_RANGE);
-				this.chosenSport = Sport.TRAIL;
+				this.chosenSport = SportUtility.TRAIL;
 				break;
 
 			case R.id.fragment_form_validate_button:
@@ -153,32 +154,11 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 		}
 	}
 
-	public String rangeDuration(int pinInt){
-		String s;
-
-		if (pinInt < 60){
-			s = String.format(getString(R.string.form_min_text), pinInt);
-		}
-		else {
-			long hours = TimeUnit.MINUTES.toHours(pinInt);
-			long minutes = TimeUnit.MINUTES.toMinutes(pinInt - TimeUnit.HOURS.toMinutes(hours));
-
-			if (minutes != 0) {
-				s = String.format(getString(R.string.form_h_min_text), hours, minutes);
-			}
-			else {
-				s = String.format(getString(R.string.form_h_text), hours);
-			}
-		}
-
-		return s;
-	}
-
 	public int getValidValue(String pinValue)
 	{
 		int pinInt = Integer.parseInt(pinValue);
 
-		if (chosenSport == Sport.TRAIL)
+		if (chosenSport == SportUtility.TRAIL)
 		{
 			if (pinInt > TRAIL_MAX_RANGE)
 			{

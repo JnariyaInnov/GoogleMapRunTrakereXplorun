@@ -1,19 +1,13 @@
 package brice.explorun.controllers;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.preference.PreferenceManager;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,7 +17,8 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 import brice.explorun.R;
-import brice.explorun.models.Utility;
+import brice.explorun.utilities.LocationUtility;
+import brice.explorun.utilities.Utility;
 import brice.explorun.models.CustomRequestQueue;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
@@ -132,7 +127,7 @@ public class NearbyAttractionsController
 				if (!found)
 				{
 					// Compute distance between the user and the place
-					double distance = Utility.distanceBetweenCoordinates(this.location.getLatitude(), this.location.getLongitude(), p1.getLatitude(), p1.getLongitude());
+					double distance = LocationUtility.distanceBetweenCoordinates(this.location.getLatitude(), this.location.getLongitude(), p1.getLatitude(), p1.getLongitude());
 					p1.setDistance(distance);
 
 					this.places.add(p1);

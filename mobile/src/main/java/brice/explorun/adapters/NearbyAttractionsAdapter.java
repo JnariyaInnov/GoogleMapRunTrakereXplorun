@@ -12,6 +12,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import brice.explorun.R;
+import brice.explorun.utilities.LocationUtility;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
 
@@ -47,20 +48,7 @@ public class NearbyAttractionsAdapter extends ArrayAdapter<Place>
 		{
 			holder.nameView.setText(place.getName());
 
-			double distance = place.getDistance();
-			String distanceString;
-			if (distance < 1)
-			{
-				// We round the distance to the nearest multiple of 10
-				distance = Math.round(Math.round(distance*1000)/10.0)*10.0;
-				distanceString = String.format(getContext().getResources().getString(R.string.distance_in_m), distance);
-			}
-			else
-			{
-				distance = Math.round(distance*10.0)/10.0;
-				distanceString = String.format(getContext().getResources().getString(R.string.distance_in_km), distance);
-			}
-			holder.distanceView.setText(distanceString);
+			holder.distanceView.setText(LocationUtility.formatDistance(getContext(), place.getDistance()));
 
 			// Add the photo of the place to the view
 			Photo photo = place.getPhoto();

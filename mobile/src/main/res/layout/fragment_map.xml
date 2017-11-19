@@ -44,15 +44,25 @@
 			android:layout_height="wrap_content"
 			android:layout_above="@id/map"
 			android:layout_alignParentBottom="true"
-			tools:context="brice.explorun.fragments.MapsFragment" />
+			tools:context="brice.explorun.fragments.MapFragment" />
 
-		<ProgressBar
-				android:id="@+id/progress_bar"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:theme="@style/AppTheme.BlueAccent"
-				android:visibility="gone"
-				android:layout_centerInParent="true">
-		</ProgressBar>
+	<fragment
+			android:id="@+id/route_info"
+			xmlns:tools="http://schemas.android.com/tools"
+			android:name="brice.explorun.fragments.RouteInfoFragment"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_above="@id/form"
+			android:layout_alignParentBottom="true"
+			tools:context="brice.explorun.fragments.MapFragment" />
+
+	<ProgressBar
+			android:id="@+id/progress_bar"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:theme="@style/AppTheme.BlueAccent"
+			android:visibility="gone"
+			android:layout_centerInParent="true">
+	</ProgressBar>
 
 </RelativeLayout>

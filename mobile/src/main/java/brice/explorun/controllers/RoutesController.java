@@ -20,8 +20,8 @@ import java.util.Random;
 
 import brice.explorun.R;
 import brice.explorun.fragments.MapFragment;
+import brice.explorun.utilities.LocationUtility;
 import brice.explorun.models.Place;
-import brice.explorun.models.Utility;
 
 public class RoutesController implements DirectionCallback
 {
@@ -141,11 +141,11 @@ public class RoutesController implements DirectionCallback
     }
 
     private double distanceToUserLocation(Place p){
-        return Utility.distanceBetweenCoordinates(this.userLocation[0], this.userLocation[1], p.getLatitude(), p.getLongitude());
+        return LocationUtility.distanceBetweenCoordinates(this.userLocation[0], this.userLocation[1], p.getLatitude(), p.getLongitude());
     }
 
     private double distanceBetweenPlace(Place p1, Place p2){
-        return Utility.distanceBetweenCoordinates(p1.getLatitude(), p1.getLongitude(), p2.getLatitude(), p2.getLongitude());
+        return LocationUtility.distanceBetweenCoordinates(p1.getLatitude(), p1.getLongitude(), p2.getLatitude(), p2.getLongitude());
     }
 
     public void getRouteFromAPI(ArrayList<Place> route)

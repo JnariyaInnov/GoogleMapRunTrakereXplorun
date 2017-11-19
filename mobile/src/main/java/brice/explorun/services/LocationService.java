@@ -31,7 +31,6 @@ import java.util.List;
 
 import brice.explorun.R;
 import brice.explorun.activities.MainActivity;
-import brice.explorun.models.Utility;
 
 public class LocationService extends Service implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
