@@ -48,6 +48,7 @@
             </intent-filter>
         </activity>
         <service android:name=".services.LocationService" />
+        <service android:name=".services.TTS" />
     </application>
 
 </manifest>

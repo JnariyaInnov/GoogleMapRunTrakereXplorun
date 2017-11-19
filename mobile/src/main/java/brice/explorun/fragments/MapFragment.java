@@ -43,6 +43,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import brice.explorun.activities.MainActivity;
@@ -53,6 +54,7 @@ import brice.explorun.controllers.NearbyAttractionsController;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
 import brice.explorun.R;
+import brice.explorun.services.LocationService;
 
 public class MapFragment extends PlacesObserverFragment implements OnMapReadyCallback, FormObserver
 {
@@ -120,13 +122,9 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		mFormButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				MainActivity act =  (MainActivity)getActivity();
-				act.speak("Bonjour, ici la voix !");
-				/*
 				formLayout.setAnimation(slideUpAnimation);
 				formLayout.setVisibility(View.VISIBLE);
 				formLayout.startAnimation(slideUpAnimation);
-				*/
 			}
 		});
 		this.progressBar = view.findViewById(R.id.progress_bar);
@@ -455,7 +453,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			this.drawRouteOnMap(route);
 
 			List<LatLng> locations = new ArrayList<>();
-			List<String> instructions = new ArrayList<>();
+			List<Step> instructions = new ArrayList<>();
 			String currentInstruction;
 
 			for (Leg leg: route.getLegList())
@@ -463,12 +461,13 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 				Coordination coordination = leg.getStartLocation();
 				locations.add(new LatLng(coordination.getLatitude(), coordination.getLongitude()));
 				for(Step step : leg.getStepList()){
-					currentInstruction = step.getHtmlInstruction().replace("<div", ".<div").replaceAll("\\<.*?>","");
-					instructions.add(currentInstruction);
-					Log.d("eX_instruction", currentInstruction);
+					step.setHtmlInstruction(step.getHtmlInstruction().replace("<div", ".<div").replaceAll("\\<.*?>",""));
+					instructions.add(step);
+					Log.d("eX_instruction", step.getHtmlInstruction());
 				}
 			}
 
+			LocationService.setInstructions(instructions);
 
 			this.map.animateCamera(Utility.getCameraUpdateBounds(this.width, this.height, (int) (this.height*0.15), locations));
 		}
