@@ -4,8 +4,6 @@ import android.Manifest;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
-import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -20,18 +18,16 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.akexorcist.googledirection.model.Step;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResult;
-import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.location.places.Places;
+
+import java.util.HashMap;
+import java.util.List;
 
 import brice.explorun.R;
 import brice.explorun.activities.MainActivity;
@@ -41,12 +37,18 @@ public class LocationService extends Service implements LocationListener, Google
 
     public static boolean isStarted = false;
     public static GoogleApiClient mGoogleApiClient = null;
+    private int instructionIndex = 0;
+    private static List<Step> instructions;
     final int notificationId = 67;
     final String notificationChannel = "locChannel";
-    Intent intent;
+    Intent locationBroadcastIntent = new Intent("ex_location");
+    Intent ttsBroadcastIntent = new Intent("ex_tts");
 
     final static int refreshInterval = 10000; // Position refresh interval (in ms)
 
+    public static void setInstructions(List<Step> instructions) {
+        LocationService.instructions = instructions;
+    }
 
     @Override
     public void onCreate() {
@@ -72,7 +74,6 @@ public class LocationService extends Service implements LocationListener, Google
             .build();
 
         startForeground(notificationId, notification);
-        intent = new Intent("ex_location");
         Log.i("explorun_location", "Service successfully started");
 
 		// Connection to Google API
@@ -166,6 +167,15 @@ public class LocationService extends Service implements LocationListener, Google
     @Override
     public void onLocationChanged(final Location loc) {
         Log.i("explorun_location", "Location changed");
+        sendBroadcast(locationBroadcastIntent);
+        //Enunciate current instruction if distance is less than 100m
+        if(instructions != null && instructionIndex < instructions.size()) {
+            Step curStep = instructions.get(instructionIndex);
+            if (Utility.distanceBetweenCoordinates(loc.getLatitude(), loc.getLongitude(), curStep.getStartLocation().getLatitude(), curStep.getStartLocation().getLongitude()) < 0.2) {
+                sendBroadcast(ttsBroadcastIntent.putExtra("text", instructions.get(instructionIndex).getHtmlInstruction()));
+                instructionIndex++;
+            }
+        }
         storeLastLocation(loc);
     }
 
@@ -178,7 +188,7 @@ public class LocationService extends Service implements LocationListener, Google
 			editor.putFloat("latitude", (float) loc.getLatitude());
 			editor.putFloat("longitude", (float) loc.getLongitude());
 			editor.apply();
-			sendBroadcast(intent);
+			sendBroadcast(locationBroadcastIntent);
 		}
 	}
 }

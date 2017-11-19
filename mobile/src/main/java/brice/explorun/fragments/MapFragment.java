@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,7 @@ import android.widget.Toast;
 import com.akexorcist.googledirection.model.Coordination;
 import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
+import com.akexorcist.googledirection.model.Step;
 import com.akexorcist.googledirection.util.DirectionConverter;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -41,6 +43,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import brice.explorun.activities.MainActivity;
@@ -51,6 +54,7 @@ import brice.explorun.controllers.NearbyAttractionsController;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
 import brice.explorun.R;
+import brice.explorun.services.LocationService;
 
 public class MapFragment extends PlacesObserverFragment implements OnMapReadyCallback, FormObserver
 {
@@ -449,12 +453,20 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			this.drawRouteOnMap(route);
 
 			List<LatLng> locations = new ArrayList<>();
+			List<Step> instructions = new ArrayList<>();
 
 			for (Leg leg: route.getLegList())
 			{
 				Coordination coordination = leg.getStartLocation();
 				locations.add(new LatLng(coordination.getLatitude(), coordination.getLongitude()));
+				for(Step step : leg.getStepList()){
+					step.setHtmlInstruction(step.getHtmlInstruction().replace("<div", ". <div").replaceAll("\\<.*?>",""));
+					instructions.add(step);
+					Log.d("eX_instruction", step.getHtmlInstruction());
+				}
 			}
+
+			LocationService.setInstructions(instructions);
 
 			this.map.animateCamera(Utility.getCameraUpdateBounds(this.width, this.height, (int) (this.height*0.15), locations));
 		}
