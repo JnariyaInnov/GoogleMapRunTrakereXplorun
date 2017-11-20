@@ -170,6 +170,9 @@ public class MainActivity extends AppCompatActivity
 			Log.i("explorun_location","Stopping location service");
 			Intent intent = new Intent(this, LocationService.class);
 			stopService(intent);
+			Log.i("explorun_tts","Stopping TTS service");
+			intent = new Intent(this, TTS.class);
+			stopService(intent);
 		}
 		super.onDestroy();
 	}
@@ -303,12 +306,12 @@ public class MainActivity extends AppCompatActivity
 			MapFragment fragment = (MapFragment) this.fragment;
 			if(!fragment.slideDownFragments())
 			{
-				this.finish();
+				this.moveTaskToBack(true);
 			}
 		}
 		else
 		{
-			this.finish();
+			this.moveTaskToBack(true);
 		}
 	}
 }

@@ -67,6 +67,7 @@ public class TTS extends Service implements TextToSpeech.OnInitListener, TextToS
 
     @Override
     public void onDestroy() {
+        isStarted = false;
         if (tts != null) {
             tts.stop();
             tts.shutdown();
