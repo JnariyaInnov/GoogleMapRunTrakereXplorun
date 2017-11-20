@@ -97,11 +97,6 @@ public class MainActivity extends AppCompatActivity
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);
 
-		Intent ttsServiceIntent = new Intent(this, TTS.class);
-		if(!TTS.isStarted){
-			this.startService(ttsServiceIntent);
-		}
-
 		if (savedInstanceState != null)
 		{
 			//Restore the fragment's instance

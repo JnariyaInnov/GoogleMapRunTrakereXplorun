@@ -3,6 +3,8 @@ package brice.explorun.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.akexorcist.googledirection.model.Step;
+
 import java.util.ArrayList;
 
 public class CustomRoute implements Parcelable
@@ -11,6 +13,7 @@ public class CustomRoute implements Parcelable
 	private float distance = 0;
 	private ArrayList<Place> places;
 	private float rating = -1;
+	private ArrayList<Step> steps;
 
 	public int getSportType()
 	{
@@ -52,6 +55,16 @@ public class CustomRoute implements Parcelable
 		this.rating = rating;
 	}
 
+	public ArrayList<Step> getSteps()
+	{
+		return steps;
+	}
+
+	public void setSteps(ArrayList<Step> steps)
+	{
+		this.steps = steps;
+	}
+
 	public CustomRoute(int sportType, ArrayList<Place> places)
 	{
 		this.sportType = sportType;
@@ -79,6 +92,15 @@ public class CustomRoute implements Parcelable
 			places = null;
 		}
 		rating = in.readFloat();
+		if (in.readByte() == 0x01)
+		{
+			steps = new ArrayList<>();
+			in.readList(steps, Step.class.getClassLoader());
+		}
+		else
+		{
+			steps = null;
+		}
 	}
 
 	@Override
@@ -102,6 +124,15 @@ public class CustomRoute implements Parcelable
 			dest.writeList(places);
 		}
 		dest.writeFloat(rating);
+		if (steps == null)
+		{
+			dest.writeByte((byte) (0x00));
+		}
+		else
+		{
+			dest.writeByte((byte) (0x01));
+			dest.writeList(steps);
+		}
 	}
 
 	@SuppressWarnings("unused")

@@ -510,7 +510,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			this.slideDownFragment(this.routeCreationLayout);
 
 			List<LatLng> locations = new ArrayList<>();
-			List<Step> instructions = new ArrayList<>();
+			ArrayList<Step> instructions = new ArrayList<>();
 
 			float distance = 0;
 
@@ -526,8 +526,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 				}
 			}
 
-			LocationService.setInstructions(instructions);
-
+			this.customRoute.setSteps(instructions);
 			this.customRoute.setDistance(distance);
 
 			this.drawRouteOnMap(route);

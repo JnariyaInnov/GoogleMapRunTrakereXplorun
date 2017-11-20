@@ -31,6 +31,7 @@ import java.util.List;
 
 import brice.explorun.R;
 import brice.explorun.activities.MainActivity;
+import brice.explorun.utilities.LocationUtility;
 
 public class LocationService extends Service implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -109,6 +110,8 @@ public class LocationService extends Service implements LocationListener, Google
 			stopLocationUpdates();
 			mGoogleApiClient.disconnect();
 		}
+		instructions = null;
+        instructionIndex = 0;
         super.onDestroy();
     }
 
@@ -170,7 +173,7 @@ public class LocationService extends Service implements LocationListener, Google
         //Enunciate current instruction if distance is less than 100m
         if(instructions != null && instructionIndex < instructions.size()) {
             Step curStep = instructions.get(instructionIndex);
-            if (Utility.distanceBetweenCoordinates(loc.getLatitude(), loc.getLongitude(), curStep.getStartLocation().getLatitude(), curStep.getStartLocation().getLongitude()) < 0.2) {
+            if (LocationUtility.distanceBetweenCoordinates(loc.getLatitude(), loc.getLongitude(), curStep.getStartLocation().getLatitude(), curStep.getStartLocation().getLongitude()) < 0.1) {
                 sendBroadcast(ttsBroadcastIntent.putExtra("text", instructions.get(instructionIndex).getHtmlInstruction()));
                 instructionIndex++;
             }
