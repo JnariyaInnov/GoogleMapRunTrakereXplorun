@@ -31,6 +31,7 @@ import brice.explorun.fragments.MapFragment;
 import brice.explorun.fragments.NearbyAttractionsFragment;
 import brice.explorun.services.ConnectivityStatusHandler;
 import brice.explorun.services.LocationService;
+import brice.explorun.services.RouteService;
 import brice.explorun.services.TTS;
 
 public class MainActivity extends AppCompatActivity
@@ -109,6 +110,11 @@ public class MainActivity extends AppCompatActivity
 		{
 			selectItem(this.navigationView.getMenu().getItem(0), null);
 		}
+
+		Intent ttsServiceIntent = new Intent(this, TTS.class);
+		if(!TTS.isStarted){
+			this.startService(ttsServiceIntent);
+		}
     }
 
 	@Override
@@ -167,11 +173,11 @@ public class MainActivity extends AppCompatActivity
 		Log.d("eX_lifeCycle", "main => onDestroy()");
 		//Stop location service
 		if(!isChangingConfigurations()){
-			Log.i("explorun_location","Stopping location service");
 			Intent intent = new Intent(this, LocationService.class);
 			stopService(intent);
-			Log.i("explorun_tts","Stopping TTS service");
 			intent = new Intent(this, TTS.class);
+			stopService(intent);
+			intent = new Intent(this, RouteService.class);
 			stopService(intent);
 		}
 		super.onDestroy();

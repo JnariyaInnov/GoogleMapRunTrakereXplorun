@@ -28,6 +28,7 @@ import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
 import brice.explorun.R;
 import brice.explorun.controllers.NearbyAttractionsController;
+import brice.explorun.services.RouteService;
 
 public class NearbyAttractionsFragment extends PlacesObserverFragment implements GoogleApiClient.OnConnectionFailedListener
 {
@@ -44,7 +45,10 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 		@Override
 		public void onReceive(Context context, Intent intent)
 		{
-			getNearbyPlaces();
+			if (!RouteService.isStarted)
+			{
+				getNearbyPlaces();
+			}
 		}
 	};
 

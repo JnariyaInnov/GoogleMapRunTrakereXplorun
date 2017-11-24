@@ -37,18 +37,11 @@ public class LocationService extends Service implements LocationListener, Google
 
     public static boolean isStarted = false;
     public static GoogleApiClient mGoogleApiClient = null;
-    private int instructionIndex = 0;
-    private static List<Step> instructions;
     final int notificationId = 67;
     final String notificationChannel = "locChannel";
     Intent locationBroadcastIntent = new Intent("ex_location");
-    Intent ttsBroadcastIntent = new Intent("ex_tts");
 
     final static int refreshInterval = 10000; // Position refresh interval (in ms)
-
-    public static void setInstructions(List<Step> instructions) {
-        LocationService.instructions = instructions;
-    }
 
     @Override
     public void onCreate() {
@@ -104,14 +97,13 @@ public class LocationService extends Service implements LocationListener, Google
 
 	@Override
     public void onDestroy() {
+		Log.i("explorun_location","Stopping location service");
         isStarted = false;
         if (mGoogleApiClient.isConnected())
 		{
 			stopLocationUpdates();
 			mGoogleApiClient.disconnect();
 		}
-		instructions = null;
-        instructionIndex = 0;
         super.onDestroy();
     }
 
@@ -169,15 +161,6 @@ public class LocationService extends Service implements LocationListener, Google
     @Override
     public void onLocationChanged(final Location loc) {
         Log.i("explorun_location", "Location changed");
-        sendBroadcast(locationBroadcastIntent);
-        //Enunciate current instruction if distance is less than 100m
-        if(instructions != null && instructionIndex < instructions.size()) {
-            Step curStep = instructions.get(instructionIndex);
-            if (LocationUtility.distanceBetweenCoordinates(loc.getLatitude(), loc.getLongitude(), curStep.getStartLocation().getLatitude(), curStep.getStartLocation().getLongitude()) < 0.1) {
-                sendBroadcast(ttsBroadcastIntent.putExtra("text", instructions.get(instructionIndex).getHtmlInstruction()));
-                instructionIndex++;
-            }
-        }
         storeLastLocation(loc);
     }
 

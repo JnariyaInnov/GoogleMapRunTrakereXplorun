@@ -13,14 +13,15 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.model.Step;
 
 import java.util.ArrayList;
 
 import brice.explorun.R;
 import brice.explorun.models.CustomRoute;
-import brice.explorun.services.LocationService;
-import brice.explorun.services.TTS;
+import brice.explorun.models.RouteObserver;
+import brice.explorun.services.RouteService;
 import brice.explorun.utilities.LocationUtility;
 import brice.explorun.utilities.SportUtility;
 import brice.explorun.utilities.TimeUtility;
@@ -34,7 +35,9 @@ public class RouteInfoFragment extends Fragment
 	private TextView arrivalTimeText;
 
 	private int durationInMinutes = 0;
-	private ArrayList<Step> steps = new ArrayList();
+	private ArrayList<Step> steps = new ArrayList<>();
+
+	private RouteObserver observer;
 
 	private BroadcastReceiver tickReceiver = new BroadcastReceiver(){
 		@Override
@@ -60,16 +63,20 @@ public class RouteInfoFragment extends Fragment
 			@Override
 			public void onClick(View view)
 			{
-				Intent ttsServiceIntent = new Intent(getActivity(), TTS.class);
-				if(!TTS.isStarted){
-					getActivity().startService(ttsServiceIntent);
-				}
-
-				LocationService.setInstructions(steps);
+				startRoute();
 			}
 		});
 
 		this.getActivity().registerReceiver(tickReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
+
+		try
+		{
+			this.observer = (RouteObserver) getParentFragment();
+		}
+		catch (ClassCastException e)
+		{
+			throw new ClassCastException(getParentFragment().toString() + " must implement RouteObserver");
+		}
 
 		return view;
 	}
@@ -122,5 +129,18 @@ public class RouteInfoFragment extends Fragment
 			this.getActivity().unregisterReceiver(this.tickReceiver);
 		}
 		super.onDestroy();
+	}
+
+	public void startRoute()
+	{
+		Intent routeServiceIntent = new Intent(getActivity(), RouteService.class);
+		routeServiceIntent.putParcelableArrayListExtra("steps", steps);
+		if (!RouteService.isStarted) {
+			getActivity().startService(routeServiceIntent);
+		}
+		if (this.observer != null)
+		{
+			this.observer.onRouteStart();
+		}
 	}
 }

@@ -52,4 +52,11 @@
 	<string name="distance_image_text">Distance</string>
 	<string name="duration_image_text">Duration</string>
 	<string name="arrival_time_image_text">Estimated time of arrival</string>
+
+	<!-- Current route fragment -->
+	<string name="pause_route_text">Pause</string>
+	<string name="stop_route_text">Stop</string>
+	<string name="resume_route_text">Resume</string>
+	<string name="average_speed_text">Average speed</string>
+	<string name="average_speed" translatable="false">%1$.1f km/h</string>
 </resources>

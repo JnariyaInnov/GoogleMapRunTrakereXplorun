@@ -49,6 +49,7 @@
         </activity>
         <service android:name=".services.LocationService" />
         <service android:name=".services.TTS" />
+        <service android:name=".services.RouteService"/>
     </application>
 
 </manifest>

@@ -26,7 +26,9 @@
 			  	android:layout_height="wrap_content"
 				android:layout_weight="1"
 				android:paddingLeft="15dp"
-				android:paddingStart="15dp">
+				android:paddingStart="15dp"
+				android:paddingRight="0dp"
+				android:paddingEnd="0dp">
 
 				<ImageView
 						android:layout_width="wrap_content"
@@ -49,7 +51,9 @@
 					android:layout_height="wrap_content"
 					android:layout_weight="1"
 					android:paddingLeft="20dp"
-					android:paddingStart="20dp">
+					android:paddingStart="20dp"
+					android:paddingRight="0dp"
+					android:paddingEnd="0dp">
 
 				<ImageView
 						android:id="@+id/sport_type_image"
@@ -81,7 +85,9 @@
 				android:layout_height="wrap_content"
 				android:layout_weight="1"
 				android:paddingLeft="15dp"
-				android:paddingStart="15dp">
+				android:paddingStart="15dp"
+				android:paddingRight="0dp"
+				android:paddingEnd="0dp">
 
 				<ImageView
 						android:layout_width="wrap_content"
@@ -104,7 +110,9 @@
 				android:layout_height="wrap_content"
 				android:layout_weight="1"
 				android:paddingLeft="20dp"
-				android:paddingStart="20dp">
+				android:paddingStart="20dp"
+				android:paddingRight="0dp"
+				android:paddingEnd="0dp">
 
 				<ImageView
 					android:layout_width="wrap_content"
@@ -127,10 +135,10 @@
 		<Button
 			android:id="@+id/btn_start_route"
 			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
+			android:layout_height="35dp"
 			android:gravity="center"
-			android:background="@color/colorAccent"
-			android:textColor="@color/colorPrimary"
+			android:background="@color/colorPrimary"
+			android:textColor="@android:color/white"
 			android:text="@string/start_route_text"
 			android:textSize="18sp"/>
 

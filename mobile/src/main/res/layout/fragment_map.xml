@@ -1,68 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout android:id="@+id/map_fragment_view"
-			  xmlns:android="http://schemas.android.com/apk/res/android"
-			  android:layout_width="match_parent"
-			  android:layout_height="match_parent">
+<RelativeLayout
+	android:id="@+id/map_fragment_view"
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
 
 	<TextView
-			android:id="@+id/no_network_label"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:gravity="center_horizontal"
-			android:layout_alignParentTop="true"
-			android:textColor="@android:color/white"
-			android:background="@android:color/holo_red_dark"
-			android:text="@string/no_network"
-			android:visibility="gone"/>
+		android:id="@+id/no_network_label"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:gravity="center_horizontal"
+		android:layout_alignParentTop="true"
+		android:textColor="@android:color/white"
+		android:background="@android:color/holo_red_dark"
+		android:text="@string/no_network"
+		android:visibility="gone"/>
 
-	<fragment android:id="@+id/map"
-			  android:name="com.google.android.gms.maps.SupportMapFragment"
-			  android:layout_below="@id/no_network_label"
-			  xmlns:android="http://schemas.android.com/apk/res/android"
-			  xmlns:tools="http://schemas.android.com/tools"
-			  android:layout_width="match_parent"
-			  android:layout_height="match_parent"
-			  tools:context="brice.explorun.fragments.MapFragment"/>
+	<fragment
+		android:id="@+id/map"
+	  	android:name="com.google.android.gms.maps.SupportMapFragment"
+		android:layout_below="@id/no_network_label"
+	  	xmlns:android="http://schemas.android.com/apk/res/android"
+	  	xmlns:tools="http://schemas.android.com/tools"
+	  	android:layout_width="match_parent"
+	  	android:layout_height="match_parent"
+	  	tools:context="brice.explorun.fragments.MapFragment"/>
 
 	<RelativeLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true">
+
+		<Button
+			android:id="@+id/form_btn"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:layout_alignParentBottom="true">
-		<Button
-				android:id="@+id/form_btn"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:text="@string/start_form"/>
+			android:text="@string/start_form"/>
+
 	</RelativeLayout>
 
 	<fragment
-			android:id="@+id/form"
-			xmlns:tools="http://schemas.android.com/tools"
-			android:name="brice.explorun.fragments.FormFragment"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_above="@id/map"
-			android:layout_alignParentBottom="true"
-			tools:context="brice.explorun.fragments.MapFragment" />
+		android:id="@+id/form"
+		xmlns:tools="http://schemas.android.com/tools"
+		android:name="brice.explorun.fragments.FormFragment"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_above="@id/map"
+		android:layout_alignParentBottom="true"
+		tools:context="brice.explorun.fragments.MapFragment" />
 
 	<fragment
-			android:id="@+id/route_info"
-			xmlns:tools="http://schemas.android.com/tools"
-			android:name="brice.explorun.fragments.RouteInfoFragment"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_above="@id/form"
-			android:layout_alignParentBottom="true"
-			tools:context="brice.explorun.fragments.MapFragment" />
+		android:id="@+id/route_info"
+		xmlns:tools="http://schemas.android.com/tools"
+		android:name="brice.explorun.fragments.RouteInfoFragment"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_above="@id/form"
+		android:layout_alignParentBottom="true"
+		tools:context="brice.explorun.fragments.MapFragment" />
+
+	<fragment
+		android:id="@+id/current_route"
+		xmlns:tools="http://schemas.android.com/tools"
+		android:name="brice.explorun.fragments.CurrentRouteFragment"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_above="@id/route_info"
+		android:layout_alignParentBottom="true"
+		tools:context="brice.explorun.fragments.MapFragment" />
 
 	<ProgressBar
-			android:id="@+id/progress_bar"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:theme="@style/AppTheme.BlueAccent"
-			android:visibility="gone"
-			android:layout_centerInParent="true">
+		android:id="@+id/progress_bar"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:theme="@style/AppTheme.BlueAccent"
+		android:visibility="gone"
+		android:layout_centerInParent="true">
 	</ProgressBar>
 
 </RelativeLayout>

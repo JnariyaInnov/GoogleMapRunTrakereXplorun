@@ -1,6 +1,7 @@
 package brice.explorun.utilities;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -61,5 +62,17 @@ public class TimeUtility
 		Calendar calendar = Calendar.getInstance(Locale.getDefault());
 		calendar.add(Calendar.MINUTE, duration);
 		return formatTime(calendar.getTimeInMillis());
+	}
+
+	/**
+	 * Compute the average speed of the user
+	 * @param distance Distance in kilometers
+	 * @param timeInMillis Elapsed time in ms
+	 * @return The average speed in km/h
+	 */
+	public static double computeAverageSpeed(double distance, long timeInMillis)
+	{
+		double hours = (timeInMillis/1000.0)/3600.0;
+		return distance/hours;
 	}
 }
