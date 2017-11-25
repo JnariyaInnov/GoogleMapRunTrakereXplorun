@@ -17,7 +17,7 @@ import android.widget.TextView;
 import com.appyvet.materialrangebar.RangeBar;
 
 import brice.explorun.R;
-import brice.explorun.models.FormObserver;
+import brice.explorun.models.RouteObserver;
 import brice.explorun.utilities.SportUtility;
 import brice.explorun.utilities.TimeUtility;
 
@@ -36,7 +36,7 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 
 	private int chosenSport;
 
-	private FormObserver observer;
+	private RouteObserver observer;
 
 	private SharedPreferences sharedPref;
 
@@ -83,11 +83,11 @@ public class FormFragment extends Fragment implements View.OnClickListener{
 
 		try
 		{
-			this.observer = (FormObserver) getParentFragment();
+			this.observer = (RouteObserver) getParentFragment();
 		}
 		catch (ClassCastException e)
 		{
-			throw new ClassCastException(getParentFragment().toString() + " must implement FormObserver");
+			throw new ClassCastException(getParentFragment().toString() + " must implement RouteObserver");
 		}
 
 		this.layout = v.findViewById(R.id.form);

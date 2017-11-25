@@ -12,10 +12,6 @@ import android.util.Log;
 
 import java.util.Locale;
 
-/**
- * Created by germain on 11/19/17.
- */
-
 public class TTS extends Service implements TextToSpeech.OnInitListener, TextToSpeech.OnUtteranceCompletedListener {
 
     private TextToSpeech tts;
@@ -67,6 +63,7 @@ public class TTS extends Service implements TextToSpeech.OnInitListener, TextToS
 
     @Override
     public void onDestroy() {
+        Log.i("explorun_tts","Stopping TTS service");
         isStarted = false;
         if (tts != null) {
             tts.stop();

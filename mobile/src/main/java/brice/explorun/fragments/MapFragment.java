@@ -48,7 +48,8 @@ import java.util.List;
 import brice.explorun.activities.MainActivity;
 import brice.explorun.controllers.RoutesController;
 import brice.explorun.models.CustomRoute;
-import brice.explorun.models.FormObserver;
+import brice.explorun.models.RouteObserver;
+import brice.explorun.services.RouteService;
 import brice.explorun.utilities.LocationUtility;
 import brice.explorun.utilities.SportUtility;
 import brice.explorun.utilities.Utility;
@@ -56,15 +57,15 @@ import brice.explorun.controllers.NearbyAttractionsController;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
 import brice.explorun.R;
-import brice.explorun.services.LocationService;
 
-public class MapFragment extends PlacesObserverFragment implements OnMapReadyCallback, FormObserver
+public class MapFragment extends PlacesObserverFragment implements OnMapReadyCallback, RouteObserver
 {
 	private final String LOCATION_KEY = "location";
 	private final String FIRST_REQUEST_KEY = "first_request";
 	private final String PLACES_KEY = "places";
 	private final String FORM_OPEN_KEY = "form_open";
 	private final String ROUTE_INFO_OPEN_KEY = "route_info_open";
+	private final String CURRENT_ROUTE_OPEN_KEY = "current_route_open";
 	private final String ROUTE_KEY = "route";
 	private final String CUSTOM_ROUTE_KEY = "custom_route";
 
@@ -92,6 +93,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	private Button mFormButton;
 	private ScrollView routeCreationLayout;
 	private ScrollView routeInfoLayout;
+	private ScrollView currentRouteLayout;
 	private Animation slideUpAnimation;
 	private Animation slideDownAnimation;
 	private ProgressBar progressBar = null;
@@ -105,6 +107,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	private int height;
 
 	private RouteInfoFragment routeInfoFragment;
+	private CurrentRouteFragment currentRouteFragment;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -145,6 +148,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		this.layout = view.findViewById(R.id.map_fragment_view);
 		this.routeCreationLayout = view.findViewById(R.id.form);
 		this.routeInfoLayout = view.findViewById(R.id.route_info);
+		this.currentRouteLayout = view.findViewById(R.id.current_route);
 		this.slideUpAnimation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_up);
 		this.slideDownAnimation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_down);
 
@@ -166,6 +170,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		this.height = getResources().getDisplayMetrics().heightPixels;
 
 		this.routeInfoFragment = (RouteInfoFragment) this.getChildFragmentManager().findFragmentById(R.id.route_info);
+		this.currentRouteFragment = (CurrentRouteFragment) this.getChildFragmentManager().findFragmentById(R.id.current_route);
 
 		return view;
 	}
@@ -213,6 +218,11 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 				this.routeInfoLayout.setVisibility(savedInstanceState.getInt(ROUTE_INFO_OPEN_KEY));
 			}
 
+			if (savedInstanceState.keySet().contains(CURRENT_ROUTE_OPEN_KEY))
+			{
+				this.currentRouteLayout.setVisibility(savedInstanceState.getInt(CURRENT_ROUTE_OPEN_KEY));
+			}
+
 			if (savedInstanceState.keySet().contains(ROUTE_KEY))
 			{
 				this.route = savedInstanceState.getParcelable(ROUTE_KEY);
@@ -251,6 +261,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		savedInstanceState.putBoolean(FIRST_REQUEST_KEY, this.isFirstRequest);
 		savedInstanceState.putInt(FORM_OPEN_KEY, this.routeCreationLayout.getVisibility());
 		savedInstanceState.putInt(ROUTE_INFO_OPEN_KEY, this.routeInfoLayout.getVisibility());
+		savedInstanceState.putInt(CURRENT_ROUTE_OPEN_KEY, this.currentRouteLayout.getVisibility());
 		savedInstanceState.putParcelableArrayList(PLACES_KEY, this.places);
 		savedInstanceState.putParcelable(LOCATION_KEY, this.mLastLocation);
 		savedInstanceState.putParcelable(ROUTE_KEY, this.route);
@@ -355,7 +366,10 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 				}
 				this.userMarker.setPosition(userLocation);
 				this.isFirstRequest = false;
-				getNearbyPlaces();
+				if (!RouteService.isStarted)
+				{
+					getNearbyPlaces();
+				}
 			}
 		}
 	}
@@ -484,6 +498,10 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 					legNumber++;
 				}
 				this.routeInfoFragment.update(this.customRoute);
+				if (this.currentRouteLayout.getVisibility() == View.VISIBLE)
+				{
+					this.currentRouteFragment.update(this.customRoute.getSportType());
+				}
 			}
 		}
 	}
@@ -580,5 +598,18 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			res = true;
 		}
 		return res;
+	}
+
+	public void onRouteStart()
+	{
+		this.slideDownFragment(this.routeInfoLayout);
+		this.slideUpFragment(this.currentRouteLayout);
+		this.currentRouteFragment.update(this.customRoute.getSportType());
+	}
+
+	public void onRouteStop()
+	{
+		this.removePolylines();
+		this.customRoute = null;
 	}
 }

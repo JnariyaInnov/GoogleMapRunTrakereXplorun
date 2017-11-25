@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 import brice.explorun.controllers.NearbyAttractionsController;
 import brice.explorun.R;
+import brice.explorun.services.RouteService;
 import brice.explorun.utilities.LocationUtility;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;

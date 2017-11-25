@@ -37,4 +37,8 @@
 	<string name="distance_image_text">Distance</string>
 	<string name="duration_image_text">Durée</string>
 	<string name="arrival_time_image_text">Heure d\'arrivée estimée</string>
+	<string name="pause_route_text">Pause</string>
+	<string name="stop_route_text">Arrivée</string>
+	<string name="average_speed_text">Vitesse moyenne</string>
+	<string name="resume_route_text">Reprendre</string>
 </resources>
