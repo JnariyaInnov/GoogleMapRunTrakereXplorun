@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity
 
 	public ConnectivityStatusHandler getConnectivityStatusHandler() { return this.connectivityStatusHandler; }
 
-	public static GoogleApiClient mGoogleApiClient = null;
+	public DrawerLayout getDrawerLayout() { return this.mDrawerLayout; }
 
 	@Override
     protected void onCreate(Bundle savedInstanceState)

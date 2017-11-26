@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -616,8 +617,8 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 	public void onRouteStart()
 	{
-		AppCompatActivity activity = (AppCompatActivity) this.getActivity();
-		activity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+		MainActivity activity = (MainActivity) this.getActivity();
+		activity.getDrawerLayout().setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
 		this.slideDownFragment(this.routeInfoLayout);
 		this.slideUpFragment(this.currentRouteLayout);
 		this.currentRouteFragment.update(this.customRoute.getSportType());
@@ -626,8 +627,8 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	public void onRouteStop()
 	{
 		this.removePolylines();
-		AppCompatActivity activity = (AppCompatActivity) this.getActivity();
-		activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		MainActivity activity = (MainActivity) this.getActivity();
+		activity.getDrawerLayout().setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
 		this.customRoute = null;
 	}
 }
