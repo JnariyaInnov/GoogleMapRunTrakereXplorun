@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
@@ -106,6 +107,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 	private int width;
 	private int height;
+	private int routeInfoLayoutVisibility = View.GONE;
 
 	private RouteInfoFragment routeInfoFragment;
 	private CurrentRouteFragment currentRouteFragment;
@@ -149,6 +151,15 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		this.layout = view.findViewById(R.id.map_fragment_view);
 		this.routeCreationLayout = view.findViewById(R.id.form);
 		this.routeInfoLayout = view.findViewById(R.id.route_info);
+		this.routeInfoLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener()
+		{
+			@Override
+			public void onGlobalLayout()
+			{
+				routeInfoLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+				routeInfoLayout.setVisibility(routeInfoLayoutVisibility);
+			}
+		});
 		this.currentRouteLayout = view.findViewById(R.id.current_route);
 		this.slideUpAnimation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_up);
 		this.slideDownAnimation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_down);
@@ -216,7 +227,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 			if (savedInstanceState.keySet().contains(ROUTE_INFO_OPEN_KEY))
 			{
-				this.routeInfoLayout.setVisibility(savedInstanceState.getInt(ROUTE_INFO_OPEN_KEY));
+				this.routeInfoLayoutVisibility = savedInstanceState.getInt(ROUTE_INFO_OPEN_KEY);
 			}
 
 			if (savedInstanceState.keySet().contains(CURRENT_ROUTE_OPEN_KEY))
@@ -551,6 +562,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			this.drawRouteOnMap(route);
 			this.showRouteInfo();
 
+			this.map.setPadding(0, 0, 0, this.routeInfoLayout.getHeight());
 			this.map.animateCamera(Utility.getCameraUpdateBounds(this.width, this.height, (int) (this.height*0.15), locations));
 		}
 		else
@@ -580,6 +592,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 	public void slideDownFragment(ScrollView layout)
 	{
+		this.map.setPadding(0, 0, 0, 0);
 		layout.setAnimation(this.slideDownAnimation);
 		layout.setVisibility(View.GONE);
 		layout.startAnimation(this.slideDownAnimation);

@@ -5,8 +5,7 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	tools:context="brice.explorun.fragments.RouteInfoFragment"
-	android:id="@+id/info_fragment"
-	android:visibility="gone">
+	android:id="@+id/info_fragment">
 
 	<LinearLayout
 		android:layout_width="match_parent"
