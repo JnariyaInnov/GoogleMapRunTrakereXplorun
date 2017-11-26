@@ -131,15 +131,37 @@
 
 		</LinearLayout>
 
-		<Button
-			android:id="@+id/btn_start_route"
-			android:layout_width="match_parent"
-			android:layout_height="35dp"
-			android:gravity="center"
-			android:background="@color/colorPrimary"
-			android:textColor="@android:color/white"
-			android:text="@string/start_route_text"
-			android:textSize="18sp"/>
+		<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal"
+				style="?android:attr/buttonBarStyle">
+
+			<Button
+					android:id="@+id/btn_cancel_route"
+					android:layout_width="0dp"
+					android:layout_height="35dp"
+					android:layout_weight="1"
+					android:gravity="center"
+					android:background="@android:color/holo_red_light"
+					android:textColor="@android:color/white"
+					android:text="@string/form_cancel_button"
+					android:textSize="18sp"
+					style="?android:attr/buttonBarButtonStyle"/>
+
+			<Button
+					android:id="@+id/btn_start_route"
+					android:layout_width="0dp"
+					android:layout_height="35dp"
+					android:layout_weight="1"
+					android:gravity="center"
+					android:background="@color/colorPrimary"
+					android:textColor="@android:color/white"
+					android:text="@string/start_route_text"
+					android:textSize="18sp"
+					style="?android:attr/buttonBarButtonStyle"/>
+
+		</LinearLayout>
 
 	</LinearLayout>
 

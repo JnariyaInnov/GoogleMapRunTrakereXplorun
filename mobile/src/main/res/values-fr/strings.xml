@@ -33,7 +33,7 @@
 	<string name="directions_api_request_error">Une erreur est survenue lors de la requête, le parcours
 		ne peut être affiché sur la carte
 	</string>
-	<string name="start_route_text">Commencer le parcours</string>
+	<string name="start_route_text">Commencer</string>
 	<string name="distance_image_text">Distance</string>
 	<string name="duration_image_text">Durée</string>
 	<string name="arrival_time_image_text">Heure d\'arrivée estimée</string>
@@ -41,4 +41,5 @@
 	<string name="stop_route_text">Arrivée</string>
 	<string name="average_speed_text">Vitesse moyenne</string>
 	<string name="resume_route_text">Reprendre</string>
+	<string name="route_info_text">Infos parcours</string>
 </resources>

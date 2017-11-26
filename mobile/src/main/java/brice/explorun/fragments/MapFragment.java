@@ -13,7 +13,6 @@ import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -86,6 +85,8 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	};
 	private GoogleMap.OnPolylineClickListener polylineClickListener;
 	private GoogleMap.OnMapClickListener mapClickListener;
+	private View.OnClickListener searchRouteClickListener;
+	private View.OnClickListener infoRouteClickListener;
 
 	private ArrayList<Place> places;
 	private ArrayList<Marker> placesMarkers;
@@ -139,6 +140,22 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 				slideDownFragments();
 			}
 		};
+		this.searchRouteClickListener = new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View view)
+			{
+				slideUpFragment(routeCreationLayout);
+			}
+		};
+		this.infoRouteClickListener = new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View view)
+			{
+				slideUpFragment(routeInfoLayout);
+			}
+		};
 
 		this.places = new ArrayList<>();
 		this.placesMarkers = new ArrayList<>();
@@ -165,13 +182,8 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		this.slideUpAnimation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_up);
 		this.slideDownAnimation = AnimationUtils.loadAnimation(this.getActivity(), R.anim.slide_down);
 
-		mFormButton = view.findViewById(R.id.form_btn);
-		mFormButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				slideUpFragment(routeCreationLayout);
-			}
-		});
+		this.mFormButton = view.findViewById(R.id.form_btn);
+		this.mFormButton.setOnClickListener(this.searchRouteClickListener);
 		this.progressBar = view.findViewById(R.id.progress_bar);
 
 		float[] userLoc = LocationUtility.getLocationFromPreferences(getActivity());
@@ -487,33 +499,40 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			this.route = route;
 			this.removePolylines();
 
-			List<Leg> legList = route.getLegList();
-
-			int blue = ContextCompat.getColor(this.getActivity(), R.color.lightBlue);
-
-			if (legList != null)
+			if (this.route != null)
 			{
-				int legNumber = 0;
-				for (Leg leg : legList)
+				List<Leg> legList = route.getLegList();
+
+				int blue = ContextCompat.getColor(this.getActivity(), R.color.lightBlue);
+
+				if (legList != null)
 				{
-					ArrayList<LatLng> directionPoints = leg.getDirectionPoint();
+					int legNumber = 0;
+					for (Leg leg : legList)
+					{
+						ArrayList<LatLng> directionPoints = leg.getDirectionPoint();
 
-					PolylineOptions polylineOptions = DirectionConverter.createPolyline(this.getActivity(), directionPoints, 5, Color.BLACK);
-					polylineOptions.zIndex(-1);
-					polylineOptions.clickable(true);
-					this.polylines.add(this.map.addPolyline(polylineOptions));
+						PolylineOptions polylineOptions = DirectionConverter.createPolyline(this.getActivity(), directionPoints, 5, Color.BLACK);
+						polylineOptions.zIndex(-1);
+						polylineOptions.clickable(true);
+						this.polylines.add(this.map.addPolyline(polylineOptions));
 
-					polylineOptions = DirectionConverter.createPolyline(this.getActivity(), directionPoints, 2, blue);
-					polylineOptions.zIndex(legNumber);
-					polylineOptions.clickable(true);
-					this.polylines.add(this.map.addPolyline(polylineOptions));
+						polylineOptions = DirectionConverter.createPolyline(this.getActivity(), directionPoints, 2, blue);
+						polylineOptions.zIndex(legNumber);
+						polylineOptions.clickable(true);
+						this.polylines.add(this.map.addPolyline(polylineOptions));
 
-					legNumber++;
-				}
-				this.routeInfoFragment.update(this.customRoute);
-				if (this.currentRouteLayout.getVisibility() == View.VISIBLE)
-				{
-					this.currentRouteFragment.update(this.customRoute.getSportType());
+						legNumber++;
+					}
+					this.routeInfoFragment.update(this.customRoute);
+					if (this.currentRouteLayout.getVisibility() == View.VISIBLE)
+					{
+						this.currentRouteFragment.update(this.customRoute.getSportType());
+					}
+
+					this.mFormButton.setText(R.string.route_info_text);
+					this.mFormButton.setCompoundDrawablesWithIntrinsicBounds(this.getResources().getDrawable(R.drawable.ic_info), null, null, null);
+					this.mFormButton.setOnClickListener(this.infoRouteClickListener);
 				}
 			}
 		}
@@ -626,9 +645,24 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 	public void onRouteStop()
 	{
-		this.removePolylines();
 		MainActivity activity = (MainActivity) this.getActivity();
 		activity.getDrawerLayout().setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+		this.removeRoute();
+	}
+
+	public void onRouteCancel()
+	{
+		this.removeRoute();
+		this.slideDownFragment(this.routeInfoLayout);
+		this.mFormButton.setText(R.string.start_form);
+		this.mFormButton.setCompoundDrawablesWithIntrinsicBounds(this.getResources().getDrawable(R.drawable.ic_search), null, null, null);
+		this.mFormButton.setOnClickListener(this.searchRouteClickListener);
+	}
+
+	public void removeRoute()
+	{
+		this.removePolylines();
 		this.customRoute = null;
+		this.route = null;
 	}
 }

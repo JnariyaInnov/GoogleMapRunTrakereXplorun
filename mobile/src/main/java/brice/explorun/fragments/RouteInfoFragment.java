@@ -57,13 +57,22 @@ public class RouteInfoFragment extends Fragment
 		this.durationText = view.findViewById(R.id.duration_text);
 		this.arrivalTimeText = view.findViewById(R.id.arrival_time_text);
 
-		Button button = view.findViewById(R.id.btn_start_route);
-		button.setOnClickListener(new View.OnClickListener()
+		Button startRouteButton = view.findViewById(R.id.btn_start_route);
+		startRouteButton.setOnClickListener(new View.OnClickListener()
 		{
 			@Override
 			public void onClick(View view)
 			{
 				startRoute();
+			}
+		});
+		Button cancelRouteButton = view.findViewById(R.id.btn_cancel_route);
+		cancelRouteButton.setOnClickListener(new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View view)
+			{
+				cancelRoute();
 			}
 		});
 
@@ -83,19 +92,22 @@ public class RouteInfoFragment extends Fragment
 
 	public void update(CustomRoute route)
 	{
-		this.updateSportImageAndText(route.getSportType());
+		if (route != null)
+		{
+			this.updateSportImageAndText(route.getSportType());
 
-		double distanceInKm = route.getDistance()/1000.0;
-		this.distanceText.setText(LocationUtility.formatDistance(this.getActivity(), distanceInKm));
+			double distanceInKm = route.getDistance() / 1000.0;
+			this.distanceText.setText(LocationUtility.formatDistance(this.getActivity(), distanceInKm));
 
-		float averageSpeed = SportUtility.getAverageSpeedFromSport(route.getSportType());
-		this.durationInMinutes =  TimeUtility.convertTimeToMinutes(distanceInKm / averageSpeed);
+			float averageSpeed = SportUtility.getAverageSpeedFromSport(route.getSportType());
+			this.durationInMinutes = TimeUtility.convertTimeToMinutes(distanceInKm / averageSpeed);
 
-		this.durationText.setText(TimeUtility.formatDuration(this.getActivity(), durationInMinutes));
+			this.durationText.setText(TimeUtility.formatDuration(this.getActivity(), durationInMinutes));
 
-		this.arrivalTimeText.setText(TimeUtility.computeEstimatedTimeOfArrival(durationInMinutes));
+			this.arrivalTimeText.setText(TimeUtility.computeEstimatedTimeOfArrival(durationInMinutes));
 
-		this.steps = route.getSteps();
+			this.steps = route.getSteps();
+		}
 	}
 
 	private void updateSportImageAndText(int sportType)
@@ -141,6 +153,14 @@ public class RouteInfoFragment extends Fragment
 		if (this.observer != null)
 		{
 			this.observer.onRouteStart();
+		}
+	}
+
+	public void cancelRoute()
+	{
+		if (this.observer != null)
+		{
+			this.observer.onRouteCancel();
 		}
 	}
 }
