@@ -645,13 +645,6 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 	public void onRouteStop()
 	{
-		MainActivity activity = (MainActivity) this.getActivity();
-		activity.getDrawerLayout().setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-		this.removeRoute();
-	}
-
-	public void onRouteCancel()
-	{
 		this.removeRoute();
 		this.slideDownFragment(this.routeInfoLayout);
 		this.mFormButton.setText(R.string.start_form);

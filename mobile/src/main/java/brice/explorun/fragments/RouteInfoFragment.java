@@ -160,7 +160,7 @@ public class RouteInfoFragment extends Fragment
 	{
 		if (this.observer != null)
 		{
-			this.observer.onRouteCancel();
+			this.observer.onRouteStop();
 		}
 	}
 }
