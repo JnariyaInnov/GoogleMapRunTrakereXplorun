@@ -35,6 +35,7 @@ import com.google.firebase.auth.GoogleAuthProvider;
 
 import brice.explorun.R;
 import brice.explorun.activities.MainActivity;
+import brice.explorun.utilities.Utility;
 
 public class LoginFragment extends Fragment
 {
@@ -113,8 +114,15 @@ public class LoginFragment extends Fragment
 
 	public void signInWithGoogle()
 	{
-		Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-		startActivityForResult(signInIntent, GOOGLE_SIGN_IN_RESULT);
+		if (Utility.isOnline(this.getActivity()))
+		{
+			Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+			startActivityForResult(signInIntent, GOOGLE_SIGN_IN_RESULT);
+		}
+		else
+		{
+			Toast.makeText(this.getActivity(), R.string.no_network, Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	@Override
