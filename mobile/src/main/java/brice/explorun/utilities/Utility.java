@@ -39,21 +39,28 @@ public class Utility
 
 	public static float getPlaceMarkerColor(Fragment context, Place place)
 	{
-		List<String> appTypes = Arrays.asList(context.getResources().getStringArray(R.array.places_types));
-		ArrayList<String> types = place.getTypes();
-		int i = 0;
-		while(i < types.size() && !appTypes.contains(types.get(i)))
+		if (context.getActivity() != null)
 		{
-			i++;
-		}
+			List<String> appTypes = Arrays.asList(context.getActivity().getResources().getStringArray(R.array.places_types));
+			ArrayList<String> types = place.getTypes();
+			int i = 0;
+			while (i < types.size() && !appTypes.contains(types.get(i)))
+			{
+				i++;
+			}
 
-		if (i == types.size())
-		{
-			return Utility.getColorFromType(context, "");
+			if (i == types.size())
+			{
+				return Utility.getColorFromType(context, "");
+			}
+			else
+			{
+				return Utility.getColorFromType(context, types.get(i));
+			}
 		}
 		else
 		{
-			return Utility.getColorFromType(context, types.get(i));
+			return Utility.getColorFromType(context, "");
 		}
 	}
 

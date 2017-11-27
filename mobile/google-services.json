@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "138137768027",
+    "firebase_url": "https://explorun-184116.firebaseio.com",
+    "project_id": "explorun-184116",
+    "storage_bucket": "explorun-184116.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:138137768027:android:f32a6396840af79b",
+        "android_client_info": {
+          "package_name": "brice.explorun"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "138137768027-58kjenhj7s3ghfkjudnh2r814ahr8bhc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAIyZWqNP9eg3MyZ7s0js3-VcB3gEMwNVc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

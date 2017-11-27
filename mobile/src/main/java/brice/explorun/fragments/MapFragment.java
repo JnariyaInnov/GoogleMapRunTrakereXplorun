@@ -203,7 +203,14 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		getActivity().unregisterReceiver(this.locReceiver);
+		try
+		{
+			getActivity().unregisterReceiver(this.locReceiver);
+		}
+		catch (IllegalArgumentException e)
+		{
+			Log.d("MapFragment", "Receiver not registered");
+		}
 	}
 
 	private void updateValuesFromBundle(Bundle savedInstanceState)
@@ -593,7 +600,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 	public void showProgressBar()
 	{
-		this.layout.setAlpha(0.6f);
+		this.layout.setAlpha(0.4f);
 		this.progressBar.setVisibility(View.VISIBLE);
 	}
 
@@ -645,6 +652,8 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 	public void onRouteStop()
 	{
+		MainActivity activity = (MainActivity) this.getActivity();
+		activity.getDrawerLayout().setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
 		this.removeRoute();
 		this.slideDownFragment(this.routeInfoLayout);
 		this.mFormButton.setText(R.string.start_form);

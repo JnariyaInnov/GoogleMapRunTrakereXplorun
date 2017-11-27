@@ -36,16 +36,28 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
+		<meta-data android:name="com.facebook.sdk.ApplicationId"
+				   android:value="@string/facebook_app_id"/>
+
+		<activity android:name="com.facebook.FacebookActivity"
+				  android:configChanges=
+						  "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+				  android:label="@string/app_name" />
+
         <activity
             android:name=".activities.MainActivity"
             android:clearTaskOnLaunch="true"
             android:launchMode="singleTop"
             android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+        </activity>
+        <activity
+			android:name=".activities.LoginActivity"
+			android:label="@string/title_activity_login">
         </activity>
         <service android:name=".services.LocationService" />
         <service android:name=".services.TTS" />

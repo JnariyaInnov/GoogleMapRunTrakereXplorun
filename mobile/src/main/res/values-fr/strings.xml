@@ -42,4 +42,10 @@
 	<string name="average_speed_text">Vitesse moyenne</string>
 	<string name="resume_route_text">Reprendre</string>
 	<string name="route_info_text">Infos parcours</string>
+	<string name="title_activity_login">Connexion</string>
+	<string name="login_error_text">Erreur lors de la connexion</string>
+	<string name="nav_logout">Se déconnecter</string>
+	<string name="authentication_failed">Erreur lors de la connexion</string>
+	<string name="login_successful">Connexion réussie !</string>
+	<string name="logout_successful">Déconnexion réussie !</string>
 </resources>

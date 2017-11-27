@@ -22,8 +22,16 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
+import com.facebook.login.LoginManager;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import brice.explorun.R;
 import brice.explorun.fragments.AboutFragment;
@@ -38,6 +46,7 @@ public class MainActivity extends AppCompatActivity
 {
 	private Fragment fragment;
 	private final int MY_PERMISSIONS_REQUEST_GPS = 0;
+	private GoogleSignInClient mGoogleSignInClient;
 
 	private DrawerLayout mDrawerLayout;
 	private ActionBarDrawerToggle mDrawerToggle;
@@ -61,59 +70,86 @@ public class MainActivity extends AppCompatActivity
         Log.d("eX_lifeCycle", "main => onCreate()");
         setContentView(R.layout.activity_main);
 
-		this.mDrawerLayout = findViewById(R.id.drawer_layout);
-		this.navigationView = findViewById(R.id.navigation);
-
-		//setting up selected item listener
-		this.navigationView.setNavigationItemSelectedListener(
-				new NavigationView.OnNavigationItemSelectedListener() {
-					@Override
-					public boolean onNavigationItemSelected(MenuItem menuItem) {
-						selectItem(menuItem, null);
-						return true;
-					}
-				});
-
-		this.mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close)
+		// Check if user is signed in (non-null) and update UI accordingly.
+		FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+		if (currentUser == null)
 		{
-			/** Called when a drawer has settled in a completely closed state. */
-			public void onDrawerClosed(View view)
-			{
-				super.onDrawerClosed(view);
-				getSupportActionBar().setTitle(mTitle);
-				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-			}
-
-			/** Called when a drawer has settled in a completely open state. */
-			public void onDrawerOpened(View drawerView) {
-				super.onDrawerOpened(drawerView);
-				getSupportActionBar().setTitle(getResources().getString(R.string.drawer_title));
-				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-			}
-		};
-
-		// Set the drawer toggle as the DrawerListener
-		mDrawerLayout.addDrawerListener(this.mDrawerToggle);
-
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-		getSupportActionBar().setHomeButtonEnabled(true);
-
-		if (savedInstanceState != null)
-		{
-			//Restore the fragment's instance
-			this.fragment = getSupportFragmentManager().getFragment(savedInstanceState, "fragment");
-			this.mTitle = savedInstanceState.getString("title");
-			getSupportActionBar().setTitle(this.mTitle);
-			this.selectedItemId = savedInstanceState.getInt("selectedItemId");
+			Intent intent = new Intent(this, LoginActivity.class);
+			startActivity(intent);
+			this.finish();
 		}
 		else
 		{
-			selectItem(this.navigationView.getMenu().getItem(0), null);
-		}
+			// Configure Google Sign In
+			GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+					.requestIdToken(getString(R.string.default_web_client_id))
+					.requestEmail()
+					.build();
 
-		Intent ttsServiceIntent = new Intent(this, TTS.class);
-		if(!TTS.isStarted){
-			this.startService(ttsServiceIntent);
+			this.mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
+			this.mDrawerLayout = findViewById(R.id.drawer_layout);
+			this.navigationView = findViewById(R.id.navigation);
+
+			//setting up selected item listener
+			this.navigationView.setNavigationItemSelectedListener(
+					new NavigationView.OnNavigationItemSelectedListener()
+					{
+						@Override
+						public boolean onNavigationItemSelected(MenuItem menuItem)
+						{
+							selectItem(menuItem, null);
+							return true;
+						}
+					});
+
+			this.mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close)
+			{
+				/**
+				 * Called when a drawer has settled in a completely closed state.
+				 */
+				public void onDrawerClosed(View view)
+				{
+					super.onDrawerClosed(view);
+					getSupportActionBar().setTitle(mTitle);
+					invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+				}
+
+				/**
+				 * Called when a drawer has settled in a completely open state.
+				 */
+				public void onDrawerOpened(View drawerView)
+				{
+					super.onDrawerOpened(drawerView);
+					getSupportActionBar().setTitle(getResources().getString(R.string.drawer_title));
+					invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+				}
+			};
+
+			// Set the drawer toggle as the DrawerListener
+			mDrawerLayout.addDrawerListener(this.mDrawerToggle);
+
+			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+			getSupportActionBar().setHomeButtonEnabled(true);
+
+			if (savedInstanceState != null)
+			{
+				//Restore the fragment's instance
+				this.fragment = getSupportFragmentManager().getFragment(savedInstanceState, "fragment");
+				this.mTitle = savedInstanceState.getString("title");
+				getSupportActionBar().setTitle(this.mTitle);
+				this.selectedItemId = savedInstanceState.getInt("selectedItemId");
+			}
+			else
+			{
+				selectItem(this.navigationView.getMenu().getItem(0), null);
+			}
+
+			Intent ttsServiceIntent = new Intent(this, TTS.class);
+			if (!TTS.isStarted)
+			{
+				this.startService(ttsServiceIntent);
+			}
 		}
     }
 
@@ -260,37 +296,50 @@ public class MainActivity extends AppCompatActivity
 		int itemId = item.getItemId();
 		if (itemId != this.selectedItemId)
 		{
-			// Update title and selected item id
-			this.mTitle = item.getTitle().toString();
-			this.selectedItemId = itemId;
-
-			// Highlight selected item
-			item.setChecked(true);
-
-			// Create a new fragment according to id
-			switch (itemId)
+			if (itemId == R.id.nav_logout)
 			{
-				case R.id.nav_about:
-					this.fragment = new AboutFragment();
-					break;
-
-				case R.id.nav_nearby_attractions:
-					this.fragment = new NearbyAttractionsFragment();
-					break;
-
-				default:
-					// Set title for main fragment = app name
-					this.mTitle = getResources().getString(R.string.app_name);
-					this.fragment = new MapFragment();
-					break;
+				FirebaseAuth.getInstance().signOut();
+				this.mGoogleSignInClient.signOut();
+				LoginManager.getInstance().logOut();
+				Toast.makeText(this, R.string.logout_successful, Toast.LENGTH_SHORT).show();
+				Intent intent = new Intent(this, LoginActivity.class);
+				startActivity(intent);
+				this.finish();
 			}
+			else
+			{
+				// Update title and selected item id
+				this.mTitle = item.getTitle().toString();
+				this.selectedItemId = itemId;
 
-			this.fragment.setArguments(args);
-			// Insert the fragment by replacing any existing fragment
-			FragmentManager fragmentManager = getSupportFragmentManager();
-			fragmentManager.beginTransaction()
-					.replace(R.id.container, this.fragment)
-					.commit();
+				// Highlight selected item
+				item.setChecked(true);
+
+				// Create a new fragment according to id
+				switch (itemId)
+				{
+					case R.id.nav_about:
+						this.fragment = new AboutFragment();
+						break;
+
+					case R.id.nav_nearby_attractions:
+						this.fragment = new NearbyAttractionsFragment();
+						break;
+
+					default:
+						// Set title for main fragment = app name
+						this.mTitle = getResources().getString(R.string.app_name);
+						this.fragment = new MapFragment();
+						break;
+				}
+
+				this.fragment.setArguments(args);
+				// Insert the fragment by replacing any existing fragment
+				FragmentManager fragmentManager = getSupportFragmentManager();
+				fragmentManager.beginTransaction()
+						.replace(R.id.container, this.fragment)
+						.commit();
+			}
 		}
 
 		// Close the drawer
