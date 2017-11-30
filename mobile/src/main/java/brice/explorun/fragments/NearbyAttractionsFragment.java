@@ -24,6 +24,7 @@ import java.util.List;
 
 import brice.explorun.activities.MainActivity;
 import brice.explorun.adapters.NearbyAttractionsAdapter;
+import brice.explorun.controllers.WikiAttractionController;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;
 import brice.explorun.R;
@@ -68,6 +69,7 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 		}
 
 		this.nearbyAttractionsController = new NearbyAttractionsController(this);
+		this.wikiAttractionController = new WikiAttractionController(this);
 
 		this.types = Arrays.asList(getResources().getStringArray(R.array.places_types));
 
@@ -90,6 +92,8 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 			public void onItemClick(AdapterView<?> adapterView, View view, int i, long l)
 			{
 				viewPlaceOnMap(places.get(i));
+
+				wikiAttractionController.getWikiAttraction(places.get(i));
 			}
 		});
 

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 import brice.explorun.controllers.NearbyAttractionsController;
 import brice.explorun.R;
+import brice.explorun.controllers.WikiAttractionController;
 import brice.explorun.services.RouteService;
 import brice.explorun.utilities.LocationUtility;
 import brice.explorun.models.Photo;
@@ -20,6 +21,7 @@ import brice.explorun.utilities.Utility;
 public abstract class PlacesObserverFragment extends Fragment
 {
 	protected NearbyAttractionsController nearbyAttractionsController;
+	protected WikiAttractionController wikiAttractionController;
 	protected Location mLastLocation = new Location("");
 	protected LinearLayout progressBarLayout = null;
 
