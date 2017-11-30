@@ -109,12 +109,12 @@ public class RoutesController implements DirectionCallback
         }
         //Random gone wrong, better luck next time
         else if (totalDistance > maxKM){
-            Log.d("eX_route", "Route is too long, trying again");
+            Log.d("eX_route", "Route is too long, trying again (" + totalDistance + ")");
             return null;
         }
         //No route of this length can be created with current places list
         else {
-            Log.d("eX_route", "Route is too short, trying again");
+            Log.d("eX_route", "Route is too short, trying again (" + totalDistance + ")");
             return null;
         }
 

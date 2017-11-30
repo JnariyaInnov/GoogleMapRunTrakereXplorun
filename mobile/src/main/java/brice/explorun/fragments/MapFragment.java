@@ -489,13 +489,13 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			else
 			{
 				this.hideProgressBar();
-				Toast.makeText(this.getActivity(), R.string.no_network, Toast.LENGTH_LONG).show();
+				Toast.makeText(this.getActivity(), R.string.no_network, Toast.LENGTH_SHORT).show();
 			}
 		}
 		else
 		{
 			this.hideProgressBar();
-			Toast.makeText(this.getActivity(), R.string.no_route_found, Toast.LENGTH_LONG).show();
+			Toast.makeText(this.getActivity(), R.string.no_route_found, Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -534,7 +534,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 					this.routeInfoFragment.update(this.customRoute);
 					if (this.currentRouteLayout.getVisibility() == View.VISIBLE)
 					{
-						this.currentRouteFragment.update(this.customRoute.getSportType());
+						this.currentRouteFragment.update(this.customRoute);
 					}
 
 					this.mFormButton.setText(R.string.route_info_text);
@@ -647,7 +647,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		activity.getDrawerLayout().setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
 		this.slideDownFragment(this.routeInfoLayout);
 		this.slideUpFragment(this.currentRouteLayout);
-		this.currentRouteFragment.update(this.customRoute.getSportType());
+		this.currentRouteFragment.update(this.customRoute);
 	}
 
 	public void onRouteStop()

@@ -63,6 +63,7 @@
 	<string name="resume_route_text">Resume</string>
 	<string name="average_speed_text">Average speed</string>
 	<string name="average_speed" translatable="false">%1$.1f km/h</string>
+	<string name="route_saved">Your route has been saved in your history</string>
 
 	<!-- Login activity -->
 	<string name="title_activity_login">Login</string>

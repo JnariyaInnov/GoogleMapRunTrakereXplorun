@@ -24,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -80,6 +81,7 @@ public class MainActivity extends AppCompatActivity
 		}
 		else
 		{
+			FacebookSdk.sdkInitialize(this.getApplicationContext());
 			// Configure Google Sign In
 			GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
 					.requestIdToken(getString(R.string.default_web_client_id))

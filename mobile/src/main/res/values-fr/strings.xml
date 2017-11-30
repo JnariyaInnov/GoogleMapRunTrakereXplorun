@@ -48,4 +48,5 @@
 	<string name="authentication_failed">Erreur lors de la connexion</string>
 	<string name="login_successful">Connexion réussie !</string>
 	<string name="logout_successful">Déconnexion réussie !</string>
+	<string name="route_saved">Votre parcours a été sauvegardé dans votre historique</string>
 </resources>

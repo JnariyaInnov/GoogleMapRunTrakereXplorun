@@ -32,9 +32,18 @@ import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import brice.explorun.R;
 import brice.explorun.activities.MainActivity;
+import brice.explorun.models.CustomRoute;
 import brice.explorun.utilities.Utility;
 
 public class LoginFragment extends Fragment
@@ -166,7 +175,6 @@ public class LoginFragment extends Fragment
 					// Sign in success, update UI with the signed-in user's information
 					Log.d("LoginFragment", "SignInWithCredential:success");
 					Toast.makeText(getActivity(), R.string.login_successful, Toast.LENGTH_SHORT).show();
-					FirebaseUser user = mAuth.getCurrentUser();
 					Intent intent = new Intent(getActivity(), MainActivity.class);
 					startActivity(intent);
 					getActivity().finish();

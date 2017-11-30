@@ -1,11 +1,14 @@
 package brice.explorun.fragments;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,7 +22,23 @@ import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+
 import brice.explorun.R;
+import brice.explorun.models.CustomRoute;
+import brice.explorun.models.FirebaseRoute;
+import brice.explorun.models.Place;
 import brice.explorun.models.RouteObserver;
 import brice.explorun.services.RouteService;
 import brice.explorun.utilities.LocationUtility;
@@ -42,9 +61,11 @@ public class CurrentRouteFragment extends Fragment
 
 	private Animation animation;
 
+	private CustomRoute customRoute;
 	private long base = 0;
 	private double distance = 0;
 	private long lastStopTime = 0;
+	private long duration = 0;
 	private boolean isRunning = true;
 
 	private RouteObserver observer;
@@ -122,9 +143,9 @@ public class CurrentRouteFragment extends Fragment
 		return view;
 	}
 
-	public void update(int sportType)
+	public void update(CustomRoute customRoute)
 	{
-		if (sportType == SportUtility.WALKING)
+		if (customRoute.getSportType() == SportUtility.WALKING)
 		{
 			this.speedImage.setImageDrawable(this.getResources().getDrawable(R.drawable.ic_walk));
 		}
@@ -157,7 +178,7 @@ public class CurrentRouteFragment extends Fragment
 		{
 			this.updateLayoutOnPause();
 		}
-		this.speedText.setText(String.format(getResources().getString(R.string.average_speed), TimeUtility.computeAverageSpeed(this.distance, SystemClock.elapsedRealtime()-this.chronometer.getBase())));
+		this.speedText.setText(String.format(getResources().getString(R.string.average_speed), 0));
 		this.chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener()
 		{
 			@Override
@@ -166,6 +187,7 @@ public class CurrentRouteFragment extends Fragment
 				speedText.setText(String.format(getResources().getString(R.string.average_speed), TimeUtility.computeAverageSpeed(distance, SystemClock.elapsedRealtime()-chronometer.getBase())));
 			}
 		});
+		this.customRoute = customRoute;
 	}
 
 	public void onSaveInstanceState(Bundle outBundle)
@@ -214,10 +236,20 @@ public class CurrentRouteFragment extends Fragment
 
 	public void stopRoute()
 	{
-		this.distance = 0;
-		this.base = 0;
-		this.lastStopTime = 0;
 		this.chronometer.stop();
+		this.duration = SystemClock.elapsedRealtime() - this.base;
+		AlertDialog.Builder builder = new AlertDialog.Builder(this.getActivity());
+		builder.setMessage(R.string.route_saved).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+		{
+			@Override
+			public void onClick(DialogInterface dialogInterface, int i)
+			{
+				dialogInterface.dismiss();
+			}
+		});
+		AlertDialog dialog = builder.create();
+		dialog.show();
+		addRouteInFirebase();
 		Intent intent = new Intent(this.getActivity(), RouteService.class);
 		this.getActivity().stopService(intent);
 		this.layout.setAnimation(this.animation);
@@ -227,5 +259,41 @@ public class CurrentRouteFragment extends Fragment
 		{
 			this.observer.onRouteStop();
 		}
+	}
+
+	public void addRouteInFirebase()
+	{
+		FirebaseFirestore db = FirebaseFirestore.getInstance();
+		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+		if (user != null)
+		{
+			float[] loc = LocationUtility.getLocationFromPreferences(this.getActivity());
+			LatLng pos = new LatLng(loc[0], loc[1]);
+			ArrayList<LatLng> places = new ArrayList<>();
+			for (Place p: this.customRoute.getPlaces())
+			{
+				places.add(new LatLng(p.getLatitude(), p.getLongitude()));
+			}
+			FirebaseRoute route = new FirebaseRoute(new Date(), this.customRoute.getSportType(), this.distance, this.duration, pos, places);
+			db.collection("users").document(user.getUid()).collection("routes").add(route).addOnSuccessListener(new OnSuccessListener<DocumentReference>()
+			{
+				@Override
+				public void onSuccess(DocumentReference documentReference)
+				{
+					Log.d("CurrentRoute", "Route successfully stored");
+				}
+			})
+			.addOnFailureListener(new OnFailureListener()
+			{
+				@Override
+				public void onFailure(@NonNull Exception e)
+				{
+					Log.e("CurrentRoute", "Error while storing route:" + e.getMessage());
+				}
+			});
+		}
+		this.distance = 0;
+		this.base = 0;
+		this.lastStopTime = 0;
 	}
 }
