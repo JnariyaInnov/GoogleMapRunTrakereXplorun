@@ -1,7 +1,6 @@
 package brice.explorun.controllers;
 
 
-import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
@@ -18,22 +17,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import brice.explorun.fragments.PlacesObserverFragment;
+import brice.explorun.fragments.RouteInfoFragment;
 import brice.explorun.models.CustomRequestQueue;
 import brice.explorun.models.Place;
-import brice.explorun.services.TTS;
 
 import static com.android.volley.VolleyLog.TAG;
 
 public class WikiAttractionController {
 
 
-	private PlacesObserverFragment observer;
+	private RouteInfoFragment observer;
 	private final String WIKI_API_BASE_URL = "https://fr.wikipedia.org/w/api.php?";
 	private Place place;
 	private String attractionText;
-	private TTS tts;
 
-	public WikiAttractionController(PlacesObserverFragment observer){
+	public WikiAttractionController(RouteInfoFragment observer){
 		this.observer = observer;
 	}
 
@@ -52,8 +50,9 @@ public class WikiAttractionController {
 		return builtUri.toString();
 	}
 
-	public void getWikiAttraction(Place place)
+	public String getWikiAttraction(Place place)
 	{
+
 		this.place = place;
 		String url = getWikiApiUrl(this.place.getName());
 		final WikiAttractionController _this = this;
@@ -78,6 +77,7 @@ public class WikiAttractionController {
 		);
 
 		CustomRequestQueue.getInstance(this.observer.getActivity()).getRequestQueue().add(request);
+		return attractionText;
 	}
 
 	public void getWikiAttractionByString(String attractionName)
@@ -124,6 +124,16 @@ public class WikiAttractionController {
 			}
 			else
 			{
+				p = Pattern.compile("\"\\*\":\"#REDIRECT");
+				m = p.matcher(status);
+				if (m.find()){
+					status = status.replaceAll(".*\"\\*\":\"#REDIRECT(.*)","$1");
+					status = status.replaceAll("\\[","");
+					status = status.replaceAll("\\]","");
+					status = status.replaceAll("\\}","");
+					status = status.replaceAll("\"","");
+					getWikiAttractionByString(status);
+				}
 				p = Pattern.compile("\"\\*\":\"#REDIRECTION");
 				m = p.matcher(status);
 				if (m.find()){
@@ -137,7 +147,6 @@ public class WikiAttractionController {
 				else {
 					attractionText  = textCleaner(status);
 					Log.d(TAG, attractionText);
-					
 				}
 			}
 
@@ -158,7 +167,14 @@ public class WikiAttractionController {
 
 		String paragraph;
 
-		paragraph = status.substring(status.indexOf("'''")-4,status.indexOf("=="));
+		Pattern p = Pattern.compile("'''");
+		Matcher m = p.matcher(status);
+		if (m.find()) {
+			paragraph = status.substring(status.indexOf("'''"), status.indexOf("=="));
+		}
+		else {
+			paragraph = status;
+		}
 		paragraph = paragraph.replaceAll("^n","");
 		paragraph = paragraph.replaceAll("\u00e0","à");
 		paragraph = paragraph.replaceAll("\u00e2","â");

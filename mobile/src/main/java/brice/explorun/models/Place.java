@@ -23,6 +23,16 @@ public class Place implements Parcelable
 	private String iconUrl = ""; // Url of the place's icon on the map
 	private Photo photo; // Photo of the place
 
+	private String description;
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	public String getPlaceId()
 	{
 		return placeId;

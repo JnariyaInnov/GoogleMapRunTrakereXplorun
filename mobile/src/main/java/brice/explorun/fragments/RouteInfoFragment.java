@@ -13,13 +13,14 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.model.Step;
 
 import java.util.ArrayList;
 
 import brice.explorun.R;
+import brice.explorun.controllers.WikiAttractionController;
 import brice.explorun.models.CustomRoute;
+import brice.explorun.models.Place;
 import brice.explorun.models.RouteObserver;
 import brice.explorun.services.RouteService;
 import brice.explorun.utilities.LocationUtility;
@@ -36,8 +37,11 @@ public class RouteInfoFragment extends Fragment
 
 	private int durationInMinutes = 0;
 	private ArrayList<Step> steps = new ArrayList<>();
+	private ArrayList<Place> places = new ArrayList<>();
 
 	private RouteObserver observer;
+
+	protected WikiAttractionController wikiAttractionController;
 
 	private BroadcastReceiver tickReceiver = new BroadcastReceiver(){
 		@Override
@@ -56,13 +60,16 @@ public class RouteInfoFragment extends Fragment
 		this.distanceText = view.findViewById(R.id.distance_text);
 		this.durationText = view.findViewById(R.id.duration_text);
 		this.arrivalTimeText = view.findViewById(R.id.arrival_time_text);
-
 		Button startRouteButton = view.findViewById(R.id.btn_start_route);
 		startRouteButton.setOnClickListener(new View.OnClickListener()
 		{
 			@Override
 			public void onClick(View view)
 			{
+				for (Place place : places)
+				{
+					place.setDescription(wikiAttractionController.getWikiAttraction(place));
+				}
 				startRoute();
 			}
 		});
@@ -87,6 +94,8 @@ public class RouteInfoFragment extends Fragment
 			throw new ClassCastException(getParentFragment().toString() + " must implement RouteObserver");
 		}
 
+		wikiAttractionController = new WikiAttractionController(this);
+
 		return view;
 	}
 
@@ -107,6 +116,9 @@ public class RouteInfoFragment extends Fragment
 			this.arrivalTimeText.setText(TimeUtility.computeEstimatedTimeOfArrival(durationInMinutes));
 
 			this.steps = route.getSteps();
+
+			this.places = route.getPlaces();
+
 		}
 	}
 
