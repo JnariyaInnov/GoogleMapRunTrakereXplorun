@@ -21,6 +21,7 @@ import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -36,6 +37,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import brice.explorun.R;
+import brice.explorun.activities.MainActivity;
 import brice.explorun.models.CustomRoute;
 import brice.explorun.models.FirebaseRoute;
 import brice.explorun.models.Place;
@@ -45,6 +47,7 @@ import brice.explorun.services.RouteService;
 import brice.explorun.utilities.LocationUtility;
 import brice.explorun.utilities.SportUtility;
 import brice.explorun.utilities.TimeUtility;
+import brice.explorun.utilities.Utility;
 
 public class CurrentRouteFragment extends Fragment
 {
@@ -212,6 +215,7 @@ public class CurrentRouteFragment extends Fragment
 	public void pauseRoute()
 	{
 		this.chronometer.stop();
+		this.duration = SystemClock.elapsedRealtime() - this.base;
 		this.lastStopTime = SystemClock.elapsedRealtime();
 		this.updateLayoutOnPause();
 		this.isRunning = false;
@@ -237,28 +241,27 @@ public class CurrentRouteFragment extends Fragment
 
 	public void stopRoute()
 	{
-		this.chronometer.stop();
-		this.duration = SystemClock.elapsedRealtime() - this.base;
-		AlertDialog.Builder builder = new AlertDialog.Builder(this.getActivity());
-		builder.setMessage(R.string.route_saved).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+		if (this.isRunning)
 		{
-			@Override
-			public void onClick(DialogInterface dialogInterface, int i)
+			pauseRoute();
+		}
+
+		if (Utility.isOnline(this.getActivity()))
+		{
+			addRouteInFirebase();
+			slideDownFragment();
+			showDialog();
+			this.distance = 0;
+			this.base = 0;
+			this.lastStopTime = 0;
+			if (this.observer != null)
 			{
-				dialogInterface.dismiss();
+				this.observer.onRouteStop();
 			}
-		});
-		AlertDialog dialog = builder.create();
-		dialog.show();
-		addRouteInFirebase();
-		Intent intent = new Intent(this.getActivity(), RouteService.class);
-		this.getActivity().stopService(intent);
-		this.layout.setAnimation(this.animation);
-		this.layout.setVisibility(View.GONE);
-		this.layout.startAnimation(this.animation);
-		if (this.observer != null)
+		}
+		else
 		{
-			this.observer.onRouteStop();
+			Toast.makeText(this.getActivity(), R.string.no_network, Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -271,30 +274,40 @@ public class CurrentRouteFragment extends Fragment
 			float[] loc = LocationUtility.getLocationFromPreferences(this.getActivity());
 			Position pos = new Position(loc[0], loc[1]);
 			ArrayList<Position> places = new ArrayList<>();
-			for (Place p: this.customRoute.getPlaces())
+			for (Place p : this.customRoute.getPlaces())
 			{
 				places.add(new Position(p.getLatitude(), p.getLongitude()));
 			}
 			FirebaseRoute route = new FirebaseRoute(new Date(), this.customRoute.getSportType(), this.distance, this.duration, pos, places);
-			db.collection("users").document(user.getUid()).collection("routes").add(route).addOnSuccessListener(new OnSuccessListener<DocumentReference>()
-			{
-				@Override
-				public void onSuccess(DocumentReference documentReference)
-				{
-					Log.d("CurrentRoute", "Route successfully stored");
-				}
-			})
-			.addOnFailureListener(new OnFailureListener()
-			{
-				@Override
-				public void onFailure(@NonNull Exception e)
-				{
-					Log.e("CurrentRoute", "Error while storing route:" + e.getMessage());
-				}
-			});
+			db.collection("users").document(user.getUid()).collection("routes").add(route);
 		}
-		this.distance = 0;
-		this.base = 0;
-		this.lastStopTime = 0;
+	}
+
+	public void slideDownFragment()
+	{
+		Intent intent = new Intent(this.getActivity(), RouteService.class);
+		this.getActivity().stopService(intent);
+		this.layout.setAnimation(this.animation);
+		this.layout.setVisibility(View.GONE);
+		this.layout.startAnimation(this.animation);
+	}
+
+	public void showDialog()
+	{
+		AlertDialog.Builder builder = new AlertDialog.Builder(this.getActivity());
+		builder.setMessage(R.string.route_saved).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+		{
+			@Override
+			public void onClick(DialogInterface dialogInterface, int i)
+			{
+				dialogInterface.dismiss();
+				// Setting the new fragment in MainActivity
+				MainActivity activity = (MainActivity) getActivity();
+				activity.getSupportActionBar().setTitle(activity.getResources().getString(R.string.nav_history));
+				activity.selectItem(activity.getNavigationView().getMenu().getItem(2), null);
+			}
+		});
+		AlertDialog dialog = builder.create();
+		dialog.show();
 	}
 }

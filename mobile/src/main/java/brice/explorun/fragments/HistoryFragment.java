@@ -17,7 +17,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -84,38 +86,33 @@ public class HistoryFragment extends Fragment
 
 	public void getRoutesHistory()
 	{
-		if (Utility.isOnline(this.getActivity()))
+		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+		FirebaseFirestore db = FirebaseFirestore.getInstance();
+		if (user != null)
 		{
-			FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-			FirebaseFirestore db = FirebaseFirestore.getInstance();
-			if (user != null)
+			this.progressBar.setVisibility(View.VISIBLE);
+			Log.d("HistoryFragment", "Retrieving history");
+			db.collection("users").document(user.getUid()).collection("routes").orderBy("date", Query.Direction.DESCENDING)
+			.addSnapshotListener(new EventListener<QuerySnapshot>()
 			{
-				this.progressBar.setVisibility(View.VISIBLE);
-				Log.d("HistoryFragment", "Retrieving history");
-				db.collection("users").document(user.getUid()).collection("routes").orderBy("date", Query.Direction.DESCENDING)
-				.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>()
+				@Override
+				public void onEvent(QuerySnapshot querySnapshot, FirebaseFirestoreException e)
 				{
-					@Override
-					public void onComplete(@NonNull Task<QuerySnapshot> task)
+					if (e != null)
 					{
-						if (task.isSuccessful())
-						{
-							adapter.clear();
-							for (DocumentSnapshot document : task.getResult())
-							{
-								adapter.add(document.toObject(FirebaseRoute.class));
-							}
-							progressBar.setVisibility(View.GONE);
-						}
-						else
-						{
-							progressBar.setVisibility(View.GONE);
-							Toast.makeText(getActivity(), R.string.history_error, Toast.LENGTH_SHORT).show();
-							Log.e("HistoryFragment", "error retrieving routes: ", task.getException());
-						}
+						Log.e("HistoryFragment", "Listen error", e);
+						progressBar.setVisibility(View.GONE);
+						Toast.makeText(getActivity(), R.string.history_error, Toast.LENGTH_SHORT).show();
 					}
-				});
-			}
+					else
+					{
+						Log.d("HistoryFragment", "Getting routes");
+						adapter.clear();
+						adapter.addAll(querySnapshot.toObjects(FirebaseRoute.class));
+						progressBar.setVisibility(View.GONE);
+					}
+				}
+			});
 		}
 	}
 }
