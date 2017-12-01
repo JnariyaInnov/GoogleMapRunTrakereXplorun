@@ -39,6 +39,7 @@ import brice.explorun.R;
 import brice.explorun.models.CustomRoute;
 import brice.explorun.models.FirebaseRoute;
 import brice.explorun.models.Place;
+import brice.explorun.models.Position;
 import brice.explorun.models.RouteObserver;
 import brice.explorun.services.RouteService;
 import brice.explorun.utilities.LocationUtility;
@@ -178,7 +179,7 @@ public class CurrentRouteFragment extends Fragment
 		{
 			this.updateLayoutOnPause();
 		}
-		this.speedText.setText(String.format(getResources().getString(R.string.average_speed), 0));
+		this.speedText.setText(String.format(getResources().getString(R.string.average_speed), 0f));
 		this.chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener()
 		{
 			@Override
@@ -268,11 +269,11 @@ public class CurrentRouteFragment extends Fragment
 		if (user != null)
 		{
 			float[] loc = LocationUtility.getLocationFromPreferences(this.getActivity());
-			LatLng pos = new LatLng(loc[0], loc[1]);
-			ArrayList<LatLng> places = new ArrayList<>();
+			Position pos = new Position(loc[0], loc[1]);
+			ArrayList<Position> places = new ArrayList<>();
 			for (Place p: this.customRoute.getPlaces())
 			{
-				places.add(new LatLng(p.getLatitude(), p.getLongitude()));
+				places.add(new Position(p.getLatitude(), p.getLongitude()));
 			}
 			FirebaseRoute route = new FirebaseRoute(new Date(), this.customRoute.getSportType(), this.distance, this.duration, pos, places);
 			db.collection("users").document(user.getUid()).collection("routes").add(route).addOnSuccessListener(new OnSuccessListener<DocumentReference>()

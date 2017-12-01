@@ -49,4 +49,7 @@
 	<string name="login_successful">Connexion réussie !</string>
 	<string name="logout_successful">Déconnexion réussie !</string>
 	<string name="route_saved">Votre parcours a été sauvegardé dans votre historique</string>
+	<string name="history_error">Une erreur est survenue lors de la récupération de votre
+		historique
+	</string>
 </resources>

@@ -1,11 +1,13 @@
 package brice.explorun.utilities;
 
 import android.content.Context;
+import android.text.format.DateUtils;
 import android.util.Log;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -46,10 +48,25 @@ public class TimeUtility
 		return (int)(timeInHours*60);
 	}
 
-	public static String formatTime(long timeInMillis)
+	public static String formatTime(Context context, long timeInMillis)
 	{
-		SimpleDateFormat format = new SimpleDateFormat("HH:mm", Locale.getDefault());
-		return format.format(new Date(timeInMillis));
+		return DateUtils.formatDateTime(context, timeInMillis, DateUtils.FORMAT_SHOW_TIME);
+	}
+
+	/**
+	 * Format time in h:m:s format
+	 * @param timeInMillis Time in milliseconds
+	 * @return The formatted time
+	 */
+	public static String formatDurationHms(Context context, long timeInMillis)
+	{
+		timeInMillis /= 1000;
+		int seconds = (int) (timeInMillis % 60);
+		timeInMillis /= 60;
+		int minutes = (int) (timeInMillis % 60);
+		timeInMillis /= 60;
+		int hours = (int) (timeInMillis % 24);
+		return String.format(context.getString(R.string.duration_text), hours, minutes, seconds);
 	}
 
 	/**
@@ -57,11 +74,11 @@ public class TimeUtility
 	 * @param duration Duration of the route in minutes
 	 * @return The estimated time of arrival
 	 */
-	public static String computeEstimatedTimeOfArrival(int duration)
+	public static String computeEstimatedTimeOfArrival(Context context, int duration)
 	{
 		Calendar calendar = Calendar.getInstance(Locale.getDefault());
 		calendar.add(Calendar.MINUTE, duration);
-		return formatTime(calendar.getTimeInMillis());
+		return formatTime(context, calendar.getTimeInMillis());
 	}
 
 	/**
@@ -74,5 +91,10 @@ public class TimeUtility
 	{
 		double hours = (timeInMillis/1000.0)/3600.0;
 		return distance/hours;
+	}
+
+	public static String formatDate(Context context, Date date)
+	{
+		return DateUtils.formatDateTime(context, date.getTime(), DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_MONTH | DateUtils.FORMAT_SHOW_YEAR);
 	}
 }

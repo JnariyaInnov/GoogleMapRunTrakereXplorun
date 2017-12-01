@@ -36,6 +36,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 import brice.explorun.R;
 import brice.explorun.fragments.AboutFragment;
+import brice.explorun.fragments.HistoryFragment;
 import brice.explorun.fragments.MapFragment;
 import brice.explorun.fragments.NearbyAttractionsFragment;
 import brice.explorun.services.ConnectivityStatusHandler;
@@ -64,7 +65,6 @@ public class MainActivity extends AppCompatActivity
 
 	public DrawerLayout getDrawerLayout() { return this.mDrawerLayout; }
 
-	@Override
     protected void onCreate(Bundle savedInstanceState)
 	{
         super.onCreate(savedInstanceState);
@@ -326,6 +326,10 @@ public class MainActivity extends AppCompatActivity
 
 					case R.id.nav_nearby_attractions:
 						this.fragment = new NearbyAttractionsFragment();
+						break;
+
+					case R.id.nav_history:
+						this.fragment = new HistoryFragment();
 						break;
 
 					default:

@@ -8,6 +8,6 @@
 	<string name="google_directions_web_key" templateMergeStrategy="preserve" translatable="false">
 		AIzaSyA4MpzHTZvxxVfFR7GUdmbuJDLLhSluicw
 	</string>
-	<string name="facebook_app_id">160103167928854</string>
-	<string name="fb_login_protocol_scheme">fb160103167928854</string>
+	<string name="facebook_app_id" translatable="false">160103167928854</string>
+	<string name="fb_login_protocol_scheme" translatable="false">fb160103167928854</string>
 </resources>

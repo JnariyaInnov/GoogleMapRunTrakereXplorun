@@ -42,7 +42,7 @@ public class RouteInfoFragment extends Fragment
 	private BroadcastReceiver tickReceiver = new BroadcastReceiver(){
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			arrivalTimeText.setText(TimeUtility.computeEstimatedTimeOfArrival(durationInMinutes));
+			arrivalTimeText.setText(TimeUtility.computeEstimatedTimeOfArrival(getActivity(), durationInMinutes));
 		}
 	};
 
@@ -104,7 +104,7 @@ public class RouteInfoFragment extends Fragment
 
 			this.durationText.setText(TimeUtility.formatDuration(this.getActivity(), durationInMinutes));
 
-			this.arrivalTimeText.setText(TimeUtility.computeEstimatedTimeOfArrival(durationInMinutes));
+			this.arrivalTimeText.setText(TimeUtility.computeEstimatedTimeOfArrival(this.getActivity(), durationInMinutes));
 
 			this.steps = route.getSteps();
 		}

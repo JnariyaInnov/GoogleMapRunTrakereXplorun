@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:orientation="vertical">
+
+	<TextView
+			android:id="@+id/no_network_label"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:gravity="center_horizontal"
+			android:background="@android:color/holo_red_dark"
+			android:textColor="@android:color/white"
+			android:visibility="gone"
+			android:text="@string/no_network" />
+
+	<LinearLayout
+			android:id="@+id/progress_layout"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:gravity="center"
+			android:orientation="vertical"
+			android:visibility="gone">
+
+		<ProgressBar
+				android:id="@+id/requests_progress"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:theme="@style/AppTheme.BlueAccent">
+		</ProgressBar>
+	</LinearLayout>
+
+	<ListView
+			android:id="@+id/list_history"
+			android:layout_width="match_parent"
+			android:layout_height="0dp"
+			android:layout_weight="1">
+	</ListView>
+
+</LinearLayout>

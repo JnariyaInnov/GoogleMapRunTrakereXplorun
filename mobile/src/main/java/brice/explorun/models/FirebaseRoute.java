@@ -1,20 +1,21 @@
 package brice.explorun.models;
 
-import com.google.android.gms.maps.model.LatLng;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.util.ArrayList;
 import java.util.Date;
 
 import brice.explorun.utilities.SportUtility;
 
-public class FirebaseRoute
+public class FirebaseRoute implements Parcelable
 {
 	private Date date;
 	private int sportType = SportUtility.WALKING;
 	private double distance = 0;
 	private long duration = 0;
-	private LatLng startPosition;
-	private ArrayList<LatLng> places;
+	private Position startPosition;
+	private ArrayList<Position> places;
 
 	public Date getDate()
 	{
@@ -56,27 +57,27 @@ public class FirebaseRoute
 		this.duration = duration;
 	}
 
-	public LatLng getStartPosition()
+	public Position getStartPosition()
 	{
 		return startPosition;
 	}
 
-	public void setStartPosition(LatLng startPosition)
+	public void setStartPosition(Position startPosition)
 	{
 		this.startPosition = startPosition;
 	}
 
-	public ArrayList<LatLng> getPlaces()
+	public ArrayList<Position> getPlaces()
 	{
 		return places;
 	}
 
-	public void setPlaces(ArrayList<LatLng> places)
+	public void setPlaces(ArrayList<Position> places)
 	{
 		this.places = places;
 	}
 
-	public FirebaseRoute(Date date, int sportType, double distance, long duration, LatLng startPosition, ArrayList<LatLng> places)
+	public FirebaseRoute(Date date, int sportType, double distance, long duration, Position startPosition, ArrayList<Position> places)
 	{
 		this.date = date;
 		this.sportType = sportType;
@@ -85,4 +86,69 @@ public class FirebaseRoute
 		this.startPosition = startPosition;
 		this.places = places;
 	}
+
+	public FirebaseRoute()
+	{
+
+	}
+
+	protected FirebaseRoute(Parcel in)
+	{
+		long tmpDate = in.readLong();
+		date = tmpDate != -1 ? new Date(tmpDate) : null;
+		sportType = in.readInt();
+		distance = in.readDouble();
+		duration = in.readLong();
+		startPosition = (Position) in.readValue(Position.class.getClassLoader());
+		if (in.readByte() == 0x01)
+		{
+			places = new ArrayList<>();
+			in.readList(places, Position.class.getClassLoader());
+		}
+		else
+		{
+			places = null;
+		}
+	}
+
+	@Override
+	public int describeContents()
+	{
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags)
+	{
+		dest.writeLong(date != null ? date.getTime() : -1L);
+		dest.writeInt(sportType);
+		dest.writeDouble(distance);
+		dest.writeLong(duration);
+		dest.writeValue(startPosition);
+		if (places == null)
+		{
+			dest.writeByte((byte) (0x00));
+		}
+		else
+		{
+			dest.writeByte((byte) (0x01));
+			dest.writeList(places);
+		}
+	}
+
+	@SuppressWarnings("unused")
+	public static final Parcelable.Creator<FirebaseRoute> CREATOR = new Parcelable.Creator<FirebaseRoute>()
+	{
+		@Override
+		public FirebaseRoute createFromParcel(Parcel in)
+		{
+			return new FirebaseRoute(in);
+		}
+
+		@Override
+		public FirebaseRoute[] newArray(int size)
+		{
+			return new FirebaseRoute[size];
+		}
+	};
 }

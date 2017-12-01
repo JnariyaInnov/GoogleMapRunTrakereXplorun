@@ -65,8 +65,12 @@
 	<string name="average_speed" translatable="false">%1$.1f km/h</string>
 	<string name="route_saved">Your route has been saved in your history</string>
 
-	<!-- Login activity -->
+	<!-- Login fragment -->
 	<string name="title_activity_login">Login</string>
 	<string name="login_successful">Login successful!</string>
 	<string name="logout_successful">Logout successful!</string>
+
+	<!-- History fragment -->
+	<string name="history_error">An error occurred while retrieving your history</string>
+	<string name="duration_text">%1$d:%2$02d:%3$02d</string>
 </resources>
