@@ -68,4 +68,9 @@
 	<string name="title_activity_login">Login</string>
 	<string name="login_successful">Login successful!</string>
 	<string name="logout_successful">Logout successful!</string>
+	<string name="walk_speed">"Walk speed : "</string>
+	<string name="run_speed">"Run speed : "</string>
+	<string name="trail_speed">"Trail speed : "</string>
+	<string name="sport_speeds">Average speed in each sport</string>
+	<string name="nav_settings">Settings</string>
 </resources>
