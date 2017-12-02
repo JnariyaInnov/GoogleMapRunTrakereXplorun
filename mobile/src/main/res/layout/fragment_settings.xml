@@ -1,106 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="20sp">
-
-    <TextView
-        android:id="@+id/tv_avgSportSpeed"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/sport_speeds"
-        android:layout_marginBottom="20sp"
-        style="?android:attr/listSeparatorTextViewStyle"/>
-
-    <!-- Walk -->
+    android:layout_height="match_parent">
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10sp"
-        android:orientation="horizontal">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="20sp">
 
         <TextView
-            android:id="@+id/tv_walkTitle"
+            android:id="@+id/tv_avgSportSpeed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:text="@string/sport_speeds"
+            android:layout_marginBottom="20sp"
+            style="?android:attr/listSeparatorTextViewStyle"/>
+
+        <!-- Walk -->
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/walk_speed" />
+            android:layout_marginLeft="10sp"
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tv_walkSpeed"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/tv_walkTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/walk_speed" />
 
-    </LinearLayout>
+            <TextView
+                android:id="@+id/tv_walkSpeed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
-    <SeekBar
-        android:id="@+id/seekBarWalk"
-        style="@style/Widget.AppCompat.SeekBar.Discrete"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10sp"
-        android:layout_marginBottom="30sp"
-        android:max="15" />
+        </LinearLayout>
 
-    <!-- Run -->
+        <SeekBar
+            android:id="@+id/seekBarWalk"
+            style="@style/Widget.AppCompat.SeekBar.Discrete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10sp"
+            android:layout_marginBottom="30sp"
+            android:max="15" />
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10sp"
-        android:orientation="horizontal">
+        <!-- Run -->
 
-        <TextView
-            android:id="@+id/tv_runTitle"
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/run_speed" />
+            android:layout_marginLeft="10sp"
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tv_runSpeed"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/tv_runTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/run_speed" />
 
-    </LinearLayout>
+            <TextView
+                android:id="@+id/tv_runSpeed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
-    <SeekBar
-        android:id="@+id/seekBarRun"
-        style="@style/Widget.AppCompat.SeekBar.Discrete"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10sp"
-        android:layout_marginBottom="30sp"
-        android:max="30" />
+        </LinearLayout>
 
-    <!-- Trail -->
+        <SeekBar
+            android:id="@+id/seekBarRun"
+            style="@style/Widget.AppCompat.SeekBar.Discrete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10sp"
+            android:layout_marginBottom="30sp"
+            android:max="30" />
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10sp"
-        android:orientation="horizontal">
+        <!-- Trail -->
 
-        <TextView
-            android:id="@+id/tv_trailTitle"
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/trail_speed" />
+            android:layout_marginLeft="10sp"
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tv_trailSpeed"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/tv_trailTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/trail_speed" />
+
+            <TextView
+                android:id="@+id/tv_trailSpeed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/seekBarTrail"
+            style="@style/Widget.AppCompat.SeekBar.Discrete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10sp"
+            android:layout_marginBottom="30sp"
+            android:max="30" />
 
     </LinearLayout>
-
-    <SeekBar
-        android:id="@+id/seekBarTrail"
-        style="@style/Widget.AppCompat.SeekBar.Discrete"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10sp"
-        android:layout_marginBottom="30sp"
-        android:max="30" />
-
-</LinearLayout>
+</ScrollView>

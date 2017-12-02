@@ -21,8 +21,8 @@ public class SettingsFragment extends Fragment {
 
     private SeekBar walkSeekBar, runSeekBar, trailSeekbar;
     private TextView tvWalkSpeed, tvRunSpeed, tvTrailSpeed;
-    private static double minWalkSpeed = 2.0;
-    private static double minRunSpeed = 5.0;
+    private final float minWalkSpeed = 2f;
+    private final float minRunSpeed = 5f;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -40,11 +40,11 @@ public class SettingsFragment extends Fragment {
         trailSeekbar.setProgress((int) (2.0 * (trailSpeed - minRunSpeed)));
         //Speed display
         tvWalkSpeed = view.findViewById(R.id.tv_walkSpeed);
-        tvWalkSpeed.setText(walkSpeed + " km/h");
+        tvWalkSpeed.setText(String.format(String.format(getResources().getString(R.string.average_speed), walkSpeed)));
         tvRunSpeed = view.findViewById(R.id.tv_runSpeed);
-        tvRunSpeed.setText(runSpeed + " km/h");
+        tvRunSpeed.setText(String.format(String.format(getResources().getString(R.string.average_speed), runSpeed)));
         tvTrailSpeed = view.findViewById(R.id.tv_trailSpeed);
-        tvTrailSpeed.setText(trailSpeed + " km/h");
+        tvTrailSpeed.setText(String.format(String.format(getResources().getString(R.string.average_speed), trailSpeed)));
         //Add listeners
         addSeekBarListener("walkSpeed", walkSeekBar, tvWalkSpeed);
         addSeekBarListener("runSpeed", runSeekBar, tvRunSpeed);
@@ -57,18 +57,18 @@ public class SettingsFragment extends Fragment {
         skBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                double speed;
+                float speed;
                 //0.5 increments
                 if(prefKey.contains("walk")){
-                    speed = minWalkSpeed + ((double)progress / 2.0);
+                    speed = minWalkSpeed + (progress / 2f);
                 }
                 else{
-                    speed = minRunSpeed + ((double)progress / 2.0);
+                    speed = minRunSpeed + (progress / 2f);
                 }
-                txtView.setText(speed + " km/h");
+                txtView.setText(String.format(String.format(getResources().getString(R.string.average_speed), speed)));
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
                 SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putFloat(prefKey, (float) speed);
+                editor.putFloat(prefKey, speed);
                 editor.apply();
             }
 
