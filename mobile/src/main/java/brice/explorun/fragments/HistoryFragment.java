@@ -65,6 +65,7 @@ public class HistoryFragment extends Fragment
 			}
 		});
 
+		// We don't retrieve the user's history when he has just changed the orientation
 		if (savedInstanceState == null)
 		{
 			getRoutesHistory();
@@ -96,6 +97,7 @@ public class HistoryFragment extends Fragment
 		{
 			this.progressBar.setVisibility(View.VISIBLE);
 			Log.d("HistoryFragment", "Retrieving history");
+			// We set a listener to be able to retrieve the user's history even if he is offline
 			db.collection("users").document(user.getUid()).collection("routes").orderBy("date", Query.Direction.DESCENDING)
 			.addSnapshotListener(new EventListener<QuerySnapshot>()
 			{
@@ -122,6 +124,7 @@ public class HistoryFragment extends Fragment
 
 	public void viewRouteOnMap(FirebaseRoute route)
 	{
+		// To view the route on the map, the user needs an internet connection because of the call to Google Directions API
 		if (Utility.isOnline(this.getActivity()))
 		{
 			Bundle args = new Bundle();

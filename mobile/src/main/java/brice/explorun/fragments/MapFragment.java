@@ -332,6 +332,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 			map.moveCamera(Utility.getCameraUpdateBounds(this.width, this.height, padding, locations));
 		}
+		// Create a custom route if the user has clicked on one of his previous routes
 		if (this.isFirstRequest && this.args != null && this.args.containsKey("route"))
 		{
 			FirebaseRoute route = this.args.getParcelable("route");
@@ -620,6 +621,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			}
 
 			this.customRoute.setSteps(instructions);
+			// If the custom route has a distance, it means that it was a route in the user's history
 			if (this.customRoute.getDistance() == -1)
 			{
 				this.customRoute.setDistance(distance);

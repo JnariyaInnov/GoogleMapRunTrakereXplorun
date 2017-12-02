@@ -87,10 +87,8 @@ public class FirebaseRoute implements Parcelable
 		this.places = places;
 	}
 
-	public FirebaseRoute()
-	{
-
-	}
+	// Constructor required by Firestore
+	public FirebaseRoute() {}
 
 	protected FirebaseRoute(Parcel in)
 	{

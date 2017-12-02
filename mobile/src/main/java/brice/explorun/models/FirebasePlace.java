@@ -18,6 +18,7 @@ public class FirebasePlace implements Parcelable
 		return this.position;
 	}
 
+	// Constructor required by Firestore
 	public FirebasePlace(){}
 
 	public FirebasePlace(String name, Position position)

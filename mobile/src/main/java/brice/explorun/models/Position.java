@@ -18,6 +18,7 @@ public class Position implements Parcelable
 		return longitude;
 	}
 
+	// Constructor required by Firestore
 	public Position(){}
 
 	public Position(double latitude, double longitude)

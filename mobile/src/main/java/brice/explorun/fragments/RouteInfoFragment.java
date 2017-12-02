@@ -98,6 +98,7 @@ public class RouteInfoFragment extends Fragment
 			float distance = route.getDistance();
 			this.distanceText.setText(LocationUtility.formatDistance(this.getActivity(), distance));
 
+			// If the route has a duration, it means that this is a route stored in the user's history
 			if (route.getDuration() != -1)
 			{
 				long duration = route.getDuration();
@@ -105,7 +106,7 @@ public class RouteInfoFragment extends Fragment
 				this.durationInMinutes = (int)Math.round(duration / 1000.0 / 60.0);
 				this.sportTypeText.setText(String.format(getResources().getString(R.string.average_speed), TimeUtility.computeAverageSpeed(distance, duration)));
 			}
-			else
+			else // Basic case: the user has searched for a route
 			{
 				float averageSpeed = SportUtility.getAverageSpeedFromSport(route.getSportType());
 				this.durationInMinutes = TimeUtility.convertTimeToMinutes(distance/1000.0 / averageSpeed);

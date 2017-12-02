@@ -235,11 +235,13 @@ public class CurrentRouteFragment extends Fragment
 
 	public void stopRoute()
 	{
+		// We pause the route to enable the user to retry to store his route if he has no internet connection on his first attempt
 		if (this.isRunning)
 		{
 			pauseRoute();
 		}
 
+		// We add the route in firebase only if user has an internet connection because synchronising data offline doesn't work well
 		if (Utility.isOnline(this.getActivity()))
 		{
 			addRouteInFirebase();
@@ -271,6 +273,7 @@ public class CurrentRouteFragment extends Fragment
 				Log.d("CurrentRouteFragment", p.getName());
 				places.add(new FirebasePlace(p.getName(), new Position(p.getLatitude(), p.getLongitude())));
 			}
+			// We have to translate the route in a POJO (Plain Old Java Object) to store it in an easier way in Firebase
 			FirebaseRoute route = new FirebaseRoute(new Date(), this.customRoute.getSportType(), this.distance, this.duration, this.customRoute.getStartPosition(), places);
 			db.collection("users").document(user.getUid()).collection("routes").add(route);
 		}
@@ -294,7 +297,7 @@ public class CurrentRouteFragment extends Fragment
 			public void onClick(DialogInterface dialogInterface, int i)
 			{
 				dialogInterface.dismiss();
-				// Setting the new fragment in MainActivity
+				// When the user clicks on the OK button, he is redirected to his history
 				MainActivity activity = (MainActivity) getActivity();
 				activity.getSupportActionBar().setTitle(activity.getResources().getString(R.string.nav_history));
 				activity.selectItem(activity.getNavigationView().getMenu().getItem(2), null);
