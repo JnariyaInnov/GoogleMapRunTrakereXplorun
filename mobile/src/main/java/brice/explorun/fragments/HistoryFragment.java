@@ -1,26 +1,22 @@
 package brice.explorun.fragments;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -60,6 +56,14 @@ public class HistoryFragment extends Fragment
 		ListView list = view.findViewById(R.id.list_history);
 		this.adapter = new RoutesHistoryAdapter(this.getActivity(), this.routes);
 		list.setAdapter(this.adapter);
+		list.setOnItemClickListener(new AdapterView.OnItemClickListener()
+		{
+			@Override
+			public void onItemClick(AdapterView<?> adapterView, View view, int i, long l)
+			{
+				viewRouteOnMap(routes.get(i));
+			}
+		});
 
 		if (savedInstanceState == null)
 		{
@@ -113,6 +117,23 @@ public class HistoryFragment extends Fragment
 					}
 				}
 			});
+		}
+	}
+
+	public void viewRouteOnMap(FirebaseRoute route)
+	{
+		if (Utility.isOnline(this.getActivity()))
+		{
+			Bundle args = new Bundle();
+			args.putParcelable("route", route);
+			// Setting the new fragment in MainActivity
+			MainActivity activity = (MainActivity) this.getActivity();
+			activity.getSupportActionBar().setTitle(activity.getResources().getString(R.string.app_name));
+			activity.selectItem(activity.getNavigationView().getMenu().getItem(0), args);
+		}
+		else
+		{
+			Toast.makeText(this.getActivity(), R.string.view_route_on_map_error, Toast.LENGTH_SHORT).show();
 		}
 	}
 }

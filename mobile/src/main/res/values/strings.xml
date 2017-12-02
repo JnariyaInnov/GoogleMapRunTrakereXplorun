@@ -64,6 +64,7 @@
 	<string name="average_speed_text">Average speed</string>
 	<string name="average_speed" translatable="false">%1$.1f km/h</string>
 	<string name="route_saved">Your route has been saved in your history</string>
+	<string name="save_route_error">An internet connection is required to save your route</string>
 
 	<!-- Login fragment -->
 	<string name="title_activity_login">Login</string>
@@ -72,5 +73,6 @@
 
 	<!-- History fragment -->
 	<string name="history_error">An error occurred while retrieving your history</string>
-	<string name="duration_text">%1$d:%2$02d:%3$02d</string>
+	<string name="duration_text" translatable="false">%1$d:%2$02d:%3$02d</string>
+	<string name="view_route_on_map_error">An internet connection is required to view your route on map</string>
 </resources>

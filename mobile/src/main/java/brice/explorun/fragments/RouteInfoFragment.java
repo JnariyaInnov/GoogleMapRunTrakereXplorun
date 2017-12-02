@@ -13,7 +13,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.model.Step;
 
 import java.util.ArrayList;
@@ -96,15 +95,24 @@ public class RouteInfoFragment extends Fragment
 		{
 			this.updateSportImageAndText(route.getSportType());
 
-			double distanceInKm = route.getDistance() / 1000.0;
-			this.distanceText.setText(LocationUtility.formatDistance(this.getActivity(), distanceInKm));
+			float distance = route.getDistance();
+			this.distanceText.setText(LocationUtility.formatDistance(this.getActivity(), distance));
 
-			float averageSpeed = SportUtility.getAverageSpeedFromSport(route.getSportType());
-			this.durationInMinutes = TimeUtility.convertTimeToMinutes(distanceInKm / averageSpeed);
+			if (route.getDuration() != -1)
+			{
+				long duration = route.getDuration();
+				this.durationText.setText(TimeUtility.formatDurationHms(this.getActivity(), duration));
+				this.durationInMinutes = (int)Math.round(duration / 1000.0 / 60.0);
+				this.sportTypeText.setText(String.format(getResources().getString(R.string.average_speed), TimeUtility.computeAverageSpeed(distance, duration)));
+			}
+			else
+			{
+				float averageSpeed = SportUtility.getAverageSpeedFromSport(route.getSportType());
+				this.durationInMinutes = TimeUtility.convertTimeToMinutes(distance/1000.0 / averageSpeed);
+				this.durationText.setText(TimeUtility.formatDuration(this.getActivity(), durationInMinutes));
+			}
 
-			this.durationText.setText(TimeUtility.formatDuration(this.getActivity(), durationInMinutes));
-
-			this.arrivalTimeText.setText(TimeUtility.computeEstimatedTimeOfArrival(this.getActivity(), durationInMinutes));
+			this.arrivalTimeText.setText(TimeUtility.computeEstimatedTimeOfArrival(this.getActivity(), this.durationInMinutes));
 
 			this.steps = route.getSteps();
 		}

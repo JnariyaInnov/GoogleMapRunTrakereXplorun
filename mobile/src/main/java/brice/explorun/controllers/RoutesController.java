@@ -20,6 +20,8 @@ import java.util.Random;
 
 import brice.explorun.R;
 import brice.explorun.fragments.MapFragment;
+import brice.explorun.models.CustomRoute;
+import brice.explorun.models.Position;
 import brice.explorun.utilities.LocationUtility;
 import brice.explorun.models.Place;
 
@@ -148,7 +150,7 @@ public class RoutesController implements DirectionCallback
         return LocationUtility.distanceBetweenCoordinates(p1.getLatitude(), p1.getLongitude(), p2.getLatitude(), p2.getLongitude());
     }
 
-    public void getRouteFromAPI(ArrayList<Place> route)
+    public void getRouteFromAPI(CustomRoute route)
 	{
 		getDirectionRequest(route).execute(this);
 	}
@@ -170,19 +172,20 @@ public class RoutesController implements DirectionCallback
     @Override
     public void onDirectionFailure(Throwable t)
     {
-    	Log.e("eX_route", "Failure - Error with Direction API request: " + t.getLocalizedMessage());
+    	Log.e("eX_route", "Failure - Error with Direction API request: " + t.getMessage());
         this.fragment.onDirectionAPIResponse(null);
     }
 
-    private DirectionRequest getDirectionRequest(ArrayList<Place> route)
+    private DirectionRequest getDirectionRequest(CustomRoute route)
     {
-        LatLng userLoc = new LatLng(this.userLocation[0], this.userLocation[1]);
+    	Position pos = route.getStartPosition();
+		LatLng userLoc = new LatLng(pos.getLatitude(), pos.getLongitude());
 
         DirectionDestinationRequest request =
                         GoogleDirection.withServerKey(this.fragment.getResources().getString(R.string.google_directions_web_key))
                         .from(userLoc);
 
-        for (Place place: route)
+        for (Place place: route.getPlaces())
 		{
 			request.and(new LatLng(place.getLatitude(), place.getLongitude()));
 		}

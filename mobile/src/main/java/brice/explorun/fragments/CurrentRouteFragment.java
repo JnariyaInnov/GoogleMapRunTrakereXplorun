@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,22 +22,17 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 
 import brice.explorun.R;
 import brice.explorun.activities.MainActivity;
 import brice.explorun.models.CustomRoute;
+import brice.explorun.models.FirebasePlace;
 import brice.explorun.models.FirebaseRoute;
 import brice.explorun.models.Place;
 import brice.explorun.models.Position;
@@ -67,7 +61,7 @@ public class CurrentRouteFragment extends Fragment
 
 	private CustomRoute customRoute;
 	private long base = 0;
-	private double distance = 0;
+	private float distance = 0;
 	private long lastStopTime = 0;
 	private long duration = 0;
 	private boolean isRunning = true;
@@ -77,7 +71,7 @@ public class CurrentRouteFragment extends Fragment
 	private BroadcastReceiver distanceReceiver = new BroadcastReceiver(){
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			distance = intent.getDoubleExtra("distance", 0);
+			distance = intent.getFloatExtra("distance", 0);
 			distanceText.setText(LocationUtility.formatDistance(getActivity(), distance));
 			speedText.setText(String.format(getResources().getString(R.string.average_speed), TimeUtility.computeAverageSpeed(distance, SystemClock.elapsedRealtime()-base)));
 		}
@@ -131,7 +125,7 @@ public class CurrentRouteFragment extends Fragment
 		{
 			this.base = savedInstanceState.getLong(BASE_KEY);
 			this.lastStopTime = savedInstanceState.getLong(LAST_STOP_TIME_KEY);
-			this.distance = savedInstanceState.getDouble(DISTANCE_KEY);
+			this.distance = savedInstanceState.getFloat(DISTANCE_KEY);
 			this.isRunning = savedInstanceState.getBoolean(RUNNING_KEY);
 		}
 
@@ -198,7 +192,7 @@ public class CurrentRouteFragment extends Fragment
 	{
 		outBundle.putLong(BASE_KEY, this.base);
 		outBundle.putLong(LAST_STOP_TIME_KEY, this.lastStopTime);
-		outBundle.putDouble(DISTANCE_KEY, this.distance);
+		outBundle.putFloat(DISTANCE_KEY, this.distance);
 		outBundle.putBoolean(RUNNING_KEY, this.isRunning);
 		super.onSaveInstanceState(outBundle);
 	}
@@ -261,7 +255,7 @@ public class CurrentRouteFragment extends Fragment
 		}
 		else
 		{
-			Toast.makeText(this.getActivity(), R.string.no_network, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this.getActivity(), R.string.save_route_error, Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -271,14 +265,13 @@ public class CurrentRouteFragment extends Fragment
 		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 		if (user != null)
 		{
-			float[] loc = LocationUtility.getLocationFromPreferences(this.getActivity());
-			Position pos = new Position(loc[0], loc[1]);
-			ArrayList<Position> places = new ArrayList<>();
+			ArrayList<FirebasePlace> places = new ArrayList<>();
 			for (Place p : this.customRoute.getPlaces())
 			{
-				places.add(new Position(p.getLatitude(), p.getLongitude()));
+				Log.d("CurrentRouteFragment", p.getName());
+				places.add(new FirebasePlace(p.getName(), new Position(p.getLatitude(), p.getLongitude())));
 			}
-			FirebaseRoute route = new FirebaseRoute(new Date(), this.customRoute.getSportType(), this.distance, this.duration, pos, places);
+			FirebaseRoute route = new FirebaseRoute(new Date(), this.customRoute.getSportType(), this.distance, this.duration, this.customRoute.getStartPosition(), places);
 			db.collection("users").document(user.getUid()).collection("routes").add(route);
 		}
 	}

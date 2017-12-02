@@ -2,12 +2,9 @@ package brice.explorun.utilities;
 
 import android.content.Context;
 import android.text.format.DateUtils;
-import android.util.Log;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -83,14 +80,14 @@ public class TimeUtility
 
 	/**
 	 * Compute the average speed of the user
-	 * @param distance Distance in kilometers
+	 * @param distance Distance in meters
 	 * @param timeInMillis Elapsed time in ms
 	 * @return The average speed in km/h
 	 */
 	public static double computeAverageSpeed(double distance, long timeInMillis)
 	{
 		double hours = (timeInMillis/1000.0)/3600.0;
-		return distance/hours;
+		return (distance/1000.0)/hours;
 	}
 
 	public static String formatDate(Context context, Date date)

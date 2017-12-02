@@ -25,7 +25,7 @@ public class RouteService extends Service
 	Intent ttsBroadcastIntent = new Intent("ex_tts");
 	Intent updateDistanceBroadcastIntent = new Intent("ex_distance");
 
-	private double distance = 0;
+	private float distance = 0;
 	private double lastSentDistance = 0;
 	private float latitude = -1;
 	private float longitude = -1;
@@ -73,13 +73,13 @@ public class RouteService extends Service
 		}
 		else
 		{
-			this.distance += LocationUtility.distanceBetweenCoordinates(loc[0], loc[1], this.latitude, this.longitude);
+			this.distance += LocationUtility.distanceBetweenCoordinates(loc[0], loc[1], this.latitude, this.longitude)*1000;
 			this.latitude = loc[0];
 			this.longitude = loc[1];
-			double delta = 0.1;
-			if (this.distance < 1)
+			double delta = 100;
+			if (this.distance < 1000)
 			{
-				delta = 0.05;
+				delta = 50;
 			}
 			if (this.distance - this.lastSentDistance > delta)
 			{

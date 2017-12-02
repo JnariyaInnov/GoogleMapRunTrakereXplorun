@@ -50,6 +50,9 @@ import java.util.List;
 import brice.explorun.activities.MainActivity;
 import brice.explorun.controllers.RoutesController;
 import brice.explorun.models.CustomRoute;
+import brice.explorun.models.FirebasePlace;
+import brice.explorun.models.FirebaseRoute;
+import brice.explorun.models.Position;
 import brice.explorun.models.RouteObserver;
 import brice.explorun.services.RouteService;
 import brice.explorun.utilities.LocationUtility;
@@ -316,7 +319,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		addPlacesMarkers();
 		drawRouteOnMap(this.route);
 		// Move the camera if the user has clicked on one attraction in the list in the NearbyAttractionsFragment
-		if (this.isFirstRequest && this.args != null)
+		if (this.isFirstRequest && this.args != null && this.args.containsKey("latitude"))
 		{
 			LatLng loc1 = new LatLng(this.args.getDouble("latitude"), this.args.getDouble("longitude"));
 
@@ -328,6 +331,23 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			int padding = getPaddingForCameraBetweenTwoLocations(loc1, loc2);
 
 			map.moveCamera(Utility.getCameraUpdateBounds(this.width, this.height, padding, locations));
+		}
+		if (this.isFirstRequest && this.args != null && this.args.containsKey("route"))
+		{
+			FirebaseRoute route = this.args.getParcelable("route");
+			if (route != null)
+			{
+				ArrayList<Place> places = new ArrayList<>();
+				for (FirebasePlace p : route.getPlaces())
+				{
+					places.add(new Place(p.getName(), p.getPosition()));
+				}
+				this.customRoute = new CustomRoute(route.getStartPosition(), route.getSportType(), places);
+				this.customRoute.setDuration(route.getDuration());
+				this.customRoute.setDistance(route.getDistance());
+				this.showProgressBar();
+				this.getRouteFromAPI();
+			}
 		}
 		this.map.setOnPolylineClickListener(this.polylineClickListener);
 		this.map.setOnMapClickListener(this.mapClickListener);
@@ -387,7 +407,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 				{
 					initializeMyLocationButton();
 				}
-				if (this.isFirstRequest && this.args == null)
+				if (this.isFirstRequest && (this.args == null || this.args.containsKey("route")))
 				{
 					this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 13));
 				}
@@ -413,7 +433,14 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		if (errorsCount < this.types.size())
 		{
 			this.removeMarkers();
-			this.places.clear();
+			if (this.places != null)
+			{
+				this.places.clear();
+			}
+			else
+			{
+				this.places = new ArrayList<>();
+			}
 			this.routesController.setPlaces(places);
 		}
 		this.places.addAll(places);
@@ -422,23 +449,26 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 	public void addPlacesMarkers()
 	{
-		for (Place place: this.places)
+		if (this.places != null)
 		{
-			LatLng location = new LatLng(place.getLatitude(), place.getLongitude());
-			if (this.map != null)
+			for (Place place : this.places)
 			{
-				MarkerOptions options = new MarkerOptions().title(place.getName()).position(location);
-				options.icon(BitmapDescriptorFactory.defaultMarker(Utility.getPlaceMarkerColor(this, place)));
-				Marker marker = this.map.addMarker(options);
-				this.placesMarkers.add(marker);
-
-				// Open info window of the place marker if the user has clicked one attraction from NearbyAttractionsFragment
-				if (this.args != null)
+				LatLng location = new LatLng(place.getLatitude(), place.getLongitude());
+				if (this.map != null)
 				{
-					LatLng placeLocation = new LatLng(this.args.getDouble("latitude"), this.args.getDouble("longitude"));
-					if (location.equals(placeLocation))
+					MarkerOptions options = new MarkerOptions().title(place.getName()).position(location);
+					options.icon(BitmapDescriptorFactory.defaultMarker(Utility.getPlaceMarkerColor(this, place)));
+					Marker marker = this.map.addMarker(options);
+					this.placesMarkers.add(marker);
+
+					// Open info window of the place marker if the user has clicked one attraction from NearbyAttractionsFragment
+					if (this.args != null)
 					{
-						marker.showInfoWindow();
+						LatLng placeLocation = new LatLng(this.args.getDouble("latitude"), this.args.getDouble("longitude"));
+						if (location.equals(placeLocation))
+						{
+							marker.showInfoWindow();
+						}
 					}
 				}
 			}
@@ -479,23 +509,29 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		double maxKM = rightPinValue / 60.0 * averageSpeed;
 
 		ArrayList<Place> route = this.routesController.generateRoute(minKM, maxKM);
-		this.customRoute = new CustomRoute(sport, route);
+		float[] pos = LocationUtility.getLocationFromPreferences(this.getActivity());
+		this.customRoute = new CustomRoute(new Position(pos[0], pos[1]), sport, route);
 		if (route != null)
 		{
-			if (Utility.isOnline(this.getActivity()))
-			{
-				this.routesController.getRouteFromAPI(route);
-			}
-			else
-			{
-				this.hideProgressBar();
-				Toast.makeText(this.getActivity(), R.string.no_network, Toast.LENGTH_SHORT).show();
-			}
+			this.getRouteFromAPI();
 		}
 		else
 		{
 			this.hideProgressBar();
 			Toast.makeText(this.getActivity(), R.string.no_route_found, Toast.LENGTH_SHORT).show();
+		}
+	}
+
+	public void getRouteFromAPI()
+	{
+		if (Utility.isOnline(this.getActivity()))
+		{
+			this.routesController.getRouteFromAPI(this.customRoute);
+		}
+		else
+		{
+			this.hideProgressBar();
+			Toast.makeText(this.getActivity(), R.string.no_network, Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -584,7 +620,10 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			}
 
 			this.customRoute.setSteps(instructions);
-			this.customRoute.setDistance(distance);
+			if (this.customRoute.getDistance() == -1)
+			{
+				this.customRoute.setDistance(distance);
+			}
 
 			this.drawRouteOnMap(route);
 			this.showRouteInfo();
