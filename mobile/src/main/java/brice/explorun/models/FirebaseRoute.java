@@ -10,12 +10,23 @@ import brice.explorun.utilities.SportUtility;
 
 public class FirebaseRoute implements Parcelable
 {
+	private String id = "";
 	private Date date;
 	private int sportType = SportUtility.WALKING;
 	private float distance = 0;
 	private long duration = 0;
 	private Position startPosition;
 	private ArrayList<FirebasePlace> places;
+
+	public String getId()
+	{
+		return this.id;
+	}
+
+	public void setId(String id)
+	{
+		this.id = id;
+	}
 
 	public Date getDate()
 	{

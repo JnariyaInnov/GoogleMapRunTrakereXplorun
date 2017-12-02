@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -56,14 +57,6 @@ public class HistoryFragment extends Fragment
 		ListView list = view.findViewById(R.id.list_history);
 		this.adapter = new RoutesHistoryAdapter(this.getActivity(), this.routes);
 		list.setAdapter(this.adapter);
-		list.setOnItemClickListener(new AdapterView.OnItemClickListener()
-		{
-			@Override
-			public void onItemClick(AdapterView<?> adapterView, View view, int i, long l)
-			{
-				viewRouteOnMap(routes.get(i));
-			}
-		});
 
 		// We don't retrieve the user's history when he has just changed the orientation
 		if (savedInstanceState == null)
@@ -114,29 +107,20 @@ public class HistoryFragment extends Fragment
 					{
 						Log.d("HistoryFragment", "Getting routes");
 						adapter.clear();
-						adapter.addAll(querySnapshot.toObjects(FirebaseRoute.class));
+						for (DocumentSnapshot document: querySnapshot.getDocuments())
+						{
+							FirebaseRoute route = document.toObject(FirebaseRoute.class);
+							route.setId(document.getId());
+							adapter.add(route);
+						}
+						if (adapter.isEmpty() && getActivity() != null)
+						{
+							Toast.makeText(getActivity(), R.string.no_route, Toast.LENGTH_SHORT).show();
+						}
 						progressBar.setVisibility(View.GONE);
 					}
 				}
 			});
-		}
-	}
-
-	public void viewRouteOnMap(FirebaseRoute route)
-	{
-		// To view the route on the map, the user needs an internet connection because of the call to Google Directions API
-		if (Utility.isOnline(this.getActivity()))
-		{
-			Bundle args = new Bundle();
-			args.putParcelable("route", route);
-			// Setting the new fragment in MainActivity
-			MainActivity activity = (MainActivity) this.getActivity();
-			activity.getSupportActionBar().setTitle(activity.getResources().getString(R.string.app_name));
-			activity.selectItem(activity.getNavigationView().getMenu().getItem(0), args);
-		}
-		else
-		{
-			Toast.makeText(this.getActivity(), R.string.view_route_on_map_error, Toast.LENGTH_SHORT).show();
 		}
 	}
 }

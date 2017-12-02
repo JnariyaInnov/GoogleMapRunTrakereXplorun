@@ -52,4 +52,6 @@
 	<string name="history_error">Une erreur est survenue lors de la récupération de votrehistorique</string>
 	<string name="save_route_error">Une connexion internet est requise pour enregistrer votre parcours</string>
 	<string name="view_route_on_map_error">Une connexion internet est requise pour visualiser votre parcours sur la carte</string>
+	<string name="delete">Supprimer</string>
+	<string name="no_route">Vous n\'avez aucun parcours dans votre historique</string>
 </resources>
