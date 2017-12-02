@@ -26,17 +26,13 @@ import android.widget.Toast;
 
 import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import brice.explorun.R;
-import brice.explorun.fragments.AboutFragment;
 import brice.explorun.fragments.HistoryFragment;
 import brice.explorun.fragments.MapFragment;
 import brice.explorun.fragments.NearbyAttractionsFragment;
@@ -321,10 +317,6 @@ public class MainActivity extends AppCompatActivity
 				// Create a new fragment according to id
 				switch (itemId)
 				{
-					case R.id.nav_about:
-						this.fragment = new AboutFragment();
-						break;
-
 					case R.id.nav_nearby_attractions:
 						this.fragment = new NearbyAttractionsFragment();
 						break;
