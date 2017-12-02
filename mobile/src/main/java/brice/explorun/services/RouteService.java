@@ -12,6 +12,7 @@ import com.akexorcist.googledirection.model.Step;
 
 import java.util.List;
 
+import brice.explorun.models.Place;
 import brice.explorun.utilities.LocationUtility;
 
 public class RouteService extends Service
@@ -20,7 +21,9 @@ public class RouteService extends Service
 
 	public static boolean isStarted = false;
 	private List<Step> steps;
+	private List<Place> places;
 
+	private int placeIndex = 0;
 	private int instructionIndex = 0;
 	Intent ttsBroadcastIntent = new Intent("ex_tts");
 	Intent updateDistanceBroadcastIntent = new Intent("ex_distance");
@@ -49,6 +52,7 @@ public class RouteService extends Service
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
 		this.steps = intent.getParcelableArrayListExtra("steps");
+		this.places = intent.getParcelableArrayListExtra("places");
 		update();
 		return super.onStartCommand(intent, flags, startId);
 	}
@@ -65,6 +69,18 @@ public class RouteService extends Service
 				this.instructionIndex++;
 			}
 		}
+
+		if(this.places != null && this.placeIndex < this.places.size()) {
+			Log.i(this.TAG, "Test 1 for tts");
+			Place curStep = this.places.get(this.placeIndex);
+			if (LocationUtility.distanceBetweenCoordinates(loc[0], loc[1], curStep.getLatitude(), curStep.getLongitude()) < 0.1) {
+				Log.i(this.TAG, "Test 2 for tts");
+				Log.i(this.TAG, this.places.get(this.placeIndex).getDescription());
+				sendBroadcast(this.ttsBroadcastIntent.putExtra("text", this.places.get(this.placeIndex).getDescription()));
+				this.placeIndex++;
+			}
+		}
+
 		// Update total distance
 		if (this.latitude == -1f && this.longitude == -1f)
 		{

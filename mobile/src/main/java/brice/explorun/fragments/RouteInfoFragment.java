@@ -159,6 +159,7 @@ public class RouteInfoFragment extends Fragment
 	{
 		Intent routeServiceIntent = new Intent(getActivity(), RouteService.class);
 		routeServiceIntent.putParcelableArrayListExtra("steps", steps);
+		routeServiceIntent.putParcelableArrayListExtra("places", places);
 		if (!RouteService.isStarted) {
 			getActivity().startService(routeServiceIntent);
 		}
