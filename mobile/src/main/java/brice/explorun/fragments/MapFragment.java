@@ -474,7 +474,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 	{
 		this.showProgressBar();
 
-		float averageSpeed = SportUtility.getAverageSpeedFromSport(sport);
+		float averageSpeed = SportUtility.getAverageSpeedFromSport(getContext(), sport);
 		double minKM = leftPinValue / 60.0 * averageSpeed;
 		double maxKM = rightPinValue / 60.0 * averageSpeed;
 

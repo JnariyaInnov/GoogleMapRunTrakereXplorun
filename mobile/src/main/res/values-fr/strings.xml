@@ -48,4 +48,9 @@
 	<string name="authentication_failed">Erreur lors de la connexion</string>
 	<string name="login_successful">Connexion réussie !</string>
 	<string name="logout_successful">Déconnexion réussie !</string>
+    <string name="walk_speed">"Vitesse de marche : "</string>
+	<string name="run_speed">"Vitesse de course : "</string>
+	<string name="trail_speed">"Vitesse de trail : "</string>
+	<string name="sport_speeds">Vitesse moyenne dans chaque sport</string>
+	<string name="nav_settings">Paramètres</string>
 </resources>

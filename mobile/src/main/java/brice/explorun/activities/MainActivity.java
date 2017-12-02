@@ -37,6 +37,7 @@ import brice.explorun.R;
 import brice.explorun.fragments.AboutFragment;
 import brice.explorun.fragments.MapFragment;
 import brice.explorun.fragments.NearbyAttractionsFragment;
+import brice.explorun.fragments.SettingsFragment;
 import brice.explorun.services.ConnectivityStatusHandler;
 import brice.explorun.services.LocationService;
 import brice.explorun.services.RouteService;
@@ -325,7 +326,9 @@ public class MainActivity extends AppCompatActivity
 					case R.id.nav_nearby_attractions:
 						this.fragment = new NearbyAttractionsFragment();
 						break;
-
+					case R.id.nav_settings:
+						this.fragment = new SettingsFragment();
+						break;
 					default:
 						// Set title for main fragment = app name
 						this.mTitle = getResources().getString(R.string.app_name);

@@ -99,7 +99,7 @@ public class RouteInfoFragment extends Fragment
 			double distanceInKm = route.getDistance() / 1000.0;
 			this.distanceText.setText(LocationUtility.formatDistance(this.getActivity(), distanceInKm));
 
-			float averageSpeed = SportUtility.getAverageSpeedFromSport(route.getSportType());
+			float averageSpeed = SportUtility.getAverageSpeedFromSport(getContext(), route.getSportType());
 			this.durationInMinutes = TimeUtility.convertTimeToMinutes(distanceInKm / averageSpeed);
 
 			this.durationText.setText(TimeUtility.formatDuration(this.getActivity(), durationInMinutes));
