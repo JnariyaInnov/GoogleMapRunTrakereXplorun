@@ -9,11 +9,23 @@ import java.util.ArrayList;
 
 public class CustomRoute implements Parcelable
 {
+	private Position startPosition;
 	private int sportType;
-	private float distance = 0;
+	private float distance = -1;
+	private long duration = -1;
 	private ArrayList<Place> places;
 	private float rating = -1;
 	private ArrayList<Step> steps;
+
+	public Position getStartPosition()
+	{
+		return startPosition;
+	}
+
+	public void setStartPosition(Position position)
+	{
+		this.startPosition = position;
+	}
 
 	public int getSportType()
 	{
@@ -33,6 +45,16 @@ public class CustomRoute implements Parcelable
 	public void setDistance(float distance)
 	{
 		this.distance = distance;
+	}
+
+	public long getDuration()
+	{
+		return this.duration;
+	}
+
+	public void setDuration(long duration)
+	{
+		this.duration = duration;
 	}
 
 	public ArrayList<Place> getPlaces()
@@ -65,21 +87,23 @@ public class CustomRoute implements Parcelable
 		this.steps = steps;
 	}
 
-	public CustomRoute(int sportType, ArrayList<Place> places)
+	public CustomRoute(Position position, int sportType, ArrayList<Place> places)
 	{
+		this.startPosition = position;
 		this.sportType = sportType;
 		this.places = places;
 	}
 
-	public CustomRoute(int sportType, float distance, ArrayList<Place> places, float rating)
+	public CustomRoute(Position position, int sportType, float distance, ArrayList<Place> places, float rating)
 	{
-		this(sportType, places);
+		this(position, sportType, places);
 		this.distance = distance;
 		this.rating = rating;
 	}
 
 	protected CustomRoute(Parcel in)
 	{
+		startPosition = (Position) in.readValue(Position.class.getClassLoader());
 		sportType = in.readInt();
 		distance = in.readFloat();
 		if (in.readByte() == 0x01)
@@ -112,6 +136,7 @@ public class CustomRoute implements Parcelable
 	@Override
 	public void writeToParcel(Parcel dest, int flags)
 	{
+		dest.writeValue(startPosition);
 		dest.writeInt(sportType);
 		dest.writeFloat(distance);
 		if (places == null)

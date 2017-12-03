@@ -128,7 +128,7 @@ public class NearbyAttractionsController
 				{
 					// Compute distance between the user and the place
 					double distance = LocationUtility.distanceBetweenCoordinates(this.location.getLatitude(), this.location.getLongitude(), p1.getLatitude(), p1.getLongitude());
-					p1.setDistance(distance);
+					p1.setDistance(distance*1000);
 
 					this.places.add(p1);
 				}

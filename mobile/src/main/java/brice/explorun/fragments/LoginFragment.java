@@ -30,7 +30,6 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 import brice.explorun.R;
@@ -166,7 +165,6 @@ public class LoginFragment extends Fragment
 					// Sign in success, update UI with the signed-in user's information
 					Log.d("LoginFragment", "SignInWithCredential:success");
 					Toast.makeText(getActivity(), R.string.login_successful, Toast.LENGTH_SHORT).show();
-					FirebaseUser user = mAuth.getCurrentUser();
 					Intent intent = new Intent(getActivity(), MainActivity.class);
 					startActivity(intent);
 					getActivity().finish();
@@ -176,7 +174,7 @@ public class LoginFragment extends Fragment
 					// If sign in fails, display a message to the user.
 					Log.w("LoginFragment", "SignInWithCredential:failure", task.getException());
 					Toast.makeText(getActivity(), R.string.authentication_failed, Toast.LENGTH_SHORT).show();
-				}
+			}
 			}
 		});
 	}

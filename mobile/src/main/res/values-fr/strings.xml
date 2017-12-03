@@ -48,6 +48,12 @@
 	<string name="authentication_failed">Erreur lors de la connexion</string>
 	<string name="login_successful">Connexion réussie !</string>
 	<string name="logout_successful">Déconnexion réussie !</string>
+	<string name="route_saved">Votre parcours a été sauvegardé dans votre historique</string>
+	<string name="history_error">Une erreur est survenue lors de la récupération de votre historique</string>
+	<string name="save_route_error">Une connexion internet est requise pour enregistrer votre parcours</string>
+	<string name="view_route_on_map_error">Une connexion internet est requise pour visualiser votre parcours sur la carte</string>
+	<string name="delete">Supprimer</string>
+	<string name="no_route">Vous n\'avez aucun parcours dans votre historique</string>
     <string name="walk_speed">"Vitesse de marche : "</string>
 	<string name="run_speed">"Vitesse de course : "</string>
 	<string name="trail_speed">"Vitesse de trail : "</string>

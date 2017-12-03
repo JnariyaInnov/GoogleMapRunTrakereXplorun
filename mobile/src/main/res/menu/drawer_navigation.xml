@@ -10,16 +10,16 @@
 				android:id="@+id/nav_nearby_attractions"
 				android:title="@string/nav_nearby_attractions" />
 
+		<item
+				android:id="@+id/nav_history"
+				android:title="@string/nav_history" />
 
 	</group>
 
 	<group android:id="@+id/aside_nav" android:checkableBehavior="single">
 		<item
-			android:id="@+id/nav_settings"
-			android:title="@string/nav_settings" />
-		<item
-				android:id="@+id/nav_about"
-				android:title="@string/nav_about" />
+				android:id="@+id/nav_settings"
+				android:title="@string/nav_settings" />
 		<item
 				app:actionLayout="@layout/logout_button"
 				android:id="@+id/nav_logout"/>

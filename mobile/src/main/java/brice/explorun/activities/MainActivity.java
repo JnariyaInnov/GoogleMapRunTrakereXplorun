@@ -24,17 +24,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import brice.explorun.R;
-import brice.explorun.fragments.AboutFragment;
+import brice.explorun.fragments.HistoryFragment;
 import brice.explorun.fragments.MapFragment;
 import brice.explorun.fragments.NearbyAttractionsFragment;
 import brice.explorun.fragments.SettingsFragment;
@@ -81,6 +80,7 @@ public class MainActivity extends AppCompatActivity
 		}
 		else
 		{
+			FacebookSdk.sdkInitialize(this.getApplicationContext());
 			// Configure Google Sign In
 			GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
 					.requestIdToken(getString(R.string.default_web_client_id))
@@ -319,16 +319,18 @@ public class MainActivity extends AppCompatActivity
 				// Create a new fragment according to id
 				switch (itemId)
 				{
-					case R.id.nav_about:
-						this.fragment = new AboutFragment();
-						break;
-
 					case R.id.nav_nearby_attractions:
 						this.fragment = new NearbyAttractionsFragment();
 						break;
+
+					case R.id.nav_history:
+						this.fragment = new HistoryFragment();
+						break;
+
 					case R.id.nav_settings:
 						this.fragment = new SettingsFragment();
 						break;
+
 					default:
 						// Set title for main fragment = app name
 						this.mTitle = getResources().getString(R.string.app_name);

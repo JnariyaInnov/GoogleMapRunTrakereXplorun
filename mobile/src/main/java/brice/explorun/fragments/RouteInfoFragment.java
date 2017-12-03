@@ -13,7 +13,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.model.Step;
 
 import java.util.ArrayList;
@@ -42,7 +41,7 @@ public class RouteInfoFragment extends Fragment
 	private BroadcastReceiver tickReceiver = new BroadcastReceiver(){
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			arrivalTimeText.setText(TimeUtility.computeEstimatedTimeOfArrival(durationInMinutes));
+			arrivalTimeText.setText(TimeUtility.computeEstimatedTimeOfArrival(getActivity(), durationInMinutes));
 		}
 	};
 
@@ -96,15 +95,25 @@ public class RouteInfoFragment extends Fragment
 		{
 			this.updateSportImageAndText(route.getSportType());
 
-			double distanceInKm = route.getDistance() / 1000.0;
-			this.distanceText.setText(LocationUtility.formatDistance(this.getActivity(), distanceInKm));
+			float distance = route.getDistance();
+			this.distanceText.setText(LocationUtility.formatDistance(this.getActivity(), distance));
 
-			float averageSpeed = SportUtility.getAverageSpeedFromSport(getContext(), route.getSportType());
-			this.durationInMinutes = TimeUtility.convertTimeToMinutes(distanceInKm / averageSpeed);
+			// If the route has a duration, it means that this is a route stored in the user's history
+			if (route.getDuration() != -1)
+			{
+				long duration = route.getDuration();
+				this.durationText.setText(TimeUtility.formatDurationHms(this.getActivity(), duration));
+				this.durationInMinutes = (int)Math.round(duration / 1000.0 / 60.0);
+				this.sportTypeText.setText(String.format(getResources().getString(R.string.average_speed), TimeUtility.computeAverageSpeed(distance, duration)));
+			}
+			else // Basic case: the user has searched for a route
+			{
+				float averageSpeed = SportUtility.getAverageSpeedFromSport(this.getActivity(), route.getSportType());
+				this.durationInMinutes = TimeUtility.convertTimeToMinutes(distance/1000.0 / averageSpeed);
+				this.durationText.setText(TimeUtility.formatDuration(this.getActivity(), durationInMinutes));
+			}
 
-			this.durationText.setText(TimeUtility.formatDuration(this.getActivity(), durationInMinutes));
-
-			this.arrivalTimeText.setText(TimeUtility.computeEstimatedTimeOfArrival(durationInMinutes));
+			this.arrivalTimeText.setText(TimeUtility.computeEstimatedTimeOfArrival(this.getActivity(), this.durationInMinutes));
 
 			this.steps = route.getSteps();
 		}

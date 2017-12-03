@@ -1,7 +1,9 @@
 package brice.explorun.fragments;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -18,13 +20,28 @@ import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.Date;
 
 import brice.explorun.R;
+import brice.explorun.activities.MainActivity;
+import brice.explorun.models.CustomRoute;
+import brice.explorun.models.FirebasePlace;
+import brice.explorun.models.FirebaseRoute;
+import brice.explorun.models.Place;
+import brice.explorun.models.Position;
 import brice.explorun.models.RouteObserver;
 import brice.explorun.services.RouteService;
 import brice.explorun.utilities.LocationUtility;
 import brice.explorun.utilities.SportUtility;
 import brice.explorun.utilities.TimeUtility;
+import brice.explorun.utilities.Utility;
 
 public class CurrentRouteFragment extends Fragment
 {
@@ -42,9 +59,11 @@ public class CurrentRouteFragment extends Fragment
 
 	private Animation animation;
 
+	private CustomRoute customRoute;
 	private long base = 0;
-	private double distance = 0;
+	private float distance = 0;
 	private long lastStopTime = 0;
+	private long duration = 0;
 	private boolean isRunning = true;
 
 	private RouteObserver observer;
@@ -52,7 +71,7 @@ public class CurrentRouteFragment extends Fragment
 	private BroadcastReceiver distanceReceiver = new BroadcastReceiver(){
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			distance = intent.getDoubleExtra("distance", 0);
+			distance = intent.getFloatExtra("distance", 0);
 			distanceText.setText(LocationUtility.formatDistance(getActivity(), distance));
 			speedText.setText(String.format(getResources().getString(R.string.average_speed), TimeUtility.computeAverageSpeed(distance, SystemClock.elapsedRealtime()-base)));
 		}
@@ -106,7 +125,7 @@ public class CurrentRouteFragment extends Fragment
 		{
 			this.base = savedInstanceState.getLong(BASE_KEY);
 			this.lastStopTime = savedInstanceState.getLong(LAST_STOP_TIME_KEY);
-			this.distance = savedInstanceState.getDouble(DISTANCE_KEY);
+			this.distance = savedInstanceState.getFloat(DISTANCE_KEY);
 			this.isRunning = savedInstanceState.getBoolean(RUNNING_KEY);
 		}
 
@@ -122,9 +141,9 @@ public class CurrentRouteFragment extends Fragment
 		return view;
 	}
 
-	public void update(int sportType)
+	public void update(CustomRoute customRoute)
 	{
-		if (sportType == SportUtility.WALKING)
+		if (customRoute.getSportType() == SportUtility.WALKING)
 		{
 			this.speedImage.setImageDrawable(this.getResources().getDrawable(R.drawable.ic_walk));
 		}
@@ -157,7 +176,7 @@ public class CurrentRouteFragment extends Fragment
 		{
 			this.updateLayoutOnPause();
 		}
-		this.speedText.setText(String.format(getResources().getString(R.string.average_speed), TimeUtility.computeAverageSpeed(this.distance, SystemClock.elapsedRealtime()-this.chronometer.getBase())));
+		this.speedText.setText(String.format(getResources().getString(R.string.average_speed), 0f));
 		this.chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener()
 		{
 			@Override
@@ -166,13 +185,14 @@ public class CurrentRouteFragment extends Fragment
 				speedText.setText(String.format(getResources().getString(R.string.average_speed), TimeUtility.computeAverageSpeed(distance, SystemClock.elapsedRealtime()-chronometer.getBase())));
 			}
 		});
+		this.customRoute = customRoute;
 	}
 
 	public void onSaveInstanceState(Bundle outBundle)
 	{
 		outBundle.putLong(BASE_KEY, this.base);
 		outBundle.putLong(LAST_STOP_TIME_KEY, this.lastStopTime);
-		outBundle.putDouble(DISTANCE_KEY, this.distance);
+		outBundle.putFloat(DISTANCE_KEY, this.distance);
 		outBundle.putBoolean(RUNNING_KEY, this.isRunning);
 		super.onSaveInstanceState(outBundle);
 	}
@@ -189,6 +209,7 @@ public class CurrentRouteFragment extends Fragment
 	public void pauseRoute()
 	{
 		this.chronometer.stop();
+		this.duration = SystemClock.elapsedRealtime() - this.base;
 		this.lastStopTime = SystemClock.elapsedRealtime();
 		this.updateLayoutOnPause();
 		this.isRunning = false;
@@ -214,18 +235,75 @@ public class CurrentRouteFragment extends Fragment
 
 	public void stopRoute()
 	{
-		this.distance = 0;
-		this.base = 0;
-		this.lastStopTime = 0;
-		this.chronometer.stop();
+		// We pause the route to enable the user to retry to store his route if he has no internet connection on his first attempt
+		if (this.isRunning)
+		{
+			pauseRoute();
+		}
+
+		// We add the route in firebase only if user has an internet connection because synchronising data offline doesn't work well
+		if (Utility.isOnline(this.getActivity()))
+		{
+			addRouteInFirebase();
+			slideDownFragment();
+			showDialog();
+			this.distance = 0;
+			this.base = 0;
+			this.lastStopTime = 0;
+			if (this.observer != null)
+			{
+				this.observer.onRouteStop();
+			}
+		}
+		else
+		{
+			Toast.makeText(this.getActivity(), R.string.save_route_error, Toast.LENGTH_SHORT).show();
+		}
+	}
+
+	public void addRouteInFirebase()
+	{
+		FirebaseFirestore db = FirebaseFirestore.getInstance();
+		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+		if (user != null)
+		{
+			ArrayList<FirebasePlace> places = new ArrayList<>();
+			for (Place p : this.customRoute.getPlaces())
+			{
+				Log.d("CurrentRouteFragment", p.getName());
+				places.add(new FirebasePlace(p.getName(), new Position(p.getLatitude(), p.getLongitude())));
+			}
+			// We have to translate the route in a POJO (Plain Old Java Object) to store it in an easier way in Firebase
+			FirebaseRoute route = new FirebaseRoute(new Date(), this.customRoute.getSportType(), this.distance, this.duration, this.customRoute.getStartPosition(), places);
+			db.collection("users").document(user.getUid()).collection("routes").add(route);
+		}
+	}
+
+	public void slideDownFragment()
+	{
 		Intent intent = new Intent(this.getActivity(), RouteService.class);
 		this.getActivity().stopService(intent);
 		this.layout.setAnimation(this.animation);
 		this.layout.setVisibility(View.GONE);
 		this.layout.startAnimation(this.animation);
-		if (this.observer != null)
+	}
+
+	public void showDialog()
+	{
+		AlertDialog.Builder builder = new AlertDialog.Builder(this.getActivity());
+		builder.setMessage(R.string.route_saved).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
 		{
-			this.observer.onRouteStop();
-		}
+			@Override
+			public void onClick(DialogInterface dialogInterface, int i)
+			{
+				dialogInterface.dismiss();
+				// When the user clicks on the OK button, he is redirected to his history
+				MainActivity activity = (MainActivity) getActivity();
+				activity.getSupportActionBar().setTitle(activity.getResources().getString(R.string.nav_history));
+				activity.selectItem(activity.getNavigationView().getMenu().getItem(2), null);
+			}
+		});
+		AlertDialog dialog = builder.create();
+		dialog.show();
 	}
 }

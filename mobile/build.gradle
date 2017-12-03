@@ -26,6 +26,7 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:26.1.0'
     compile 'com.google.firebase:firebase-auth:11.6.2'
+    compile 'com.google.firebase:firebase-firestore:11.6.2'
     compile 'com.google.android.gms:play-services-auth:11.6.2'
     compile 'com.google.android.gms:play-services-maps:11.6.2'
     compile 'com.google.android.gms:play-services-location:11.6.2'
@@ -35,6 +36,7 @@ dependencies {
     compile 'com.facebook.android:facebook-android-sdk:4.7.0'
     compile 'com.appyvet:materialrangebar:1.4'
     compile 'com.akexorcist:googledirectionlibrary:1.1.0'
+    compile "com.daimajia.swipelayout:library:1.2.0@aar"
     testCompile 'junit:junit:4.12'
 }
 

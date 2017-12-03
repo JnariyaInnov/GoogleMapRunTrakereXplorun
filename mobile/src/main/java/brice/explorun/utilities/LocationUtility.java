@@ -54,15 +54,15 @@ public class LocationUtility
 	public static String formatDistance(Context context, double distance)
 	{
 		String res;
-		if (distance < 1)
+		if (distance < 1000)
 		{
 			// We round the distance to the nearest multiple of 10
-			distance = Math.round(Math.round(distance*1000)/10.0)*10.0;
+			distance = Math.round(distance/10.0)*10.0;
 			res = String.format(context.getResources().getString(R.string.distance_in_m), distance);
 		}
 		else
 		{
-			distance = Math.round(distance*10.0)/10.0;
+			distance = Math.round(distance/1000*10.0)/10.0;
 			res = String.format(context.getResources().getString(R.string.distance_in_km), distance);
 		}
 		return res;

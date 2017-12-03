@@ -9,17 +9,21 @@ import android.widget.TextView;
 
 import brice.explorun.R;
 import brice.explorun.activities.MainActivity;
+import brice.explorun.fragments.HistoryFragment;
 import brice.explorun.fragments.MapFragment;
+import brice.explorun.fragments.PlacesObserverFragment;
 import brice.explorun.utilities.Utility;
 import brice.explorun.fragments.NearbyAttractionsFragment;
 
 public class ConnectivityStatusHandler extends BroadcastReceiver
 {
 	private MainActivity activity; // Parent activity
+	private boolean isConnected;
 
 	public ConnectivityStatusHandler(MainActivity activity)
 	{
 		this.activity = activity;
+		this.isConnected = Utility.isOnline(activity);
 	}
 
 	public void onReceive(Context context, Intent intent)
@@ -41,23 +45,23 @@ public class ConnectivityStatusHandler extends BroadcastReceiver
 			//call function
 			if (Utility.isOnline(this.activity.getBaseContext()))
 			{
-				// Retrieving the current displayed fragment
-				Fragment fragment = this.activity.getSupportFragmentManager().findFragmentById(R.id.container);
-				// If the user is on the NearbyAttractionsFragment, we update the list
-				if (fragment instanceof NearbyAttractionsFragment)
+				if (!isConnected)
 				{
-					NearbyAttractionsFragment frag = (NearbyAttractionsFragment) fragment;
-					frag.getNearbyPlaces();
+					// Retrieving the current displayed fragment
+					Fragment fragment = this.activity.getSupportFragmentManager().findFragmentById(R.id.container);
+					// If the user is on a PlacesObserverFragment
+					if (fragment instanceof PlacesObserverFragment)
+					{
+						PlacesObserverFragment frag = (PlacesObserverFragment) fragment;
+						frag.getNearbyPlaces();
+					}
 				}
-				else if (fragment instanceof MapFragment)
-				{
-					MapFragment frag = (MapFragment) fragment;
-					frag.getNearbyPlaces();
-				}
+				isConnected = true;
 				noNetworkLabel.setVisibility(View.GONE);
 			}
 			else
 			{
+				isConnected = false;
 				noNetworkLabel.setVisibility(View.VISIBLE);
 			}
 		}

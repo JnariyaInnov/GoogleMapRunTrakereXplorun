@@ -21,7 +21,7 @@ public class Place implements Parcelable
 	private ArrayList<String> types = new ArrayList<>(); // Types of the place, used by Google
 
 	private String iconUrl = ""; // Url of the place's icon on the map
-	private Photo photo; // Photo of the place
+	private Photo photo = null; // Photo of the place
 
 	public String getPlaceId()
 	{
@@ -112,6 +112,13 @@ public class Place implements Parcelable
 		this.setTypes(types);
 		this.setIconUrl(iconUrl);
 		this.setPhoto(photo);
+	}
+
+	public Place(String name, Position position)
+	{
+		this.setName(name);
+		this.setLatitude(position.getLatitude());
+		this.setLongitude(position.getLongitude());
 	}
 
 	protected Place(Parcel in)
