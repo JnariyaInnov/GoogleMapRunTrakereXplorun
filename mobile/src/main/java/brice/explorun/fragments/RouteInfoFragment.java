@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,7 @@ import brice.explorun.utilities.LocationUtility;
 import brice.explorun.utilities.SportUtility;
 import brice.explorun.utilities.TimeUtility;
 
+
 public class RouteInfoFragment extends Fragment
 {
 	private ImageView sportTypeImage;
@@ -38,6 +40,7 @@ public class RouteInfoFragment extends Fragment
 	private int durationInMinutes = 0;
 	private ArrayList<Step> steps = new ArrayList<>();
 	private ArrayList<Place> places = new ArrayList<>();
+	private int i = 0;
 
 	private RouteObserver observer;
 
@@ -66,10 +69,6 @@ public class RouteInfoFragment extends Fragment
 			@Override
 			public void onClick(View view)
 			{
-				for (Place place : places)
-				{
-					place.setDescription(wikiAttractionController.getWikiAttraction(place));
-				}
 				startRoute();
 			}
 		});
@@ -94,7 +93,7 @@ public class RouteInfoFragment extends Fragment
 			throw new ClassCastException(getParentFragment().toString() + " must implement RouteObserver");
 		}
 
-		wikiAttractionController = new WikiAttractionController(this);
+		this.wikiAttractionController = new WikiAttractionController(this);
 
 		return view;
 	}
@@ -157,9 +156,15 @@ public class RouteInfoFragment extends Fragment
 
 	public void startRoute()
 	{
+		for (Place place : places)
+		{
+			Log.i("Place dans le parcour" , place.getName());
+			this.wikiAttractionController.getWikiAttraction(place);
+		}
 		Intent routeServiceIntent = new Intent(getActivity(), RouteService.class);
 		routeServiceIntent.putParcelableArrayListExtra("steps", steps);
 		routeServiceIntent.putParcelableArrayListExtra("places", places);
+
 		if (!RouteService.isStarted) {
 			getActivity().startService(routeServiceIntent);
 		}
@@ -167,6 +172,8 @@ public class RouteInfoFragment extends Fragment
 		{
 			this.observer.onRouteStart();
 		}
+
+
 	}
 
 	public void cancelRoute()
@@ -175,5 +182,24 @@ public class RouteInfoFragment extends Fragment
 		{
 			this.observer.onRouteCancel();
 		}
+	}
+
+	public void updatePlaceDesc(String Desc)
+	{
+
+
+		//if (this.places != null)
+		//{
+		//	for (int i = 0; i < this.places.size(); i++)
+		//	{
+		//		if (this.places.get(i).getPlaceId().equals(place.getPlaceId()))
+		//		{
+		//			this.places.set(i,place);
+		//			Log.i("test " + i,this.places.get(i).getName());
+		//			Log.i("test " +i,places.get(i).getDescription());
+		//		}
+		//	}
+		//}
+
 	}
 }

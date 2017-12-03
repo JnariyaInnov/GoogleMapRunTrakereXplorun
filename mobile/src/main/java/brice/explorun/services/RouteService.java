@@ -71,11 +71,9 @@ public class RouteService extends Service
 		}
 
 		if(this.places != null && this.placeIndex < this.places.size()) {
-			Log.i(this.TAG, "Test 1 for tts");
 			Place curStep = this.places.get(this.placeIndex);
 			if (LocationUtility.distanceBetweenCoordinates(loc[0], loc[1], curStep.getLatitude(), curStep.getLongitude()) < 0.1) {
-				Log.i(this.TAG, "Test 2 for tts");
-				Log.i(this.TAG, this.places.get(this.placeIndex).getDescription());
+				Log.i("tts name place",places.get(this.placeIndex).getName());
 				sendBroadcast(this.ttsBroadcastIntent.putExtra("text", this.places.get(this.placeIndex).getDescription()));
 				this.placeIndex++;
 			}

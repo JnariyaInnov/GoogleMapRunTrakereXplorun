@@ -13,13 +13,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import brice.explorun.fragments.PlacesObserverFragment;
 import brice.explorun.fragments.RouteInfoFragment;
 import brice.explorun.models.CustomRequestQueue;
 import brice.explorun.models.Place;
+import brice.explorun.utilities.Utility;
 
 import static com.android.volley.VolleyLog.TAG;
 
@@ -36,7 +37,6 @@ public class WikiAttractionController {
 	}
 
 
-
 	private String getWikiApiUrl(String attractionName)
 	{
 		Uri builtUri = Uri.parse(WIKI_API_BASE_URL).buildUpon()
@@ -50,34 +50,36 @@ public class WikiAttractionController {
 		return builtUri.toString();
 	}
 
-	public String getWikiAttraction(Place place)
+	public void getWikiAttraction(Place place)
 	{
-
 		this.place = place;
-		String url = getWikiApiUrl(this.place.getName());
-		final WikiAttractionController _this = this;
-		JsonObjectRequest request = new JsonObjectRequest(
-				Request.Method.GET,
-				url,
-				null,
-				new Response.Listener<JSONObject>() {
+		if (Utility.isOnline(this.observer.getActivity())) {
+				String url = getWikiApiUrl(this.place.getName());
+				Log.i("url", url);
+			final WikiAttractionController _this = this;
+			JsonObjectRequest request = new JsonObjectRequest(
+					Request.Method.GET,
+					url,
+					null,
+					new Response.Listener<JSONObject>() {
 
-					@Override
-					public void onResponse(JSONObject response) {
-						_this.onResponse(response);
+						@Override
+						public void onResponse(JSONObject response) {
+							_this.onResponse(response);
+						}
+					},
+					new Response.ErrorListener() {
+
+						@Override
+						public void onErrorResponse(VolleyError error) {
+							_this.onErrorResponse(error);
+						}
 					}
-				},
-				new Response.ErrorListener() {
+			);
 
-					@Override
-					public void onErrorResponse(VolleyError error) {
-						_this.onErrorResponse(error);
-					}
-				}
-		);
+			CustomRequestQueue.getInstance(this.observer.getActivity()).getRequestQueue().add(request);
 
-		CustomRequestQueue.getInstance(this.observer.getActivity()).getRequestQueue().add(request);
-		return attractionText;
+		}
 	}
 
 	public void getWikiAttractionByString(String attractionName)
@@ -111,10 +113,10 @@ public class WikiAttractionController {
 
 	public void onResponse(JSONObject response)
 	{
+		attractionText = "";
 		try
 		{
 			String status = response.getString("query");
-			Log.d(TAG,status);
 
 			Pattern p = Pattern.compile("\"pages\":\\{\"-1\"");
 			Matcher m = p.matcher(status);
@@ -146,11 +148,9 @@ public class WikiAttractionController {
 				}
 				else {
 					attractionText  = textCleaner(status);
-					Log.d(TAG, attractionText);
 				}
 			}
-
-
+			this.observer.updatePlaceDesc(attractionText);
 		}
 		catch (JSONException e)
 		{

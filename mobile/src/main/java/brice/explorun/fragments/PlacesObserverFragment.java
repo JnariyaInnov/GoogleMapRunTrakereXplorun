@@ -21,7 +21,6 @@ import brice.explorun.utilities.Utility;
 public abstract class PlacesObserverFragment extends Fragment
 {
 	protected NearbyAttractionsController nearbyAttractionsController;
-	protected WikiAttractionController wikiAttractionController;
 	protected Location mLastLocation = new Location("");
 	protected LinearLayout progressBarLayout = null;
 
