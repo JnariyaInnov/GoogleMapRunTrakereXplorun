@@ -131,6 +131,7 @@ public class Place implements Parcelable
 		this.latitude = in.readDouble();
 		this.longitude = in.readDouble();
 		this.distance = in.readDouble();
+		this.description = in.readString();
 		if (in.readByte() == 0x01)
 		{
 			this.types = new ArrayList<>();
@@ -158,6 +159,7 @@ public class Place implements Parcelable
 		dest.writeDouble(this.latitude);
 		dest.writeDouble(this.longitude);
 		dest.writeDouble(this.distance);
+		dest.writeString(this.description);
 		if (this.types == null)
 		{
 			dest.writeByte((byte) (0x00));

@@ -206,6 +206,7 @@ public class WikiAttractionController {
 		paragraph = paragraph.replaceAll("\\}\\}","");
 		paragraph = paragraph.replaceAll("\\|"," ");
 		paragraph = paragraph.replaceAll("'''","");
+		paragraph = paragraph.replaceAll("(^.*?\\..*?\\..*?\\.)(.*)", "$1");
 
 		return paragraph;
 	}

@@ -53,6 +53,9 @@ public class RouteService extends Service
 	{
 		this.steps = intent.getParcelableArrayListExtra("steps");
 		this.places = intent.getParcelableArrayListExtra("places");
+		for (Place p : places){
+			Log.i("tts name place",p.getDescription());
+		}
 		update();
 		return super.onStartCommand(intent, flags, startId);
 	}
@@ -73,7 +76,6 @@ public class RouteService extends Service
 		if(this.places != null && this.placeIndex < this.places.size()) {
 			Place curStep = this.places.get(this.placeIndex);
 			if (LocationUtility.distanceBetweenCoordinates(loc[0], loc[1], curStep.getLatitude(), curStep.getLongitude()) < 0.1) {
-				Log.i("tts name place",places.get(this.placeIndex).getDescription());
 				sendBroadcast(this.ttsBroadcastIntent.putExtra("text", this.places.get(this.placeIndex).getDescription()));
 				this.placeIndex++;
 			}
