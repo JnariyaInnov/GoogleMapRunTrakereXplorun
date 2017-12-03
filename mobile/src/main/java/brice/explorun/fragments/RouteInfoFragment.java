@@ -40,7 +40,7 @@ public class RouteInfoFragment extends Fragment
 	private int durationInMinutes = 0;
 	private ArrayList<Step> steps = new ArrayList<>();
 	private ArrayList<Place> places = new ArrayList<>();
-	private int i = 0;
+	private int countPlace = 0;
 
 	private RouteObserver observer;
 
@@ -158,22 +158,8 @@ public class RouteInfoFragment extends Fragment
 	{
 		for (Place place : places)
 		{
-			Log.i("Place dans le parcour" , place.getName());
 			this.wikiAttractionController.getWikiAttraction(place);
 		}
-		Intent routeServiceIntent = new Intent(getActivity(), RouteService.class);
-		routeServiceIntent.putParcelableArrayListExtra("steps", steps);
-		routeServiceIntent.putParcelableArrayListExtra("places", places);
-
-		if (!RouteService.isStarted) {
-			getActivity().startService(routeServiceIntent);
-		}
-		if (this.observer != null)
-		{
-			this.observer.onRouteStart();
-		}
-
-
 	}
 
 	public void cancelRoute()
@@ -184,22 +170,32 @@ public class RouteInfoFragment extends Fragment
 		}
 	}
 
-	public void updatePlaceDesc(String Desc)
+	public void updatePlaceDesc(Place place)
 	{
+		if (this.places != null)
+		{
+			for (int i = 0; i < this.places.size(); i++)
+			{
+				if (this.places.get(i).getPlaceId().equals(place.getPlaceId()))
+				{
+					this.places.set(i,place);
+					countPlace++;
+				}
+			}
+		}
 
+		if (this.places.size() == countPlace){
+			Intent routeServiceIntent = new Intent(getActivity(), RouteService.class);
+			routeServiceIntent.putParcelableArrayListExtra("steps", steps);
+			routeServiceIntent.putParcelableArrayListExtra("places", places);
 
-		//if (this.places != null)
-		//{
-		//	for (int i = 0; i < this.places.size(); i++)
-		//	{
-		//		if (this.places.get(i).getPlaceId().equals(place.getPlaceId()))
-		//		{
-		//			this.places.set(i,place);
-		//			Log.i("test " + i,this.places.get(i).getName());
-		//			Log.i("test " +i,places.get(i).getDescription());
-		//		}
-		//	}
-		//}
-
+			if (!RouteService.isStarted) {
+				getActivity().startService(routeServiceIntent);
+			}
+			if (this.observer != null)
+			{
+				this.observer.onRouteStart();
+			}
+		}
 	}
 }

@@ -27,7 +27,6 @@ public class WikiAttractionController {
 
 	private RouteInfoFragment observer;
 	private final String WIKI_API_BASE_URL = "https://fr.wikipedia.org/w/api.php?";
-	private Place place;
 	private String attractionText;
 
 	public WikiAttractionController(RouteInfoFragment observer){
@@ -50,9 +49,9 @@ public class WikiAttractionController {
 
 	public void getWikiAttraction(Place place)
 	{
-		this.place = place;
+		final Place fplace= place;
 		if (Utility.isOnline(this.observer.getActivity())) {
-				String url = getWikiApiUrl(this.place.getName());
+				String url = getWikiApiUrl(place.getName());
 				Log.i("url", url);
 			final WikiAttractionController _this = this;
 			JsonObjectRequest request = new JsonObjectRequest(
@@ -62,8 +61,8 @@ public class WikiAttractionController {
 					new Response.Listener<JSONObject>() {
 
 						@Override
-						public void onResponse(JSONObject response) {
-							_this.onResponse(response);
+						public void onResponse(JSONObject response ) {
+							_this.onResponse(response, fplace);
 						}
 					},
 					new Response.ErrorListener() {
@@ -80,9 +79,9 @@ public class WikiAttractionController {
 		}
 	}
 
-	public void getWikiAttractionByString(String attractionName)
+	public void getWikiAttractionByString(String attractionName, Place place)
 	{
-
+		final Place fplace = place;
 		String url = getWikiApiUrl(attractionName);
 		final WikiAttractionController _this = this;
 		JsonObjectRequest request = new JsonObjectRequest(
@@ -93,7 +92,7 @@ public class WikiAttractionController {
 
 					@Override
 					public void onResponse(JSONObject response) {
-						_this.onResponse(response);
+						_this.onResponse(response, fplace);
 					}
 				},
 				new Response.ErrorListener() {
@@ -109,9 +108,9 @@ public class WikiAttractionController {
 	}
 
 
-	public void onResponse(JSONObject response)
+	public void onResponse(JSONObject response, Place place)
 	{
-		attractionText = "";
+		attractionText = " ";
 		try
 		{
 			String status = response.getString("query");
@@ -132,7 +131,7 @@ public class WikiAttractionController {
 					status = status.replaceAll("\\]","");
 					status = status.replaceAll("\\}","");
 					status = status.replaceAll("\"","");
-					getWikiAttractionByString(status);
+					getWikiAttractionByString(status, place);
 				}
 				p = Pattern.compile("\"\\*\":\"#REDIRECTION");
 				m = p.matcher(status);
@@ -142,13 +141,14 @@ public class WikiAttractionController {
 					status = status.replaceAll("\\]","");
 					status = status.replaceAll("\\}","");
 					status = status.replaceAll("\"","");
-					getWikiAttractionByString(status);
+					getWikiAttractionByString(status, place);
 				}
 				else {
 					attractionText  = textCleaner(status);
 				}
 			}
-			this.observer.updatePlaceDesc(attractionText);
+			place.setDescription(attractionText);
+			this.observer.updatePlaceDesc(place);
 		}
 		catch (JSONException e)
 		{
