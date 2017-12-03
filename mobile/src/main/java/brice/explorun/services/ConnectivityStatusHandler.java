@@ -11,6 +11,7 @@ import brice.explorun.R;
 import brice.explorun.activities.MainActivity;
 import brice.explorun.fragments.HistoryFragment;
 import brice.explorun.fragments.MapFragment;
+import brice.explorun.fragments.PlacesObserverFragment;
 import brice.explorun.utilities.Utility;
 import brice.explorun.fragments.NearbyAttractionsFragment;
 
@@ -48,15 +49,10 @@ public class ConnectivityStatusHandler extends BroadcastReceiver
 				{
 					// Retrieving the current displayed fragment
 					Fragment fragment = this.activity.getSupportFragmentManager().findFragmentById(R.id.container);
-					// If the user is on the NearbyAttractionsFragment, we update the list
-					if (fragment instanceof NearbyAttractionsFragment)
+					// If the user is on a PlacesObserverFragment
+					if (fragment instanceof PlacesObserverFragment)
 					{
-						NearbyAttractionsFragment frag = (NearbyAttractionsFragment) fragment;
-						frag.getNearbyPlaces();
-					}
-					else if (fragment instanceof MapFragment)
-					{
-						MapFragment frag = (MapFragment) fragment;
+						PlacesObserverFragment frag = (PlacesObserverFragment) fragment;
 						frag.getNearbyPlaces();
 					}
 				}

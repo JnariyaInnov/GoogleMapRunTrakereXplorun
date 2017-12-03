@@ -3,6 +3,7 @@ package brice.explorun.adapters;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -69,6 +70,11 @@ public class RoutesHistoryAdapter extends ArraySwipeAdapter<FirebaseRoute>
 			});
 			switch (route.getSportType())
 			{
+				case SportUtility.WALKING:
+					holder.imageView.setImageDrawable(getContext().getResources().getDrawable(R.drawable.ic_walk));
+					holder.sportTypeView.setText(R.string.form_walk_radio);
+					break;
+
 				case SportUtility.RUNNING:
 					holder.imageView.setImageDrawable(getContext().getResources().getDrawable(R.drawable.ic_run));
 					holder.sportTypeView.setText(R.string.form_run_radio);
@@ -80,8 +86,7 @@ public class RoutesHistoryAdapter extends ArraySwipeAdapter<FirebaseRoute>
 					break;
 
 				default:
-					holder.imageView.setImageDrawable(getContext().getResources().getDrawable(R.drawable.ic_walk));
-					holder.sportTypeView.setText(R.string.form_walk_radio);
+					Log.d("RoutesHistoryAdapter", "Unexpected sport type");
 					break;
 			}
 			holder.distanceView.setText(LocationUtility.formatDistance(getContext(), route.getDistance()));
