@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -27,7 +26,6 @@ import brice.explorun.R;
 import brice.explorun.activities.MainActivity;
 import brice.explorun.adapters.RoutesHistoryAdapter;
 import brice.explorun.models.FirebaseRoute;
-import brice.explorun.utilities.Utility;
 
 public class HistoryFragment extends Fragment
 {
@@ -99,9 +97,8 @@ public class HistoryFragment extends Fragment
 				{
 					if (e != null)
 					{
-						Log.e("HistoryFragment", "Listen error", e);
+						Log.w("HistoryFragment", "Listen error");
 						progressBar.setVisibility(View.GONE);
-						Toast.makeText(getActivity(), R.string.history_error, Toast.LENGTH_SHORT).show();
 					}
 					else
 					{
