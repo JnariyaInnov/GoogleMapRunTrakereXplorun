@@ -99,7 +99,10 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 
 		this.progressBarLayout = view.findViewById(R.id.progress_layout);
 
-		getNearbyPlaces();
+		if (savedInstanceState == null)
+		{
+			getNearbyPlaces();
+		}
 
 		return view;
 	}
@@ -140,6 +143,7 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 	public void onSaveInstanceState(Bundle outBundle)
 	{
 		outBundle.putParcelableArrayList(this.PLACES_KEY, this.places);
+		super.onSaveInstanceState(outBundle);
 	}
 
 	@Override

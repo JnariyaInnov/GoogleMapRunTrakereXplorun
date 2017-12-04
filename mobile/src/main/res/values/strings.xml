@@ -21,6 +21,7 @@
 	<string name="nav_nearby_attractions">Nearby tourist attractions</string>
 	<string name="nav_about">About</string>
 	<string name="nav_logout">Logout</string>
+	<string name="drawer_locked_error">Drawer is disabled during the route</string>
 
 	<!-- Errors -->
 	<string name="network_error">Network error</string>
@@ -56,6 +57,7 @@
 	<string name="distance_image_text">Distance</string>
 	<string name="duration_image_text">Duration</string>
 	<string name="arrival_time_image_text">Estimated time of arrival</string>
+	<string name="drawer_locked">Navigation drawer is locked during the route</string>
 
 	<!-- Current route fragment -->
 	<string name="pause_route_text">Pause</string>

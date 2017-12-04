@@ -8,6 +8,8 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.location.Location;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
@@ -390,6 +392,15 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		if (ActivityCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
 		{
 			this.map.setMyLocationEnabled(true);
+			this.map.setOnMyLocationClickListener(new GoogleMap.OnMyLocationClickListener()
+			{
+				@Override
+				public void onMyLocationClick(@NonNull Location location)
+				{
+					float[] loc = LocationUtility.getLocationFromPreferences(getActivity());
+					map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(loc[0], loc[1]), 13));
+				}
+			});
 		}
 	}
 

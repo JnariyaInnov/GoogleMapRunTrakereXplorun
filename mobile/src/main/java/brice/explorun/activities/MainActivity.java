@@ -20,6 +20,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -188,6 +189,7 @@ public class MainActivity extends AppCompatActivity
 		super.onStart();
 	}
 
+	@Override
 	protected void onStop()
 	{
 		Log.d("eX_lifeCycle", "main => onStop()");
@@ -354,6 +356,13 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
+		if (item.getItemId() == android.R.id.home)
+		{
+			if (this.mDrawerLayout.getDrawerLockMode(Gravity.START) == DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+			{
+				Toast.makeText(this, R.string.drawer_locked_error, Toast.LENGTH_SHORT).show();
+			}
+		}
 		// Pass the event to ActionBarDrawerToggle, if it returns true, then it has handled the app icon touch event
 		return (this.mDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item));
 	}
