@@ -6,4 +6,5 @@ public interface RouteObserver
 	void onRouteStart();
 	void onRouteStop();
 	void onRouteCancel();
+	void onWikiSearch();
 }

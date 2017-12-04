@@ -1,6 +1,5 @@
 package brice.explorun.controllers;
 
-
 import android.net.Uri;
 import android.util.Log;
 
@@ -12,6 +11,8 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,19 +21,25 @@ import brice.explorun.models.CustomRequestQueue;
 import brice.explorun.models.Place;
 import brice.explorun.utilities.Utility;
 
-import static com.android.volley.VolleyLog.TAG;
+public class WikiAttractionController
+{
+	private final String WIKI_API_BASE_URL = "https://" + Locale.getDefault().getLanguage() + ".wikipedia.org/w/api.php?";
+	private final String TAG = "WikiController";
 
-public class WikiAttractionController {
-
+	private int countPlace = 0;
+	private ArrayList<Place> places;
 
 	private RouteInfoFragment observer;
-	private final String WIKI_API_BASE_URL = "https://fr.wikipedia.org/w/api.php?";
-	private String attractionText;
 
-	public WikiAttractionController(RouteInfoFragment observer){
-		this.observer = observer;
+	public void setPlaces(ArrayList<Place> places)
+	{
+		this.places = places;
 	}
 
+	public WikiAttractionController(RouteInfoFragment observer)
+	{
+		this.observer = observer;
+	}
 
 	private String getWikiApiUrl(String attractionName)
 	{
@@ -47,70 +54,51 @@ public class WikiAttractionController {
 		return builtUri.toString();
 	}
 
-	public void getWikiAttraction(Place place)
+	public void getWikiAttractions()
 	{
-		final Place fplace= place;
-		if (Utility.isOnline(this.observer.getActivity())) {
-				String url = getWikiApiUrl(place.getName());
-				Log.i("url", url);
+		if (Utility.isOnline(this.observer.getActivity()))
+		{
+			for (Place place: this.places)
+			{
+				this.getWikiAttractionByString(place.getName(), place);
+			}
+		}
+	}
+
+	private void getWikiAttractionByString(String attractionName, final Place place)
+	{
+		if (Utility.isOnline(this.observer.getActivity()))
+		{
+			String url = getWikiApiUrl(attractionName);
 			final WikiAttractionController _this = this;
 			JsonObjectRequest request = new JsonObjectRequest(
 					Request.Method.GET,
 					url,
 					null,
-					new Response.Listener<JSONObject>() {
-
+					new Response.Listener<JSONObject>()
+					{
 						@Override
-						public void onResponse(JSONObject response ) {
-							_this.onResponse(response, fplace);
+						public void onResponse(JSONObject response)
+						{
+							_this.onResponse(response, place);
 						}
 					},
-					new Response.ErrorListener() {
-
+					new Response.ErrorListener()
+					{
 						@Override
-						public void onErrorResponse(VolleyError error) {
+						public void onErrorResponse(VolleyError error)
+						{
 							_this.onErrorResponse(error);
 						}
 					}
 			);
 
 			CustomRequestQueue.getInstance(this.observer.getActivity()).getRequestQueue().add(request);
-
 		}
 	}
 
-	public void getWikiAttractionByString(String attractionName, Place place)
+	private void onResponse(JSONObject response, Place place)
 	{
-		final Place fplace = place;
-		String url = getWikiApiUrl(attractionName);
-		final WikiAttractionController _this = this;
-		JsonObjectRequest request = new JsonObjectRequest(
-				Request.Method.GET,
-				url,
-				null,
-				new Response.Listener<JSONObject>() {
-
-					@Override
-					public void onResponse(JSONObject response) {
-						_this.onResponse(response, fplace);
-					}
-				},
-				new Response.ErrorListener() {
-
-					@Override
-					public void onErrorResponse(VolleyError error) {
-						_this.onErrorResponse(error);
-					}
-				}
-		);
-
-		CustomRequestQueue.getInstance(this.observer.getActivity()).getRequestQueue().add(request);
-	}
-
-
-	public void onResponse(JSONObject response, Place place)
-	{
-		attractionText = " ";
 		try
 		{
 			String status = response.getString("query");
@@ -120,12 +108,14 @@ public class WikiAttractionController {
 			if (m.find())
 			{
 				Log.d(TAG,"Page non trouvée");
+				afterResponse();
 			}
 			else
 			{
 				p = Pattern.compile("\"\\*\":\"#REDIRECT");
 				m = p.matcher(status);
-				if (m.find()){
+				if (m.find())
+				{
 					status = status.replaceAll(".*\"\\*\":\"#REDIRECT(.*)","$1");
 					status = status.replaceAll("\\[","");
 					status = status.replaceAll("\\]","");
@@ -133,44 +123,64 @@ public class WikiAttractionController {
 					status = status.replaceAll("\"","");
 					getWikiAttractionByString(status, place);
 				}
-				p = Pattern.compile("\"\\*\":\"#REDIRECTION");
-				m = p.matcher(status);
-				if (m.find()){
-					status = status.replaceAll(".*\"\\*\":\"#REDIRECTION(.*)","$1");
-					status = status.replaceAll("\\[","");
-					status = status.replaceAll("\\]","");
-					status = status.replaceAll("\\}","");
-					status = status.replaceAll("\"","");
-					getWikiAttractionByString(status, place);
-				}
-				else {
-					attractionText  = textCleaner(status);
+				else
+				{
+					p = Pattern.compile("\"\\*\":\"#REDIRECTION");
+					m = p.matcher(status);
+					if (m.find())
+					{
+						status = status.replaceAll(".*\"\\*\":\"#REDIRECTION(.*)", "$1");
+						status = status.replaceAll("\\[", "");
+						status = status.replaceAll("\\]", "");
+						status = status.replaceAll("\\}", "");
+						status = status.replaceAll("\"", "");
+						getWikiAttractionByString(status, place);
+					}
+					else
+					{
+						String description = textCleaner(status);
+						Log.d(TAG, description);
+						place.setDescription(description);
+						afterResponse();
+					}
 				}
 			}
-			place.setDescription(attractionText);
-			this.observer.updatePlaceDesc(place);
 		}
 		catch (JSONException e)
 		{
-			Log.e(TAG,e.toString());
+			afterResponse();
+			Log.e(TAG, e.getMessage());
 		}
 	}
 
-	public void onErrorResponse(VolleyError error)
+	private void afterResponse()
 	{
-		Log.e(TAG,error.toString());
+		this.countPlace++;
+		if (this.countPlace == this.places.size() && this.observer != null)
+		{
+			this.observer.onWikiResponse();
+			this.countPlace = 0;
+		}
 	}
 
-	public String textCleaner(String status){
+	private void onErrorResponse(VolleyError error)
+	{
+		Log.e(TAG, error.getMessage());
+		afterResponse();
+	}
 
+	private String textCleaner(String status)
+	{
 		String paragraph;
 
 		Pattern p = Pattern.compile("'''");
 		Matcher m = p.matcher(status);
-		if (m.find()) {
+		if (m.find())
+		{
 			paragraph = status.substring(status.indexOf("'''"), status.indexOf("=="));
 		}
-		else {
+		else
+		{
 			paragraph = status;
 		}
 		paragraph = paragraph.replaceAll("^n","");
@@ -193,6 +203,7 @@ public class WikiAttractionController {
 		paragraph = paragraph.replaceAll("\u00ab","");
 		paragraph = paragraph.replaceAll("\u00bb","");
 		paragraph = paragraph.replaceAll("\u0153","œ");
+		paragraph = paragraph.replaceAll("&nbsp;", " ");
 		paragraph = paragraph.replaceAll("\\\\n","");
 		paragraph = paragraph.replaceAll("<ref.*?/>","");
 		paragraph = paragraph.replaceAll("<ref.*?ref>","");
@@ -200,17 +211,18 @@ public class WikiAttractionController {
 		paragraph = paragraph.replaceAll("\\[\\[.[^,\\]\\]]*?\\|(.*?)\\]\\]", "$1");
 		paragraph = paragraph.replaceAll("\\{\\{unité\\|(.[^,\\}\\}]*)\\|(.[^,\\}\\}]*)\\}\\}","$1 $2");
 		paragraph = paragraph.replaceAll("\\{\\{note.*note\\}\\}","");
+		paragraph = paragraph.replaceAll("formatnum:", "");
+		paragraph = paragraph.replaceAll("<!--.*?-->", "");
 		paragraph = paragraph.replaceAll("\\{\\{","");
 		paragraph = paragraph.replaceAll("\\[\\[","");
 		paragraph = paragraph.replaceAll("]]","");
 		paragraph = paragraph.replaceAll("\\}\\}","");
 		paragraph = paragraph.replaceAll("\\|"," ");
 		paragraph = paragraph.replaceAll("'''","");
+		paragraph = paragraph.replaceAll("\\(IPA.*?\\) ", "");
+		paragraph = paragraph.replaceAll("\\(Lang-.*?\\) ", "");
 		paragraph = paragraph.replaceAll("(^.*?\\..*?\\..*?\\.)(.*)", "$1");
 
 		return paragraph;
 	}
-
 }
-
-

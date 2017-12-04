@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.akexorcist.googledirection.model.Step;
 
@@ -27,6 +28,7 @@ import brice.explorun.services.RouteService;
 import brice.explorun.utilities.LocationUtility;
 import brice.explorun.utilities.SportUtility;
 import brice.explorun.utilities.TimeUtility;
+import brice.explorun.utilities.Utility;
 
 
 public class RouteInfoFragment extends Fragment
@@ -40,7 +42,6 @@ public class RouteInfoFragment extends Fragment
 	private int durationInMinutes = 0;
 	private ArrayList<Step> steps = new ArrayList<>();
 	private ArrayList<Place> places = new ArrayList<>();
-	private int countPlace = 0;
 
 	private RouteObserver observer;
 
@@ -117,7 +118,7 @@ public class RouteInfoFragment extends Fragment
 			this.steps = route.getSteps();
 
 			this.places = route.getPlaces();
-
+			this.wikiAttractionController.setPlaces(this.places);
 		}
 	}
 
@@ -156,9 +157,17 @@ public class RouteInfoFragment extends Fragment
 
 	public void startRoute()
 	{
-		for (Place place : places)
+		if (Utility.isOnline(this.getActivity()))
 		{
-			this.wikiAttractionController.getWikiAttraction(place);
+			if (this.observer != null)
+			{
+				this.observer.onWikiSearch();
+			}
+			this.wikiAttractionController.getWikiAttractions();
+		}
+		else
+		{
+			Toast.makeText(this.getActivity(), R.string.no_network, Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -170,32 +179,19 @@ public class RouteInfoFragment extends Fragment
 		}
 	}
 
-	public void updatePlaceDesc(Place place)
+	public void onWikiResponse()
 	{
-		if (this.places != null)
+		Intent routeServiceIntent = new Intent(getActivity(), RouteService.class);
+		routeServiceIntent.putParcelableArrayListExtra("steps", steps);
+		routeServiceIntent.putParcelableArrayListExtra("places", places);
+
+		if (!RouteService.isStarted)
 		{
-			for (int i = 0; i < this.places.size(); i++)
-			{
-				if (this.places.get(i).getPlaceId().equals(place.getPlaceId()))
-				{
-					this.places.set(i,place);
-					countPlace++;
-				}
-			}
+			getActivity().startService(routeServiceIntent);
 		}
-
-		if (this.places.size() == countPlace){
-			Intent routeServiceIntent = new Intent(getActivity(), RouteService.class);
-			routeServiceIntent.putParcelableArrayListExtra("steps", steps);
-			routeServiceIntent.putParcelableArrayListExtra("places", places);
-
-			if (!RouteService.isStarted) {
-				getActivity().startService(routeServiceIntent);
-			}
-			if (this.observer != null)
-			{
-				this.observer.onRouteStart();
-			}
+		if (this.observer != null)
+		{
+			this.observer.onRouteStart();
 		}
 	}
 }

@@ -53,9 +53,6 @@ public class RouteService extends Service
 	{
 		this.steps = intent.getParcelableArrayListExtra("steps");
 		this.places = intent.getParcelableArrayListExtra("places");
-		for (Place p : places){
-			Log.i("tts name place",p.getDescription());
-		}
 		update();
 		return super.onStartCommand(intent, flags, startId);
 	}
@@ -74,8 +71,8 @@ public class RouteService extends Service
 		}
 
 		if(this.places != null && this.placeIndex < this.places.size()) {
-			Place curStep = this.places.get(this.placeIndex);
-			if (LocationUtility.distanceBetweenCoordinates(loc[0], loc[1], curStep.getLatitude(), curStep.getLongitude()) < 0.1) {
+			Place curPlace = this.places.get(this.placeIndex);
+			if (LocationUtility.distanceBetweenCoordinates(loc[0], loc[1], curPlace.getLatitude(), curPlace.getLongitude()) < 0.1) {
 				sendBroadcast(this.ttsBroadcastIntent.putExtra("text", this.places.get(this.placeIndex).getDescription()));
 				this.placeIndex++;
 			}
@@ -111,11 +108,14 @@ public class RouteService extends Service
 	}
 
 	@Override
-	public void onDestroy() {
+	public void onDestroy()
+	{
 		Log.i("explorun_route","Stopping Route service");
 		isStarted = false;
 		this.steps = null;
 		this.instructionIndex = 0;
+		this.places = null;
+		this.placeIndex = 0;
 		this.unregisterReceiver(this.locReceiver);
 		super.onDestroy();
 	}
