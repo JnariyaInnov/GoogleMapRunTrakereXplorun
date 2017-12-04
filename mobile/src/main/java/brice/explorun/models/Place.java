@@ -23,6 +23,16 @@ public class Place implements Parcelable
 	private String iconUrl = ""; // Url of the place's icon on the map
 	private Photo photo = null; // Photo of the place
 
+	private String description = "";
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	public String getPlaceId()
 	{
 		return placeId;
@@ -128,6 +138,7 @@ public class Place implements Parcelable
 		this.latitude = in.readDouble();
 		this.longitude = in.readDouble();
 		this.distance = in.readDouble();
+		this.description = in.readString();
 		if (in.readByte() == 0x01)
 		{
 			this.types = new ArrayList<>();
@@ -155,6 +166,7 @@ public class Place implements Parcelable
 		dest.writeDouble(this.latitude);
 		dest.writeDouble(this.longitude);
 		dest.writeDouble(this.distance);
+		dest.writeString(this.description);
 		if (this.types == null)
 		{
 			dest.writeByte((byte) (0x00));

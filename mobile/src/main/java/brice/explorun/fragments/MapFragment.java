@@ -682,8 +682,14 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 		return res;
 	}
 
+	public void onWikiSearch()
+	{
+		this.showProgressBar();
+	}
+
 	public void onRouteStart()
 	{
+		this.hideProgressBar();
 		MainActivity activity = (MainActivity) this.getActivity();
 		activity.getDrawerLayout().setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
 		this.slideDownFragment(this.routeInfoLayout);

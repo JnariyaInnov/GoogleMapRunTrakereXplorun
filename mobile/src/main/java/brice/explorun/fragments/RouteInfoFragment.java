@@ -6,24 +6,30 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.akexorcist.googledirection.model.Step;
 
 import java.util.ArrayList;
 
 import brice.explorun.R;
+import brice.explorun.controllers.WikiAttractionController;
 import brice.explorun.models.CustomRoute;
+import brice.explorun.models.Place;
 import brice.explorun.models.RouteObserver;
 import brice.explorun.services.RouteService;
 import brice.explorun.utilities.LocationUtility;
 import brice.explorun.utilities.SportUtility;
 import brice.explorun.utilities.TimeUtility;
+import brice.explorun.utilities.Utility;
+
 
 public class RouteInfoFragment extends Fragment
 {
@@ -35,8 +41,11 @@ public class RouteInfoFragment extends Fragment
 
 	private int durationInMinutes = 0;
 	private ArrayList<Step> steps = new ArrayList<>();
+	private ArrayList<Place> places = new ArrayList<>();
 
 	private RouteObserver observer;
+
+	protected WikiAttractionController wikiAttractionController;
 
 	private BroadcastReceiver tickReceiver = new BroadcastReceiver(){
 		@Override
@@ -55,7 +64,6 @@ public class RouteInfoFragment extends Fragment
 		this.distanceText = view.findViewById(R.id.distance_text);
 		this.durationText = view.findViewById(R.id.duration_text);
 		this.arrivalTimeText = view.findViewById(R.id.arrival_time_text);
-
 		Button startRouteButton = view.findViewById(R.id.btn_start_route);
 		startRouteButton.setOnClickListener(new View.OnClickListener()
 		{
@@ -85,6 +93,8 @@ public class RouteInfoFragment extends Fragment
 		{
 			throw new ClassCastException(getParentFragment().toString() + " must implement RouteObserver");
 		}
+
+		this.wikiAttractionController = new WikiAttractionController(this);
 
 		return view;
 	}
@@ -116,6 +126,9 @@ public class RouteInfoFragment extends Fragment
 			this.arrivalTimeText.setText(TimeUtility.computeEstimatedTimeOfArrival(this.getActivity(), this.durationInMinutes));
 
 			this.steps = route.getSteps();
+
+			this.places = route.getPlaces();
+			this.wikiAttractionController.setPlaces(this.places);
 		}
 	}
 
@@ -154,14 +167,17 @@ public class RouteInfoFragment extends Fragment
 
 	public void startRoute()
 	{
-		Intent routeServiceIntent = new Intent(getActivity(), RouteService.class);
-		routeServiceIntent.putParcelableArrayListExtra("steps", steps);
-		if (!RouteService.isStarted) {
-			getActivity().startService(routeServiceIntent);
-		}
-		if (this.observer != null)
+		if (Utility.isOnline(this.getActivity()))
 		{
-			this.observer.onRouteStart();
+			if (this.observer != null)
+			{
+				this.observer.onWikiSearch();
+			}
+			this.wikiAttractionController.getWikiAttractions();
+		}
+		else
+		{
+			Toast.makeText(this.getActivity(), R.string.no_network, Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -170,6 +186,22 @@ public class RouteInfoFragment extends Fragment
 		if (this.observer != null)
 		{
 			this.observer.onRouteStop();
+		}
+	}
+
+	public void onWikiResponse()
+	{
+		Intent routeServiceIntent = new Intent(getActivity(), RouteService.class);
+		routeServiceIntent.putParcelableArrayListExtra("steps", steps);
+		routeServiceIntent.putParcelableArrayListExtra("places", places);
+
+		if (!RouteService.isStarted)
+		{
+			getActivity().startService(routeServiceIntent);
+		}
+		if (this.observer != null)
+		{
+			this.observer.onRouteStart();
 		}
 	}
 }

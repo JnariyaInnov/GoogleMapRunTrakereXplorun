@@ -90,6 +90,7 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 			public void onItemClick(AdapterView<?> adapterView, View view, int i, long l)
 			{
 				viewPlaceOnMap(places.get(i));
+
 			}
 		});
 

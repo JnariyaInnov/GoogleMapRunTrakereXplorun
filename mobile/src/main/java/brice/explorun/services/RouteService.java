@@ -12,6 +12,7 @@ import com.akexorcist.googledirection.model.Step;
 
 import java.util.List;
 
+import brice.explorun.models.Place;
 import brice.explorun.utilities.LocationUtility;
 
 public class RouteService extends Service
@@ -20,7 +21,9 @@ public class RouteService extends Service
 
 	public static boolean isStarted = false;
 	private List<Step> steps;
+	private List<Place> places;
 
+	private int placeIndex = 0;
 	private int instructionIndex = 0;
 	Intent ttsBroadcastIntent = new Intent("ex_tts");
 	Intent updateDistanceBroadcastIntent = new Intent("ex_distance");
@@ -49,6 +52,7 @@ public class RouteService extends Service
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
 		this.steps = intent.getParcelableArrayListExtra("steps");
+		this.places = intent.getParcelableArrayListExtra("places");
 		update();
 		return super.onStartCommand(intent, flags, startId);
 	}
@@ -65,6 +69,15 @@ public class RouteService extends Service
 				this.instructionIndex++;
 			}
 		}
+
+		if(this.places != null && this.placeIndex < this.places.size()) {
+			Place curPlace = this.places.get(this.placeIndex);
+			if (LocationUtility.distanceBetweenCoordinates(loc[0], loc[1], curPlace.getLatitude(), curPlace.getLongitude()) < 0.1) {
+				sendBroadcast(this.ttsBroadcastIntent.putExtra("text", this.places.get(this.placeIndex).getDescription()));
+				this.placeIndex++;
+			}
+		}
+
 		// Update total distance
 		if (this.latitude == -1f && this.longitude == -1f)
 		{
@@ -95,11 +108,14 @@ public class RouteService extends Service
 	}
 
 	@Override
-	public void onDestroy() {
+	public void onDestroy()
+	{
 		Log.i("explorun_route","Stopping Route service");
 		isStarted = false;
 		this.steps = null;
 		this.instructionIndex = 0;
+		this.places = null;
+		this.placeIndex = 0;
 		this.unregisterReceiver(this.locReceiver);
 		super.onDestroy();
 	}
