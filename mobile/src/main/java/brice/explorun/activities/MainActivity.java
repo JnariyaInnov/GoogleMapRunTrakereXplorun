@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
+import android.os.Build;
 import android.provider.Settings;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -19,6 +20,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
@@ -241,24 +243,35 @@ public class MainActivity extends AppCompatActivity
 
 	public void checkLocationEnabled()
 	{
-		LocationManager lm = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
-		boolean gps_enabled = false;
-		boolean network_enabled = false;
-
-		try {
-			gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-		} catch(Exception ex) {}
-
-		try {
-			network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-		} catch(Exception ex) {}
-
-		if(!gps_enabled && !network_enabled) {
+		if(!isLocationEnabled(this)) {
 			openLocationSettings();
 		}
 		else {
 			startService();
 		}
+	}
+
+	public static boolean isLocationEnabled(Context context) {
+		int locationMode = 0;
+		String locationProviders;
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+			try {
+				locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
+
+			} catch (Settings.SettingNotFoundException e) {
+				e.printStackTrace();
+				return false;
+			}
+
+			return locationMode != Settings.Secure.LOCATION_MODE_OFF;
+
+		}else{
+			locationProviders = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+			return !TextUtils.isEmpty(locationProviders);
+		}
+
+
 	}
 
 	private void openLocationSettings(){
