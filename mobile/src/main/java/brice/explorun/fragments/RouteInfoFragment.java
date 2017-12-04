@@ -136,6 +136,12 @@ public class RouteInfoFragment extends Fragment
 	{
 		switch (sportType)
 		{
+			case SportUtility.WALKING:
+				this.sportTypeImage.setImageDrawable(this.getResources().getDrawable(R.drawable.ic_walk));
+				this.sportTypeImage.setContentDescription(this.getResources().getString(R.string.form_walk_radio));
+				this.sportTypeText.setText(R.string.form_walk_radio);
+				break;
+
 			case SportUtility.TRAIL:
 				this.sportTypeImage.setImageDrawable(this.getResources().getDrawable(R.drawable.ic_run));
 				this.sportTypeImage.setContentDescription(this.getResources().getString(R.string.form_trail_radio));
@@ -149,9 +155,7 @@ public class RouteInfoFragment extends Fragment
 				break;
 
 			default:
-				this.sportTypeImage.setImageDrawable(this.getResources().getDrawable(R.drawable.ic_walk));
-				this.sportTypeImage.setContentDescription(this.getResources().getString(R.string.form_walk_radio));
-				this.sportTypeText.setText(R.string.form_walk_radio);
+				Log.e("RouteInfoFragment", "Unexpected sport type");
 		}
 	}
 

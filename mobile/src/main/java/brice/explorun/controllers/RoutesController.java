@@ -60,25 +60,16 @@ public class RoutesController implements DirectionCallback
                 validPlaces.add(p);
             }
         }
-        //Begin to select places
-        this.places = validPlaces;
-        if (this.places.size() > 0)
+
+        if (validPlaces.size() > 0)
 		{
 			int i = 0;
 			while (selectedPlaces == null && i++ < this.nbIterations)
 			{
-				selectedPlaces = getRoute(new ArrayList<>(this.places), minKM, maxKM);
+				selectedPlaces = getRoute(new ArrayList<>(validPlaces), minKM, maxKM);
 			}
 		}
         return selectedPlaces;
-    }
-
-    public void printRoute(ArrayList<Place> route){
-        String routeString = "";
-        for(Place p : route){
-            routeString += p.getName() + " => ";
-        }
-        Log.i("eX_route", routeString.substring(0, routeString.length() - 4));
     }
 
     private  ArrayList<Place> getRoute(ArrayList<Place> placesLeft, double minKM, double maxKM){
@@ -111,12 +102,12 @@ public class RoutesController implements DirectionCallback
         }
         //Random gone wrong, better luck next time
         else if (totalDistance > maxKM){
-            Log.d("eX_route", "Route is too long, trying again (" + totalDistance + ")");
+            Log.d("eX_route", "Route is too long, trying again (" + totalDistance + " > " + maxKM + ")");
             return null;
         }
         //No route of this length can be created with current places list
         else {
-            Log.d("eX_route", "Route is too short, trying again (" + totalDistance + ")");
+            Log.d("eX_route", "Route is too short, trying again (" + totalDistance + " < " + minKM + ")");
             return null;
         }
 
