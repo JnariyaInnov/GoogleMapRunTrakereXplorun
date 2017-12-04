@@ -105,7 +105,7 @@ public class RouteInfoFragment extends Fragment
 		{
 			this.updateSportImageAndText(route.getSportType());
 
-			float distance = route.getDistance();
+			double distance = route.getDistance();
 			this.distanceText.setText(LocationUtility.formatDistance(this.getActivity(), distance));
 
 			// If the route has a duration, it means that this is a route stored in the user's history

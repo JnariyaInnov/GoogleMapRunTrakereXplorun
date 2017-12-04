@@ -11,7 +11,7 @@ public class CustomRoute implements Parcelable
 {
 	private Position startPosition;
 	private int sportType;
-	private float distance = -1;
+	private double distance = -1;
 	private long duration = -1;
 	private ArrayList<Place> places;
 	private float rating = -1;
@@ -37,12 +37,12 @@ public class CustomRoute implements Parcelable
 		this.sportType = sportType;
 	}
 
-	public float getDistance()
+	public double getDistance()
 	{
 		return distance;
 	}
 
-	public void setDistance(float distance)
+	public void setDistance(double distance)
 	{
 		this.distance = distance;
 	}
@@ -94,7 +94,7 @@ public class CustomRoute implements Parcelable
 		this.places = places;
 	}
 
-	public CustomRoute(Position position, int sportType, float distance, ArrayList<Place> places, float rating)
+	public CustomRoute(Position position, int sportType, double distance, ArrayList<Place> places, float rating)
 	{
 		this(position, sportType, places);
 		this.distance = distance;
@@ -105,7 +105,7 @@ public class CustomRoute implements Parcelable
 	{
 		startPosition = (Position) in.readValue(Position.class.getClassLoader());
 		sportType = in.readInt();
-		distance = in.readFloat();
+		distance = in.readDouble();
 		if (in.readByte() == 0x01)
 		{
 			places = new ArrayList<>();
@@ -138,7 +138,7 @@ public class CustomRoute implements Parcelable
 	{
 		dest.writeValue(startPosition);
 		dest.writeInt(sportType);
-		dest.writeFloat(distance);
+		dest.writeDouble(distance);
 		if (places == null)
 		{
 			dest.writeByte((byte) (0x00));

@@ -13,7 +13,7 @@ public class FirebaseRoute implements Parcelable
 	private String id = "";
 	private Date date;
 	private int sportType = SportUtility.WALKING;
-	private float distance = 0;
+	private double distance = 0;
 	private long duration = 0;
 	private Position startPosition;
 	private ArrayList<FirebasePlace> places;
@@ -48,12 +48,12 @@ public class FirebaseRoute implements Parcelable
 		this.sportType = sportType;
 	}
 
-	public float getDistance()
+	public double getDistance()
 	{
 		return distance;
 	}
 
-	public void setDistance(float distance)
+	public void setDistance(double distance)
 	{
 		this.distance = distance;
 	}
@@ -88,7 +88,7 @@ public class FirebaseRoute implements Parcelable
 		this.places = places;
 	}
 
-	public FirebaseRoute(Date date, int sportType, float distance, long duration, Position startPosition, ArrayList<FirebasePlace> places)
+	public FirebaseRoute(Date date, int sportType, double distance, long duration, Position startPosition, ArrayList<FirebasePlace> places)
 	{
 		this.date = date;
 		this.sportType = sportType;
@@ -106,7 +106,7 @@ public class FirebaseRoute implements Parcelable
 		long tmpDate = in.readLong();
 		date = tmpDate != -1 ? new Date(tmpDate) : null;
 		sportType = in.readInt();
-		distance = in.readFloat();
+		distance = in.readDouble();
 		duration = in.readLong();
 		startPosition = (Position) in.readValue(Position.class.getClassLoader());
 		if (in.readByte() == 0x01)
@@ -131,7 +131,7 @@ public class FirebaseRoute implements Parcelable
 	{
 		dest.writeLong(date != null ? date.getTime() : -1L);
 		dest.writeInt(sportType);
-		dest.writeFloat(distance);
+		dest.writeDouble(distance);
 		dest.writeLong(duration);
 		dest.writeValue(startPosition);
 		if (places == null)

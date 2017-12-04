@@ -59,4 +59,5 @@
 	<string name="trail_speed">"Vitesse de trail : "</string>
 	<string name="sport_speeds">Vitesse moyenne dans chaque sport</string>
 	<string name="nav_settings">Paramètres</string>
+	<string name="save_route_text">Enregistrer le parcours</string>
 </resources>

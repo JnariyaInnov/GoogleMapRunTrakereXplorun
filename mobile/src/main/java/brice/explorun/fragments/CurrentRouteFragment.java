@@ -48,7 +48,9 @@ public class CurrentRouteFragment extends Fragment
 	private final String BASE_KEY = "base";
 	private final String LAST_STOP_TIME_KEY = "last_stop_time";
 	private final String DISTANCE_KEY = "distance";
+	private final String DURATION_KEY = "duration";
 	private final String RUNNING_KEY = "is_running";
+	private final String STOPPED_KEY = "stopped";
 
 	private ScrollView layout;
 	private TextView distanceText;
@@ -56,24 +58,30 @@ public class CurrentRouteFragment extends Fragment
 	private ImageView speedImage;
 	private Chronometer chronometer;
 	private Button pauseButton;
+	private Button stopButton;
+	private Button saveButton;
 
 	private Animation animation;
 
 	private CustomRoute customRoute;
 	private long base = 0;
-	private float distance = 0;
+	private double distance = 0;
 	private long lastStopTime = 0;
 	private long duration = 0;
 	private boolean isRunning = true;
+	private boolean isStopped = false;
 
 	private RouteObserver observer;
 
 	private BroadcastReceiver distanceReceiver = new BroadcastReceiver(){
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			distance = intent.getFloatExtra("distance", 0);
-			distanceText.setText(LocationUtility.formatDistance(getActivity(), distance));
-			speedText.setText(String.format(getResources().getString(R.string.average_speed), TimeUtility.computeAverageSpeed(distance, SystemClock.elapsedRealtime()-base)));
+			if (isRunning)
+			{
+				distance += intent.getDoubleExtra("distanceDelta", 0);
+				distanceText.setText(LocationUtility.formatDistance(getActivity(), distance));
+				updateAverageSpeed();
+			}
 		}
 	};
 
@@ -107,13 +115,22 @@ public class CurrentRouteFragment extends Fragment
 		this.chronometer = view.findViewById(R.id.duration);
 		this.pauseButton = view.findViewById(R.id.btn_pause_route);
 		this.pauseButton.setOnClickListener(this.pauseListener);
-		Button stopButton = view.findViewById(R.id.btn_stop_route);
-		stopButton.setOnClickListener(new View.OnClickListener()
+		this.stopButton = view.findViewById(R.id.btn_stop_route);
+		this.stopButton.setOnClickListener(new View.OnClickListener()
 		{
 			@Override
 			public void onClick(View view)
 			{
 				stopRoute();
+			}
+		});
+		this.saveButton = view.findViewById(R.id.btn_save_route);
+		this.saveButton.setOnClickListener(new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View view)
+			{
+				saveRoute();
 			}
 		});
 
@@ -125,8 +142,10 @@ public class CurrentRouteFragment extends Fragment
 		{
 			this.base = savedInstanceState.getLong(BASE_KEY);
 			this.lastStopTime = savedInstanceState.getLong(LAST_STOP_TIME_KEY);
-			this.distance = savedInstanceState.getFloat(DISTANCE_KEY);
+			this.duration = savedInstanceState.getLong(DURATION_KEY);
+			this.distance = savedInstanceState.getDouble(DISTANCE_KEY);
 			this.isRunning = savedInstanceState.getBoolean(RUNNING_KEY);
+			this.isStopped = savedInstanceState.getBoolean(STOPPED_KEY);
 		}
 
 		try
@@ -174,15 +193,22 @@ public class CurrentRouteFragment extends Fragment
 		}
 		else
 		{
-			this.updateLayoutOnPause();
+			if (this.isStopped)
+			{
+				this.updateLayoutOnStop();
+			}
+			else
+			{
+				this.updateLayoutOnPause();
+			}
 		}
-		this.speedText.setText(String.format(getResources().getString(R.string.average_speed), 0f));
+		this.updateAverageSpeed();
 		this.chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener()
 		{
 			@Override
 			public void onChronometerTick(Chronometer chronometer)
 			{
-				speedText.setText(String.format(getResources().getString(R.string.average_speed), TimeUtility.computeAverageSpeed(distance, SystemClock.elapsedRealtime()-chronometer.getBase())));
+				updateAverageSpeed();
 			}
 		});
 		this.customRoute = customRoute;
@@ -192,8 +218,10 @@ public class CurrentRouteFragment extends Fragment
 	{
 		outBundle.putLong(BASE_KEY, this.base);
 		outBundle.putLong(LAST_STOP_TIME_KEY, this.lastStopTime);
-		outBundle.putFloat(DISTANCE_KEY, this.distance);
+		outBundle.putLong(DURATION_KEY, this.duration);
+		outBundle.putDouble(DISTANCE_KEY, this.distance);
 		outBundle.putBoolean(RUNNING_KEY, this.isRunning);
+		outBundle.putBoolean(STOPPED_KEY, this.isStopped);
 		super.onSaveInstanceState(outBundle);
 	}
 
@@ -204,6 +232,21 @@ public class CurrentRouteFragment extends Fragment
 			this.getActivity().unregisterReceiver(this.distanceReceiver);
 		}
 		super.onDestroy();
+	}
+
+	public void updateAverageSpeed()
+	{
+		long time = SystemClock.elapsedRealtime();
+		if (!this.isRunning)
+		{
+			time = this.lastStopTime;
+		}
+		double speed = TimeUtility.computeAverageSpeed(this.distance, time - this.base);
+		if (Double.isNaN(speed))
+		{
+			speed = 0;
+		}
+		this.speedText.setText(String.format(getResources().getString(R.string.average_speed), speed));
 	}
 
 	public void pauseRoute()
@@ -233,6 +276,13 @@ public class CurrentRouteFragment extends Fragment
 		this.isRunning = true;
 	}
 
+	public void updateLayoutOnStop()
+	{
+		this.saveButton.setVisibility(View.VISIBLE);
+		this.pauseButton.setVisibility(View.GONE);
+		this.stopButton.setVisibility(View.GONE);
+	}
+
 	public void stopRoute()
 	{
 		// We pause the route to enable the user to retry to store his route if he has no internet connection on his first attempt
@@ -240,14 +290,23 @@ public class CurrentRouteFragment extends Fragment
 		{
 			pauseRoute();
 		}
+		Intent intent = new Intent(this.getActivity(), RouteService.class);
+		this.getActivity().stopService(intent);
+		this.isStopped = true;
+		this.updateLayoutOnStop();
+		this.saveRoute();
+	}
 
+	public void saveRoute()
+	{
 		// We add the route in firebase only if user has an internet connection because synchronising data offline doesn't work well
 		if (Utility.isOnline(this.getActivity()))
 		{
-			addRouteInFirebase();
-			slideDownFragment();
-			showDialog();
+			this.addRouteInFirebase();
+			this.slideDownFragment();
+			this.showDialog();
 			this.distance = 0;
+			this.duration = 0;
 			this.base = 0;
 			this.lastStopTime = 0;
 			if (this.observer != null)
@@ -281,8 +340,6 @@ public class CurrentRouteFragment extends Fragment
 
 	public void slideDownFragment()
 	{
-		Intent intent = new Intent(this.getActivity(), RouteService.class);
-		this.getActivity().stopService(intent);
 		this.layout.setAnimation(this.animation);
 		this.layout.setVisibility(View.GONE);
 		this.layout.startAnimation(this.animation);

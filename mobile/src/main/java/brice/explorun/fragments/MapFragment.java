@@ -606,11 +606,11 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 			List<LatLng> locations = new ArrayList<>();
 			ArrayList<Step> instructions = new ArrayList<>();
 
-			float distance = 0;
+			double distance = 0;
 
 			for (Leg leg: route.getLegList())
 			{
-				distance += Float.parseFloat(leg.getDistance().getValue());
+				distance += Double.parseDouble(leg.getDistance().getValue());
 				Coordination coordination = leg.getStartLocation();
 				locations.add(new LatLng(coordination.getLatitude(), coordination.getLongitude()));
 				for(Step step : leg.getStepList()){

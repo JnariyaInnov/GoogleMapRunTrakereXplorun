@@ -120,6 +120,19 @@
 				android:textSize="18sp"
 				style="?android:attr/buttonBarButtonStyle"/>
 
+			<Button
+				android:id="@+id/btn_save_route"
+				android:layout_width="0dp"
+				android:layout_height="35dp"
+				android:layout_weight="1"
+				android:gravity="center"
+				android:background="@color/colorPrimary"
+				android:textColor="@android:color/white"
+				android:text="@string/save_route_text"
+				android:textSize="18sp"
+				style="?android:attr/buttonBarButtonStyle"
+				android:visibility="gone"/>
+
 		</LinearLayout>
 
 	</LinearLayout>

@@ -61,6 +61,7 @@
 	<string name="pause_route_text">Pause</string>
 	<string name="stop_route_text">Stop</string>
 	<string name="resume_route_text">Resume</string>
+	<string name="save_route_text">Save route</string>
 	<string name="average_speed_text">Average speed</string>
 	<string name="average_speed" translatable="false">%1$.1f km/h</string>
 	<string name="route_saved">Your route has been saved in your history</string>
