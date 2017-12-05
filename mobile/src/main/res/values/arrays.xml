@@ -5,5 +5,10 @@
 		<item>church</item>
 		<item>museum</item>
 		<item>park</item>
+		<item>hindu_temple</item>
+		<item>synagogue</item>
+		<item>mosque</item>
+		<item>courthouse</item>
+		<item>embassy</item>
 	</string-array>
 </resources>

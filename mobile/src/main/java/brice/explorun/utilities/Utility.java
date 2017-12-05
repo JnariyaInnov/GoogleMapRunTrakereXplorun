@@ -72,16 +72,22 @@ public class Utility
 			case "park":
 				res = colorToHue(context, R.color.darkGreen);
 				break;
-
 			case "museum":
 				res = BitmapDescriptorFactory.HUE_ORANGE;
 				break;
-
 			case "city_hall":
+				res = BitmapDescriptorFactory.HUE_VIOLET;
+				break;
 			case "church":
+			case "hindu_temple":
+			case "synagogue":
+			case "mosque":
 				res = colorToHue(context, R.color.brown);
 				break;
-
+			case "embassy":
+			case "courthouse":
+				res = colorToHue(context, R.color.grey);
+				break;
 			default:
 				res = BitmapDescriptorFactory.HUE_RED;
 				break;
