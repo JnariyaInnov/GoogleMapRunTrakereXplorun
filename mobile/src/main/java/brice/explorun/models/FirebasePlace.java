@@ -2,7 +2,9 @@ package brice.explorun.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Keep;
 
+@Keep
 public class FirebasePlace implements Parcelable
 {
 	private String name;

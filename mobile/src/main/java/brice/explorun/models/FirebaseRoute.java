@@ -2,12 +2,14 @@ package brice.explorun.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Keep;
 
 import java.util.ArrayList;
 import java.util.Date;
 
 import brice.explorun.utilities.SportUtility;
 
+@Keep
 public class FirebaseRoute implements Parcelable
 {
 	private String id = "";
