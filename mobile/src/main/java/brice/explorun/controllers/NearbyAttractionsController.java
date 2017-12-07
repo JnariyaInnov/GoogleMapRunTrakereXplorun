@@ -39,6 +39,7 @@ public class NearbyAttractionsController
 	private int requestsCount; // Number of API requests to do
 	private int responsesCount = 0; // Number of received API responses
 	private int errorsCount = 0; // Number of API requests errors
+	private final int maxPlacesByType = 20;
 
 	private ArrayList<Place> places;
 
@@ -181,7 +182,7 @@ public class NearbyAttractionsController
 				ArrayList<Place> places = new ArrayList<>();
 				JSONArray results = response.getJSONArray("results");
 				int i = 0, j = 0;
-				while (i < 5 && j < results.length())
+				while (i < maxPlacesByType && j < results.length())
 				{
 					JSONObject object = results.getJSONObject(j);
 

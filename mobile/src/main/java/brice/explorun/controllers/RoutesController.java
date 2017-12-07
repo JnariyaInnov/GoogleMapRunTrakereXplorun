@@ -29,6 +29,7 @@ public class RoutesController implements DirectionCallback
 {
     private final int nbIterations = 100;
     private final int nbPlaces = 3;
+    private final int maxWaypoints = 23;
     private ArrayList<Place> places;
     private float[] userLocation;
 
@@ -51,6 +52,10 @@ public class RoutesController implements DirectionCallback
     }
 
     public ArrayList<Place> generateRoute(double minKM, double maxKM){
+	    //Transforming min and maxKm to take into account
+        // difference between theoretical distance and real distance
+        minKM = minKM*0.7;
+        maxKM = maxKM*0.7;
 		Log.i("eX_route", "Generating route");
         ArrayList<Place> validPlaces = new ArrayList<>();
         ArrayList<Place> selectedPlaces = null;
@@ -96,9 +101,16 @@ public class RoutesController implements DirectionCallback
 
         totalDistance += distanceToUserLocation(lastPlace);
 
-        //If route is valid, return it
+        //If route is valid
         if(totalDistance >= minKM && totalDistance <= maxKM){
-            return res;
+            //If less than 23 waypoints, returns it
+            if(res.size() < maxWaypoints){
+                return res;
+            }
+            //Else, request won't work, aborting this route
+            else{
+                return null;
+            }
         }
         //Random gone wrong, better luck next time
         else if (totalDistance > maxKM){
@@ -128,6 +140,7 @@ public class RoutesController implements DirectionCallback
         if(placesLeft.size() > this.nbPlaces){
             return new ArrayList<>(placesLeft.subList(0, this.nbPlaces));
         }
+        //If there are not enough placesLeft, we return the list as is
         else{
             return placesLeft;
         }
