@@ -28,8 +28,9 @@ import brice.explorun.models.Place;
 public class RoutesController implements DirectionCallback
 {
     private final int nbIterations = 100;
-    private final int nbPlaces = 3;
+    private final int nbPlaces = 5;
     private final int maxWaypoints = 23;
+    private final int minWaypoint = 2;
     private ArrayList<Place> places;
     private float[] userLocation;
 
@@ -89,7 +90,7 @@ public class RoutesController implements DirectionCallback
         double totalDistance = distanceToUserLocation(lastPlace);
 
         //While totalDistance of the route is less than minKm
-        while((totalDistance + distanceToUserLocation(lastPlace) < minKM) && placesLeft.size() > 0){
+        while(((totalDistance + distanceToUserLocation(lastPlace) < minKM) && placesLeft.size() > 0) || (res.size() < minWaypoint)){
             //Select a random place near lastPlace and add it to current route
             ArrayList<Place> nearestPlaces = getNearestPlaces(placesLeft, lastPlace);
             curPlace = nearestPlaces.get(r.nextInt(nearestPlaces.size()));
