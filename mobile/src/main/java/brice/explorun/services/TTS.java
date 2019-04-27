@@ -35,6 +35,7 @@ public class TTS extends Service implements TextToSpeech.OnInitListener, TextToS
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
+            tts.setSpeechRate(0.8f);
             int result = tts.setLanguage(Locale.getDefault());
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e("eX_TTS", "This Language is not supported");
@@ -50,9 +51,9 @@ public class TTS extends Service implements TextToSpeech.OnInitListener, TextToS
 
     public void speak(String text){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+            tts.speak(text, TextToSpeech.QUEUE_ADD, null, null);
         }else{
-            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+            tts.speak(text, TextToSpeech.QUEUE_ADD, null);
         }
     }
 

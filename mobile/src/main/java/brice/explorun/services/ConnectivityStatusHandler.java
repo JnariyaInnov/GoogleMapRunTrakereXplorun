@@ -3,17 +3,14 @@ package brice.explorun.services;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.view.View;
 import android.widget.TextView;
 
 import brice.explorun.R;
 import brice.explorun.activities.MainActivity;
-import brice.explorun.fragments.HistoryFragment;
-import brice.explorun.fragments.MapFragment;
 import brice.explorun.fragments.PlacesObserverFragment;
 import brice.explorun.utilities.Utility;
-import brice.explorun.fragments.NearbyAttractionsFragment;
 
 public class ConnectivityStatusHandler extends BroadcastReceiver
 {

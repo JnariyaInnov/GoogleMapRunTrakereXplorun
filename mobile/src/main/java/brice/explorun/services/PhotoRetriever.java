@@ -3,7 +3,6 @@ package brice.explorun.services;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.PlacePhotoMetadata;
 import com.google.android.gms.location.places.PlacePhotoMetadataBuffer;
 import com.google.android.gms.location.places.PlacePhotoMetadataResult;

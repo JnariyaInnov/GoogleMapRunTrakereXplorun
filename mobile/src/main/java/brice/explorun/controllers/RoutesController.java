@@ -93,11 +93,14 @@ public class RoutesController implements DirectionCallback
         while(((totalDistance + distanceToUserLocation(lastPlace) < minKM) && placesLeft.size() > 0) || (res.size() < minWaypoint)){
             //Select a random place near lastPlace and add it to current route
             ArrayList<Place> nearestPlaces = getNearestPlaces(placesLeft, lastPlace);
-            curPlace = nearestPlaces.get(r.nextInt(nearestPlaces.size()));
-            totalDistance += distanceBetweenPlace(lastPlace, curPlace);
-            res.add(curPlace);
-            placesLeft.remove(curPlace);
-            lastPlace = curPlace;
+            if (nearestPlaces.size() > 0)
+			{
+				curPlace = nearestPlaces.get(r.nextInt(nearestPlaces.size()));
+				totalDistance += distanceBetweenPlace(lastPlace, curPlace);
+				res.add(curPlace);
+				placesLeft.remove(curPlace);
+				lastPlace = curPlace;
+			}
         }
 
         totalDistance += distanceToUserLocation(lastPlace);

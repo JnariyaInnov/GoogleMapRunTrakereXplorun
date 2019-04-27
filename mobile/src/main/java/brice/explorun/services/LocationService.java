@@ -2,23 +2,28 @@ package brice.explorun.services;
 
 import android.Manifest;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import android.util.Log;
 
-import com.akexorcist.googledirection.model.Step;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -26,12 +31,8 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Places;
 
-import java.util.HashMap;
-import java.util.List;
-
 import brice.explorun.R;
 import brice.explorun.activities.MainActivity;
-import brice.explorun.utilities.LocationUtility;
 
 public class LocationService extends Service implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -39,6 +40,7 @@ public class LocationService extends Service implements LocationListener, Google
     public static GoogleApiClient mGoogleApiClient = null;
     final int notificationId = 67;
     final String notificationChannel = "locChannel";
+    final String notificationChannelName = "Localisation service";
     Intent locationBroadcastIntent = new Intent("ex_location");
 
     final static int refreshInterval = 10000; // Position refresh interval (in ms)
@@ -57,6 +59,15 @@ public class LocationService extends Service implements LocationListener, Google
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, MainActivity.class)
                         .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			NotificationChannel chan = new NotificationChannel(notificationChannel, notificationChannelName, NotificationManager.IMPORTANCE_NONE);
+			chan.setLightColor(Color.BLUE);
+			chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+			NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+			assert manager != null;
+			manager.createNotificationChannel(chan);
+		}
 
         Notification notification = new NotificationCompat.Builder(this, notificationChannel)
             .setContentTitle(getText(R.string.notification_title))

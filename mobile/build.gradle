@@ -1,15 +1,16 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion "27.0.3"
+    compileSdkVersion 28
+    buildToolsVersion "28.0.3"
     defaultConfig {
         applicationId "brice.explorun"
         minSdkVersion 16
-        targetSdkVersion 27
-        versionCode 3
-        versionName "1.0.2"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        targetSdkVersion 28
+        versionCode 4
+        versionName "1.1"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -26,24 +27,28 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:27.0.2'
-    compile 'com.google.firebase:firebase-auth:11.8.0'
-    compile 'com.google.firebase:firebase-firestore:11.8.0'
-    compile 'com.google.android.gms:play-services-auth:11.8.0'
-    compile 'com.google.android.gms:play-services-maps:11.8.0'
-    compile 'com.google.android.gms:play-services-location:11.8.0'
-    compile 'com.google.android.gms:play-services-places:11.8.0'
-    compile 'com.android.support:design:27.0.2'
-    compile 'com.android.volley:volley:1.0.0'
-    compile 'com.facebook.android:facebook-android-sdk:4.7.0'
-    compile 'com.appyvet:materialrangebar:1.4'
-    compile 'com.akexorcist:googledirectionlibrary:1.1.0'
-    compile 'com.daimajia.swipelayout:library:1.2.0@aar'
-    testCompile 'junit:junit:4.12'
+    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'com.google.firebase:firebase-auth:16.2.1'
+    implementation 'com.google.firebase:firebase-firestore:18.2.0'
+    implementation 'com.google.android.gms:play-services-auth:16.0.1'
+    implementation 'com.google.android.gms:play-services-maps:16.1.0'
+    implementation 'com.google.android.gms:play-services-location:16.0.0'
+    implementation 'com.google.android.gms:play-services-places:16.0.0'
+    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.android.volley:volley:1.1.0'
+    implementation 'com.facebook.android:facebook-android-sdk:4.7.0'
+    implementation 'com.appyvet:materialrangebar:1.4'
+    implementation 'com.akexorcist:googledirectionlibrary:1.1.0'
+    implementation 'com.daimajia.swipelayout:library:1.2.0@aar'
+
+    // Multidex
+    implementation 'androidx.multidex:multidex:2.0.1'
+
+    testImplementation 'junit:junit:4.12'
 }
 
 apply plugin: 'com.google.gms.google-services'

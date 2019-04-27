@@ -1,7 +1,7 @@
 package brice.explorun.fragments;
 
 import android.location.Location;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.widget.Toast;
 import android.util.Log;
 import android.view.View;
@@ -11,8 +11,6 @@ import java.util.ArrayList;
 
 import brice.explorun.controllers.NearbyAttractionsController;
 import brice.explorun.R;
-import brice.explorun.controllers.WikiAttractionController;
-import brice.explorun.services.RouteService;
 import brice.explorun.utilities.LocationUtility;
 import brice.explorun.models.Photo;
 import brice.explorun.models.Place;

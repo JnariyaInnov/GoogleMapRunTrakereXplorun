@@ -171,13 +171,16 @@ public class WikiAttractionController
 
 	private String textCleaner(String status)
 	{
-		String paragraph;
+		String paragraph = "";
 
 		Pattern p = Pattern.compile("'''");
 		Matcher m = p.matcher(status);
 		if (m.find())
 		{
-			paragraph = status.substring(status.indexOf("'''"), status.indexOf("=="));
+			if (status.contains("'''") && status.contains("=="))
+			{
+				paragraph = status.substring(status.indexOf("'''"), status.indexOf("=="));
+			}
 		}
 		else
 		{
