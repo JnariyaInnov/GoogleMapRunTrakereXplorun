@@ -5,6 +5,9 @@
 	<string name="google_places_web_key" templateMergeStrategy="preserve" translatable="false">
 		AIzaSyCDn9SWA9IUhHHkYp8SZZ_kIV_Ff8H8-M4
 	</string>
+	<string name="google_places_android_key" templateMergeStrategy="preserve" translatable="false">
+		AIzaSyA4MpzHTZvxxVfFR7GUdmbuJDLLhSluicw
+	</string>
 	<string name="google_directions_web_key" templateMergeStrategy="preserve" translatable="false">
 		AIzaSyA4MpzHTZvxxVfFR7GUdmbuJDLLhSluicw
 	</string>

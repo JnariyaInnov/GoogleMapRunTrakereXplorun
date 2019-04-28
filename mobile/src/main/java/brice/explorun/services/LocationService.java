@@ -19,7 +19,6 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
@@ -29,7 +28,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.Places;
 
 import brice.explorun.R;
 import brice.explorun.activities.MainActivity;
@@ -53,7 +51,6 @@ public class LocationService extends Service implements LocationListener, Google
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
-                .addApi(Places.GEO_DATA_API)
                 .build();
 
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,

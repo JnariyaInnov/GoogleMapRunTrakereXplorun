@@ -5,17 +5,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.places.Places;
+import com.google.android.libraries.places.api.Places;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,10 +29,8 @@ import brice.explorun.R;
 import brice.explorun.controllers.NearbyAttractionsController;
 import brice.explorun.services.RouteService;
 
-public class NearbyAttractionsFragment extends PlacesObserverFragment implements GoogleApiClient.OnConnectionFailedListener
+public class NearbyAttractionsFragment extends PlacesObserverFragment
 {
-	private GoogleApiClient mGoogleApiClient;
-
 	private List<String> types;
 	private ArrayList<Place> places;
 	private NearbyAttractionsAdapter adapter;
@@ -57,17 +54,13 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 	{
 		View view =  inflater.inflate(R.layout.fragment_nearby_attractions, container, false);
 
-		// Create an instance of GoogleAPIClient.
-		if (this.mGoogleApiClient == null)
-		{
-			this.mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
-					.addApi(Places.GEO_DATA_API)
-					.addOnConnectionFailedListener(this)
-					.build();
+		// Initialize Places.
+		Places.initialize(this.getActivity().getApplicationContext(), getResources().getString(R.string.google_places_android_key));
 
-		}
+		// Create a new Places client instance.
+		this.placesClient = Places.createClient(this.getActivity());
 
-		this.nearbyAttractionsController = new NearbyAttractionsController(this);
+		this.nearbyAttractionsController = new NearbyAttractionsController(this, this.placesClient);
 
 		this.types = Arrays.asList(getResources().getStringArray(R.array.places_types));
 
@@ -107,30 +100,12 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 		return view;
 	}
 
-	public void onStart()
-	{
-		super.onStart();
-		if (!this.mGoogleApiClient.isConnected())
-		{
-			this.mGoogleApiClient.connect();
-		}
-	}
-
 	@Override
 	public void onActivityCreated(@Nullable Bundle savedInstanceState)
 	{
 		super.onActivityCreated(savedInstanceState);
 		MainActivity activity = (MainActivity) this.getActivity();
 		activity.getConnectivityStatusHandler().updateNoNetworkLabel();
-	}
-
-	public void onStop()
-	{
-		if (this.mGoogleApiClient.isConnected())
-		{
-			this.mGoogleApiClient.disconnect();
-		}
-		super.onStop();
 	}
 
 	public void onDestroy()
@@ -144,12 +119,6 @@ public class NearbyAttractionsFragment extends PlacesObserverFragment implements
 	{
 		outBundle.putParcelableArrayList(this.PLACES_KEY, this.places);
 		super.onSaveInstanceState(outBundle);
-	}
-
-	@Override
-	public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
-	{
-
 	}
 
 	public void updatePlaces(ArrayList<Place> places, int errorsCount)

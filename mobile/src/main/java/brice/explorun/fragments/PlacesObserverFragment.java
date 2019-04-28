@@ -7,6 +7,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.net.PlacesClient;
+
 import java.util.ArrayList;
 
 import brice.explorun.controllers.NearbyAttractionsController;
@@ -21,6 +24,8 @@ public abstract class PlacesObserverFragment extends Fragment
 	protected NearbyAttractionsController nearbyAttractionsController;
 	protected Location mLastLocation = new Location("");
 	protected LinearLayout progressBarLayout = null;
+
+	protected PlacesClient placesClient = null;
 
 	public PlacesObserverFragment()
 	{

@@ -8,6 +8,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.google.android.libraries.places.api.net.PlacesClient;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,7 +44,9 @@ public class NearbyAttractionsController
 
 	private ArrayList<Place> places;
 
-	public NearbyAttractionsController(PlacesObserverFragment observer)
+	private PlacesClient placesClient;
+
+	public NearbyAttractionsController(PlacesObserverFragment observer, PlacesClient placesClient)
 	{
 		this.observer = observer;
 		this.asyncTasks = new ArrayList<>();
@@ -52,6 +55,7 @@ public class NearbyAttractionsController
 		this.requestsCount = types.length;
 
 		this.places = new ArrayList<>();
+		this.placesClient = placesClient;
 	}
 
 	private String getPlacesApiUrl(String type)
@@ -152,7 +156,7 @@ public class NearbyAttractionsController
 		Photo photo = place.getPhoto();
 		if (photo != null)
 		{
-			PhotoRetriever task = new PhotoRetriever(this);
+			PhotoRetriever task = new PhotoRetriever(this, this.placesClient);
 			this.asyncTasks.add(task);
 			task.execute(photo);
 		}

@@ -167,7 +167,7 @@ public class MapFragment extends PlacesObserverFragment implements OnMapReadyCal
 
 		this.types = Arrays.asList(this.getResources().getStringArray(R.array.places_types));
 
-		this.nearbyAttractionsController = new NearbyAttractionsController(this);
+		this.nearbyAttractionsController = new NearbyAttractionsController(this, this.placesClient);
 		IntentFilter filter = new IntentFilter("ex_location");
 		getActivity().registerReceiver(locReceiver, filter);
 
